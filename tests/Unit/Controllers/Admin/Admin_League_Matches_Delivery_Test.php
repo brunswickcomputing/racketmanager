@@ -26,6 +26,7 @@ use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\Services\Competition\League_Query_Service;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 final class Admin_League_Matches_Delivery_Test extends TestCase {
@@ -49,10 +50,7 @@ final class Admin_League_Matches_Delivery_Test extends TestCase {
     }
 
     public function test_present_league_finals_builds_cup_finals_with_presented_fixtures(): void {
-        $competition       = $this->createStub( Competition::class );
-        $competition->id   = 10;
-        $competition->type = Competition_Type::CUP;
-        $competition->is_cup = true;
+        $competition = Competition_Test_Factory::create( id: 10, type: Competition_Type::CUP );
 
         $fixture_league     = $this->createStub( League::class );
         $fixture_league->id = 4;

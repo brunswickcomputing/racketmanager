@@ -5,6 +5,7 @@ namespace Racketmanager\Tests\Unit\Domain\Competition;
 
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Fixture\Fixture;
@@ -15,6 +16,7 @@ use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 use wpdb;
@@ -39,12 +41,13 @@ class Event_Settings_Test extends TestCase {
         $this->rubber_repository  = $this->createMock( Rubber_Repository_Interface::class );
         $this->league_repository  = $this->createMock( League_Repository_Interface::class );
 
-        $competition = $this->createMock( \Racketmanager\Domain\Competition\Competition::class );
-        $competition_settings = new \Racketmanager\Domain\Competition\Competition_Settings( ['mode' => 'league'] );
-        $competition->settings = $competition_settings;
-        $competition->type = \Racketmanager\Domain\Competition\Competition_Type::LEAGUE;
-        $competition->is_player_entry = false;
-        $competition->standings = [];
+        $competition = Competition_Test_Factory::create(
+            1,
+            'Summer League',
+            Competition_Type::LEAGUE,
+            null,
+            array( 'mode' => 'league' )
+        );
 
         $event_raw = new stdClass();
         $event_raw->id = 10;

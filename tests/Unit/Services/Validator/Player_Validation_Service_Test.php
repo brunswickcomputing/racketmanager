@@ -13,6 +13,7 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
@@ -245,7 +246,8 @@ class Player_Validation_Service_Test extends TestCase {
 
         $league = $this->createMock( League::class );
         $event = $this->createMock( Event::class );
-        $competition = $this->createMock( Competition::class );
+        $competition = Competition_Test_Factory::create( id: 1, type: Competition_Type::LEAGUE, seasons: [ '2026' => [] ] );
+        $competition->set_rules( [ 'wtn_check' => true ] );
         $event->competition = $competition;
         $league->event = $event;
         $league->method( 'get_id' )->willReturn( 456 );
@@ -266,8 +268,6 @@ class Player_Validation_Service_Test extends TestCase {
 
         $options = [ 'checks' => [ 'wtn_check' => true ] ];
         
-        $competition->rules = [ 'wtn_check' => true ];
-        $competition->method( 'get_season_by_name' )->willReturn( [] );
         $event->method( 'get_season_by_name' )->willReturn( [] );
         $event->method( 'get_type' )->willReturn( 'LS' ); // League Singles
 
@@ -312,12 +312,12 @@ class Player_Validation_Service_Test extends TestCase {
 
         $league = $this->createMock( League::class );
         $event = $this->createMock( Event::class );
-        $competition = $this->createMock( Competition::class );
+        $competition = Competition_Test_Factory::create( id: 1, type: Competition_Type::LEAGUE, seasons: [ '2026' => [] ] );
+        $competition->set_rules( [ 'ageLimitCheck' => true ] );
         $event->competition = $competition;
         $league->event = $event;
         $event->age_limit = '45'; // Over 45s
         $event->age_offset = '0';
-        $competition->rules = [ 'ageLimitCheck' => true ];
         $options = [ 'checks' => [ 'ageLimitCheck' => true ] ];
 
         $player = (object)[
@@ -392,10 +392,8 @@ class Player_Validation_Service_Test extends TestCase {
 
         $league = $this->createMock( League::class );
         $event = $this->createMock( Event::class );
-        $competition = $this->createMock( Competition::class );
-        $competition->method('get_type')->willReturn('league');
-        $competition->type = Competition_Type::LEAGUE;
-        $competition->rules = [ 'resultTimeout' => true ];
+        $competition = Competition_Test_Factory::create( id: 1, type: Competition_Type::LEAGUE );
+        $competition->set_rules( [ 'resultTimeout' => true ] );
         $event->competition = $competition;
         $league->event = $event;
 

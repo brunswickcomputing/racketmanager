@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Ajax;
 
 use Racketmanager\Tests\Helpers\League_Test_Factory;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
@@ -128,13 +129,10 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     private function create_competition_mock( string $entry_type = 'team', string $season_name = '2026' ): Competition {
-        $competition           = $this->createMock( Competition::class );
-        $competition->settings = new \Racketmanager\Domain\Competition\Competition_Settings( [ 'entry_type' => $entry_type ] );
-        $competition->expects( $this->once() )
-            ->method( 'get_season_by_name' )
-            ->with( $season_name )
-            ->willReturn( [ 'name' => $season_name ] );
-        return $competition;
+        return Competition_Test_Factory::create(
+            settings: [ 'entry_type' => $entry_type ],
+            seasons: [ $season_name => [ 'name' => $season_name ] ]
+        );
     }
 
     private function setup_tournament_entry_service_notification( int $tournament_id, int|\Throwable $result ): void {

@@ -34,6 +34,7 @@ use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Stage;
 use Racketmanager\Domain\Scoring\Scoring_Context;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use Racketmanager\Tests\Helpers\Result_Test_Factory;
@@ -713,16 +714,13 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         );
 
         $league = $this->create_league_mock( id: 456 );
-        $competition = $this->getMockBuilder( \Racketmanager\Domain\Competition\Competition::class )
-                            ->onlyMethods( [ 'get_season_by_name' ] )
-                            ->disableOriginalConstructor()
-                            ->getMock();
-        $competition->type = Competition_Type::LEAGUE;
-        $competition->is_player_entry = false;
+        $competition = Competition_Test_Factory::create(
+            type: Competition_Type::LEAGUE,
+            seasons: [ '2026' => [] ]
+        );
+        $competition->set_is_player_entry( false );
         $league->event->competition = $competition;
         $this->league_repository_repo->method( 'find_by_id' )->willReturn( $league );
-
-        $competition->method( 'get_season_by_name' )->willReturn( [] );
 
         // Pass rubbers as array with player IDs instead of objects
         $rubbers = [

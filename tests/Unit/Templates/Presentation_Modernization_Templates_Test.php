@@ -787,16 +787,16 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
     }
 
     private function make_competition_stub( string $type = 'league', bool $team_entry = true, bool $championship = false ): Competition {
-        $competition = $this->createStub( Competition::class );
-        $competition->method( 'get_id' )->willReturn( 5 );
-        $competition->method( 'get_type' )->willReturn( $type );
-        $competition->method( 'is_event_allowed' )->willReturn( true );
-        $competition->id              = 5;
-        $competition->name            = 'Summer League';
-        $competition->type            = Competition_Type::from( $type );
-        $competition->current_season  = [ 'name' => '2026' ];
-        $competition->is_team_entry   = $team_entry;
-        $competition->is_championship = $championship;
+        $comp_type   = Competition_Type::from( $type );
+        $competition = Competition_Test_Factory::create(
+            id: 5,
+            name: 'Summer League',
+            type: $comp_type,
+            seasons: [ '2026' => [ 'name' => '2026', 'config' => [] ] ],
+            current_season: [ 'name' => '2026' ]
+        );
+        $competition->set_is_team_entry( $team_entry );
+        $competition->set_is_championship( $championship );
 
         return $competition;
     }
@@ -804,7 +804,10 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
     private function make_event_stub( Competition $competition ): Event {
         $event = $this->createStub( Event::class );
         $event->method( 'get_id' )->willReturn( 77 );
+        $event->method( 'get_competition_id' )->willReturn( 5 );
+        $event->method( 'get_season_by_name' )->willReturn( [ 'name' => '2026' ] );
         $event->id             = 77;
+        $event->competition_id = 5;
         $event->name           = "Men's Doubles";
         $event->competition    = $competition;
         $event->current_season = [ 'name' => '2026' ];
@@ -1347,14 +1350,14 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
     public function test_cup_championship_competition_club_detail_renders_exact_championship_draw_and_team_urls(): void {
         unset( $GLOBALS['racketmanager'] );
 
-        $competition = $this->createStub( \Racketmanager\Domain\Competition\Competition::class );
-        $competition->id              = 9;
-        $competition->name            = 'Summer Cup';
-        $competition->type            = Competition_Type::CUP;
-        $competition->is_championship = true;
-        $competition->current_season  = [ 'name' => '2026', 'date_start' => '2026-05-01', 'date_end' => '2026-09-01' ];
-        $competition->method( 'get_id' )->willReturn( 9 );
-        $competition->method( 'get_type' )->willReturn( 'cup' );
+        $competition = Competition_Test_Factory::create(
+            id: 9,
+            name: 'Summer Cup',
+            type: Competition_Type::CUP,
+            seasons: [ '2026' => [ 'name' => '2026', 'config' => [] ] ],
+            current_season: [ 'name' => '2026', 'date_start' => '2026-05-01', 'date_end' => '2026-09-01' ]
+        );
+        $competition->set_is_championship( true );
 
         $club = Club_Test_Factory::create(
             id: 3,
@@ -1498,8 +1501,9 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
     public function test_competition_players_list_and_detail_handle_integer_season_without_type_error(): void {
         unset( $GLOBALS['racketmanager'] );
 
-        $competition                 = $this->make_competition_stub();
-        $competition->current_season = [ 'name' => 2024 ];
+        $competition = $this->make_competition_stub();
+        $competition->set_seasons( [ '2024' => [ 'name' => '2024', 'config' => [] ] ] );
+        $competition->apply_current_season( [ 'name' => 2024 ] );
 
         $player = Player_Test_Factory::create( 51, 'Roger Federer', null, 'Roger', 'Federer' );
 
@@ -1576,9 +1580,12 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
     public function test_event_single_player_handles_integer_season_without_type_error(): void {
         unset( $GLOBALS['racketmanager'] );
 
-        $competition           = $this->make_competition_stub();
+        $competition = $this->make_competition_stub();
+        $competition->set_seasons( [ '2024' => [ 'name' => '2024', 'config' => [] ] ] );
+        $competition->apply_current_season( [ 'name' => 2024 ] );
         $event                 = $this->make_event_stub( $competition );
         $event->current_season = [ 'name' => 2024 ];
+        $event->method( 'get_season_by_name' )->willReturn( [ 'name' => 2024 ] );
 
         $player = Player_Test_Factory::create( 51, 'Roger Federer', null, 'Roger', 'Federer' );
 
@@ -1644,10 +1651,13 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
     public function test_get_event_handler_header_handles_integer_season_without_type_error(): void {
         unset( $GLOBALS['racketmanager'] );
 
-        $competition           = $this->make_competition_stub();
+        $competition = $this->make_competition_stub();
+        $competition->set_seasons( [ '2024' => [ 'name' => '2024', 'config' => [] ] ] );
+        $competition->apply_current_season( [ 'name' => 2024 ] );
         $event                 = $this->make_event_stub( $competition );
         $event->current_season = [ 'name' => 2024 ];
         $event->method( 'get_seasons' )->willReturn( [ [ 'name' => 2024 ] ] );
+        $event->method( 'get_season_by_name' )->willReturn( [ 'name' => 2024 ] );
 
         $service = $this->createStub( Competition_Service::class );
         $service->method( 'get_event_by_id' )->willReturn( $event );
@@ -1670,8 +1680,9 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
     public function test_get_competition_clubs_detail_with_players_handles_integer_season_without_type_error(): void {
         unset( $GLOBALS['racketmanager'] );
 
-        $competition                 = $this->make_competition_stub();
-        $competition->current_season = [ 'name' => 2024 ];
+        $competition = $this->make_competition_stub();
+        $competition->set_seasons( [ '2024' => [ 'name' => '2024', 'config' => [] ] ] );
+        $competition->apply_current_season( [ 'name' => 2024 ] );
 
         $club   = Club_Test_Factory::create( 3, 'Westcliff Tennis Club', 'Westcliff TC' );
         $player = Player_Test_Factory::create( 51, 'Roger Federer', null, 'Roger', 'Federer' );

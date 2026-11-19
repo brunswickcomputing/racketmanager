@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Unit\Services\Admin\Event;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
@@ -17,6 +18,7 @@ use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\League_Service;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 require_once __DIR__ . '/../../../../wp-stubs.php';
@@ -75,16 +77,16 @@ final class Event_Action_Dispatcher_Test extends TestCase {
         ?array $current_season = null,
         array $seasons = []
     ): Competition {
-        $competition                  = $this->createStub( Competition::class );
-        $competition->id              = $id;
-        $competition->is_team_entry   = false;
-        $competition->is_tournament   = $is_tournament;
-        $competition->is_championship = $is_championship;
-        $competition->settings        = new \Racketmanager\Domain\Competition\Competition_Settings( array( 'mode' => $mode ) );
-        if ( null !== $current_season ) {
-            $competition->current_season = $current_season;
-        }
-        $competition->method( 'get_seasons' )->willReturn( $seasons );
+        $type = $is_tournament ? Competition_Type::TOURNAMENT : Competition_Type::LEAGUE;
+        $competition = Competition_Test_Factory::create(
+            id: $id,
+            type: $type,
+            seasons: $seasons,
+            settings: [ 'mode' => $mode ],
+            current_season: $current_season
+        );
+        $competition->set_is_team_entry( false );
+        $competition->set_is_championship( $is_championship );
         return $competition;
     }
 
@@ -310,7 +312,7 @@ final class Event_Action_Dispatcher_Test extends TestCase {
             current_season: $season_2025,
             seasons: array( '2025' => $season_2025, '2026' => $season_2026 )
         );
-        $competition->is_league = true;
+        $competition->set_is_league( true );
         $competition_service->method( 'get_by_id' )->willReturn( $competition );
 
         $season_names = array();

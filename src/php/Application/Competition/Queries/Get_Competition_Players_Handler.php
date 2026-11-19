@@ -52,7 +52,7 @@ class Get_Competition_Players_Handler {
         $this->competition_season_service->resolve_current_season( $competition, (string) ( $query->season ?? '' ) );
 
         $season_str           = isset( $competition->current_season['name'] ) ? (string) $competition->current_season['name'] : null;
-        $competition->players = [];
+        $competition->set_players( [] );
         $player               = null;
 
         if ( ! empty( $query->player_identifier ) ) {
@@ -71,13 +71,13 @@ class Get_Competition_Players_Handler {
                 $player->matches     = $this->player_query_service->get_matches( $player, $competition, $season_str, 'competition' );
                 asort( $player->matches );
                 $player->stats       = $this->player_stats_service->get_stats( $player );
-                $competition->player = $player;
+                $competition->set_player( $player );
             } else {
                 return Competition_Players_Result::error( __( 'Player not found', 'racketmanager' ) );
             }
         } else {
             $players              = $this->player_service->get_players_for_competition( (int) $competition->get_id(), $season_str );
-            $competition->players = Util::get_players_list( $players );
+            $competition->set_players( Util::get_players_list( $players ) );
         }
 
         $template = '' !== $query->template ? 'players-' . $query->template : 'players';

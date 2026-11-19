@@ -38,6 +38,7 @@ use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use Racketmanager\Tests\Helpers\Player_Test_Factory;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 
 /**
  * Handler to real template tests: the tournament entry form permissions are decided by the producer, never by the template.
@@ -186,17 +187,14 @@ final class Entry_Tournament_Handler_Permissions_Test extends TestCase {
         $date_start   = $today->modify( '+30 days' )->format( 'Y-m-d' );
         $date_end     = $today->modify( '+37 days' )->format( 'Y-m-d' );
 
-        $competition = new class( $date_closing ) extends Competition {
-            public function __construct( string $date_closing ) {
-                $this->id             = 8;
-                $this->name           = 'Summer Open';
-                $this->type           = Competition_Type::TOURNAMENT;
-                $this->is_tournament  = true;
-                $this->is_open        = true;
-                $this->seasons        = new Season_Collection( [ '2026' => [ 'name' => '2026', 'date_closing' => $date_closing ] ] );
-                $this->current_season = [ 'name' => '2026', 'date_closing' => $date_closing ];
-            }
-        };
+        $competition = Competition_Test_Factory::create(
+            id: 8,
+            name: 'Summer Open',
+            type: Competition_Type::TOURNAMENT,
+            seasons: [ '2026' => [ 'name' => '2026', 'date_closing' => $date_closing ] ],
+            current_season: [ 'name' => '2026', 'date_closing' => $date_closing ],
+        );
+        $competition->set_is_open( true );
 
         $tournament = Tournament::from_object( (object) [
             'id'             => 1,

@@ -7,6 +7,7 @@ require_once __DIR__ . '/../../wp-stubs.php';
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
@@ -43,9 +44,9 @@ final class Modal_And_Invoice_Email_Render_Test extends TestCase {
         $league              = $this->createStub( League::class );
         $league->num_rubbers = 0;
 
-        $competition                 = $this->createStub( Competition::class );
-        $competition->is_team_entry   = true;
-        $competition->is_player_entry = false;
+        $competition = Competition_Test_Factory::create();
+        $competition->set_is_team_entry( true );
+        $competition->set_is_player_entry( false );
 
         $event = $this->createStub( Event::class );
 

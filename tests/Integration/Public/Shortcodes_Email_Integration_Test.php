@@ -36,6 +36,7 @@ use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Application\Ports\View_Renderer_Interface;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 #[AllowMockObjectsWithoutExpectations]
@@ -123,10 +124,11 @@ class Shortcodes_Email_Integration_Test extends TestCase {
         $event->method( 'get_type' )->willReturn( 'league' );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event );
 
-        $competition = $this->createMock( Competition::class );
-        $competition->method( 'get_id' )->willReturn( 30 );
-        $competition->method( 'get_name' )->willReturn( 'Summer Competition' );
-        $competition->type = Competition_Type::LEAGUE;
+        $competition = Competition_Test_Factory::create(
+            id: 30,
+            name: 'Summer Competition',
+            type: Competition_Type::LEAGUE
+        );
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
 
         $home_team_dto = $this->create_team_details_dto( 'Home Team', 'HTC', 'Captain Home', 'home@example.com', '111111' );

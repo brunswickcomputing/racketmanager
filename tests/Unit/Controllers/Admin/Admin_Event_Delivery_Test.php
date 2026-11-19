@@ -9,6 +9,7 @@ use Racketmanager\Admin\Admin_Event;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
@@ -20,6 +21,7 @@ use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Application\Ports\View_Renderer_Interface;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Admin_Delivery_Container;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
@@ -98,14 +100,15 @@ final class Admin_Event_Delivery_Test extends TestCase {
     }
 
     public function test_post_add_event_config_redirects_and_sets_flash(): void {
-        $competition                  = $this->createStub( Competition::class );
-        $competition->id              = 1;
-        $competition->is_team_entry   = false;
-        $competition->is_tournament   = false;
-        $competition->is_championship = false;
-        $competition->settings = new \Racketmanager\Domain\Competition\Competition_Settings( array( 'mode' => 'league' ) );
-        $competition->current_season  = array( 'name' => '2025', 'home_away' => true, 'num_match_days' => 10, 'match_dates' => array() );
-        $competition->method( 'get_seasons' )->willReturn( array() );
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+            name: 'League',
+            settings: array( 'mode' => 'league' ),
+            current_season: array( 'name' => '2025', 'home_away' => true, 'num_match_days' => 10, 'match_dates' => array() ),
+        );
+        $competition->set_is_team_entry( false );
+        $competition->set_is_tournament( false );
+        $competition->set_is_championship( false );
 
         $this->guard->expects( self::once() )->method( 'assert_allowed' );
         $this->competition_service->expects( self::atLeastOnce() )
@@ -149,13 +152,14 @@ final class Admin_Event_Delivery_Test extends TestCase {
     }
 
     public function test_get_config_page_renders_view_model(): void {
-        $competition                  = $this->createStub( Competition::class );
-        $competition->id              = 1;
-        $competition->name            = 'Summer League';
-        $competition->is_tournament   = false;
-        $competition->is_championship = false;
-        $competition->settings = new \Racketmanager\Domain\Competition\Competition_Settings( array( 'mode' => 'league' ) );
-        $competition->method( 'get_type' )->willReturn( 'league' );
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+            name: 'Summer League',
+            type: Competition_Type::LEAGUE,
+            settings: array( 'mode' => 'league' ),
+        );
+        $competition->set_is_tournament( false );
+        $competition->set_is_championship( false );
 
         $event              = $this->createStub( Event::class );
         $event->id          = 10;
@@ -192,10 +196,11 @@ final class Admin_Event_Delivery_Test extends TestCase {
     }
 
     public function test_invalid_event_config_redirects_with_field_errors_and_form_data(): void {
-        $competition                  = $this->createStub( Competition::class );
-        $competition->id              = 1;
-        $competition->is_tournament   = false;
-        $competition->is_championship = false;
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+        );
+        $competition->set_is_tournament( false );
+        $competition->set_is_championship( false );
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
         $this->event_repository->expects( self::never() )->method( 'insert_event' );
         $this->renderer->expects( self::never() )->method( 'render' );
@@ -215,8 +220,9 @@ final class Admin_Event_Delivery_Test extends TestCase {
     }
 
     public function test_get_restores_flash_field_errors_form_data_and_selected_tab(): void {
-        $competition     = $this->createStub( Competition::class );
-        $competition->id = 1;
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+        );
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
         $this->flash_store->method( 'pop' )->willReturn(
             array(
@@ -246,12 +252,13 @@ final class Admin_Event_Delivery_Test extends TestCase {
     }
 
     public function test_post_update_preserves_all_league_and_team_entry_settings(): void {
-        $competition                  = $this->createStub( Competition::class );
-        $competition->id              = 1;
-        $competition->is_league       = true;
-        $competition->is_team_entry   = true;
-        $competition->is_tournament   = false;
-        $competition->is_championship = false;
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+        );
+        $competition->set_is_league( true );
+        $competition->set_is_team_entry( true );
+        $competition->set_is_tournament( false );
+        $competition->set_is_championship( false );
 
         $event                 = new Event();
         $event->id             = 10;

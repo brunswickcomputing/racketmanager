@@ -24,6 +24,7 @@ use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition\League_Query_Service;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
@@ -43,9 +44,11 @@ final class Production_Hydration_Regression_Test extends TestCase {
     }
 
     public function test_event_hydrates_empty_string_serialized_settings_to_declared_types(): void {
-        $competition           = $this->createStub( Competition::class );
-        $competition->settings = new Competition_Settings( array( 'mode' => 'league' ) );
-        $competition->type     = Competition_Type::LEAGUE;
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+            settings: array( 'mode' => 'league' ),
+            type: Competition_Type::LEAGUE
+        );
 
         $event_raw = (object) array(
             'id'             => '12',
@@ -87,9 +90,11 @@ final class Production_Hydration_Regression_Test extends TestCase {
     }
 
     public function test_event_hydrates_numeric_string_serialized_settings_to_declared_types(): void {
-        $competition           = $this->createStub( Competition::class );
-        $competition->settings = new Competition_Settings( array( 'mode' => 'league' ) );
-        $competition->type     = Competition_Type::LEAGUE;
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+            settings: array( 'mode' => 'league' ),
+            type: Competition_Type::LEAGUE
+        );
 
         $event = Event::from_object(
             (object) array(
@@ -116,10 +121,12 @@ final class Production_Hydration_Regression_Test extends TestCase {
     }
 
     public function test_league_hydrates_empty_string_serialized_settings_to_declared_types(): void {
-        $competition           = $this->createStub( Competition::class );
-        $competition->settings = new Competition_Settings( array( 'mode' => 'league' ) );
-        $competition->type     = Competition_Type::LEAGUE;
-        $event                 = Event::from_object( (object) array( 'id' => 12, 'name' => 'Summer', 'type' => 'singles', 'competition_id' => 1 ), $competition );
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+            settings: array( 'mode' => 'league' ),
+            type: Competition_Type::LEAGUE
+        );
+        $event       = Event::from_object( (object) array( 'id' => 12, 'name' => 'Summer', 'type' => 'singles', 'competition_id' => 1 ), $competition );
 
         $league_raw = (object) array(
             'id'       => '34',
@@ -152,10 +159,12 @@ final class Production_Hydration_Regression_Test extends TestCase {
     }
 
     public function test_league_hydrates_numeric_string_serialized_settings_to_declared_types(): void {
-        $competition           = $this->createStub( Competition::class );
-        $competition->settings = new Competition_Settings( array( 'mode' => 'league' ) );
-        $competition->type     = Competition_Type::LEAGUE;
-        $event                 = Event::from_object( (object) array( 'id' => 12, 'name' => 'Summer', 'type' => 'singles', 'competition_id' => 1 ), $competition );
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+            settings: array( 'mode' => 'league' ),
+            type: Competition_Type::LEAGUE
+        );
+        $event       = Event::from_object( (object) array( 'id' => 12, 'name' => 'Summer', 'type' => 'singles', 'competition_id' => 1 ), $competition );
 
         $league = League::from_object(
             (object) array(
@@ -180,11 +189,13 @@ final class Production_Hydration_Regression_Test extends TestCase {
     }
 
     public function test_league_unserialize_ignores_obsolete_presentation_keys(): void {
-        $competition           = $this->createStub( Competition::class );
-        $competition->settings = new Competition_Settings( array( 'mode' => 'league' ) );
-        $competition->type     = Competition_Type::LEAGUE;
-        $event                 = Event::from_object( (object) array( 'id' => 12, 'name' => 'Summer', 'type' => 'singles', 'competition_id' => 1 ), $competition );
-        $league                = League::from_object( (object) array( 'id' => '34', 'title' => 'Division 1' ), $event );
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+            settings: array( 'mode' => 'league' ),
+            type: Competition_Type::LEAGUE
+        );
+        $event       = Event::from_object( (object) array( 'id' => 12, 'name' => 'Summer', 'type' => 'singles', 'competition_id' => 1 ), $competition );
+        $league      = League::from_object( (object) array( 'id' => '34', 'title' => 'Division 1' ), $event );
 
         $data                       = $league->__serialize();
         $data['templates']          = array( 'standings' => 'x' );
@@ -202,10 +213,12 @@ final class Production_Hydration_Regression_Test extends TestCase {
     }
 
     private function make_league_with_event_type( string $event_type ): League {
-        $competition           = $this->createStub( Competition::class );
-        $competition->settings = new Competition_Settings( array( 'mode' => 'league' ) );
-        $competition->type     = Competition_Type::LEAGUE;
-        $event                 = Event::from_object(
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+            settings: array( 'mode' => 'league' ),
+            type: Competition_Type::LEAGUE
+        );
+        $event       = Event::from_object(
             (object) array(
                 'id'             => 12,
                 'name'           => 'Summer',
@@ -341,9 +354,11 @@ final class Production_Hydration_Regression_Test extends TestCase {
             'competition_id' => 1,
             'seasons'        => array( array( 'name' => '2026' ) ),
         );
-        $competition = $this->createStub( Competition::class );
-        $competition->settings = new Competition_Settings( array( 'mode' => 'league' ) );
-        $competition->type = Competition_Type::LEAGUE;
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+            settings: array( 'mode' => 'league' ),
+            type: Competition_Type::LEAGUE
+        );
 
         $event = Event::from_object( $event_raw, $competition );
         $event->current_season = array( 'name' => '2026' );

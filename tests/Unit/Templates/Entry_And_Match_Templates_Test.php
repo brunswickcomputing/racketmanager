@@ -58,6 +58,7 @@ use Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
 use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use Racketmanager\Tests\Helpers\Player_Test_Factory;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use stdClass;
 
 class Entry_And_Match_Templates_Test extends TestCase {
@@ -159,27 +160,25 @@ class Entry_And_Match_Templates_Test extends TestCase {
             }
         };
 
-        $competition = new class extends Competition {
-            public function __construct() {
-                $this->id             = 12;
-                $this->name           = 'Summer League';
-                $this->type           = Competition_Type::LEAGUE;
-                $this->is_open        = true;
-                $this->seasons        = new Season_Collection( [
-                    '2025' => [
-                        'name' => '2025',
-                    ],
-                    '2026' => [
-                        'name'         => '2026',
-                        'date_closing' => '2026-05-01',
-                    ],
-                ] );
-                $this->current_season = [
+        $competition = Competition_Test_Factory::create(
+            id: 12,
+            name: 'Summer League',
+            type: Competition_Type::LEAGUE,
+            seasons: [
+                '2025' => [
+                    'name' => '2025',
+                ],
+                '2026' => [
                     'name'         => '2026',
                     'date_closing' => '2026-05-01',
-                ];
-            }
-        };
+                ],
+            ],
+            current_season: [
+                'name'         => '2026',
+                'date_closing' => '2026-05-01',
+            ],
+        );
+        $competition->set_is_open( true );
 
         $club = new class extends Club {
             public function __construct() {
@@ -285,24 +284,22 @@ class Entry_And_Match_Templates_Test extends TestCase {
             }
         };
 
-        $competition = new class extends Competition {
-            public function __construct() {
-                $this->id             = 14;
-                $this->name           = 'Championship Cup';
-                $this->type           = Competition_Type::CUP;
-                $this->is_open        = true;
-                $this->seasons        = new Season_Collection( [
-                    '2026' => [
-                        'name'         => '2026',
-                        'date_closing' => '2026-06-01',
-                    ],
-                ] );
-                $this->current_season = [
+        $competition = Competition_Test_Factory::create(
+            id: 14,
+            name: 'Championship Cup',
+            type: Competition_Type::CUP,
+            seasons: [
+                '2026' => [
                     'name'         => '2026',
                     'date_closing' => '2026-06-01',
-                ];
-            }
-        };
+                ],
+            ],
+            current_season: [
+                'name'         => '2026',
+                'date_closing' => '2026-06-01',
+            ],
+        );
+        $competition->set_is_open( true );
 
         $club = new class extends Club {
             public function __construct() {
@@ -347,8 +344,8 @@ class Entry_And_Match_Templates_Test extends TestCase {
         $this->assertStringContainsString( '01/06/2026', $output );
         $this->assertStringContainsString( 'Men Cup Event', $output );
 
-        $competition->seasons        = new Season_Collection( [ '2026' => [ 'name' => '2026' ] ] );
-        $competition->current_season = [ 'name' => '2026' ];
+        $competition->set_seasons( [ '2026' => [ 'name' => '2026' ] ] );
+        $competition->apply_current_season( [ 'name' => '2026' ] );
         $missing_date_vm             = $this->present_entry( $handler, $query );
         $missing_date_warnings       = [];
         $missing_date_output         = $this->render_and_capture_warnings(
@@ -396,25 +393,22 @@ class Entry_And_Match_Templates_Test extends TestCase {
         $date_start   = $today->modify( '+30 days' )->format( 'Y-m-d' );
         $date_end     = $today->modify( '+37 days' )->format( 'Y-m-d' );
 
-        $competition = new class( $date_closing ) extends Competition {
-            public function __construct( string $date_closing ) {
-                $this->id             = 8;
-                $this->name           = 'Summer Open';
-                $this->type           = Competition_Type::TOURNAMENT;
-                $this->is_tournament  = true;
-                $this->is_open        = true;
-                $this->seasons        = new Season_Collection( [
-                    '2026' => [
-                        'name'         => '2026',
-                        'date_closing' => $date_closing,
-                    ],
-                ] );
-                $this->current_season = [
+        $competition = Competition_Test_Factory::create(
+            id: 8,
+            name: 'Summer Open',
+            type: Competition_Type::TOURNAMENT,
+            seasons: [
+                '2026' => [
                     'name'         => '2026',
                     'date_closing' => $date_closing,
-                ];
-            }
-        };
+                ],
+            ],
+            current_season: [
+                'name'         => '2026',
+                'date_closing' => $date_closing,
+            ],
+        );
+        $competition->set_is_open( true );
 
         $events = [
             new class extends Event {
@@ -567,13 +561,11 @@ class Entry_And_Match_Templates_Test extends TestCase {
                     public function __construct() {
                         $this->id          = 20;
                         $this->name        = 'Men Premier';
-                        $this->competition = new class extends Competition {
-                            public function __construct() {
-                                $this->type            = Competition_Type::LEAGUE;
-                                $this->is_team_entry   = true;
-                                $this->is_player_entry = false;
-                            }
-                        };
+                        $this->competition = Competition_Test_Factory::create(
+                            type: Competition_Type::LEAGUE,
+                        );
+                        $this->competition->set_is_team_entry( true );
+                        $this->competition->set_is_player_entry( false );
                     }
                 };
             }
@@ -612,12 +604,10 @@ class Entry_And_Match_Templates_Test extends TestCase {
 
         // Also test favourite icon template in loop (competition/events)
         $events_vars = [
-            'competition' => new class extends Competition {
-                public function __construct() {
-                    $this->type           = Competition_Type::LEAGUE;
-                    $this->current_season = [ 'name' => '2026' ];
-                }
-            },
+            'competition' => Competition_Test_Factory::create(
+                type: Competition_Type::LEAGUE,
+                current_season: [ 'name' => '2026' ],
+            ),
             'events'      => [
                 (object) [
                     'event_id'    => 201,

@@ -12,6 +12,7 @@ use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Details_DTO;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Services\Tournament_Service;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 
 #[AllowMockObjectsWithoutExpectations]
 final class Get_Tournament_Handler_Test extends TestCase {
@@ -23,8 +24,8 @@ final class Get_Tournament_Handler_Test extends TestCase {
         $tournament->season = '2026';
         $tournament->method( 'get_end_date' )->willReturn( '2026-08-01' );
 
-        $competition = $this->createMock( Competition::class );
-        $competition->age_group = 'Open';
+        $competition = Competition_Test_Factory::create();
+        $competition->set_age_group( 'Open' );
 
         $details = $this->createMock( Tournament_Details_DTO::class );
         $details->tournament  = $tournament;
@@ -61,8 +62,8 @@ final class Get_Tournament_Handler_Test extends TestCase {
         $tournament->season = '2026';
         $tournament->method( 'get_end_date' )->willReturn( '2026-08-01' );
 
-        $competition = $this->createMock( Competition::class );
-        $competition->age_group = 'Open';
+        $competition = Competition_Test_Factory::create();
+        $competition->set_age_group( 'Open' );
 
         $details = $this->createMock( Tournament_Details_DTO::class );
         $details->tournament  = $tournament;

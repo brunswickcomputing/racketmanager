@@ -39,10 +39,10 @@ final class Competition_Test_Factory {
             $competition->set_settings( $settings );
         }
         if ( null !== $finals ) {
-            $competition->finals = $finals;
+            $competition->set_finals( $finals );
         }
         if ( null !== $current_season ) {
-            $competition->current_season = $current_season;
+            $competition->apply_current_season( $current_season );
         }
         return $competition;
     }

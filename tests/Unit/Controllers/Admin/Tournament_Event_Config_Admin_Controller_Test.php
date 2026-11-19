@@ -145,18 +145,19 @@ final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $_POST['num_rubbers']    = '1';
         $_GET['competition_id']  = '10';
 
-        $competition = $this->createMock( Competition::class );
-        $competition->id = 10;
-        $competition->is_tournament = true;
-        $competition->is_championship = false;
-        $competition->is_player_entry = true;
-        $competition->is_team_entry = false;
-        $competition->is_league = false;
-        $competition->type = Competition_Type::TOURNAMENT;
-        $competition->settings = new Competition_Settings( [ 'mode' => 'tournament' ] );
-        $competition->seasons = new Season_Collection( [ '2026' => [ 'name' => '2026', 'home_away' => 0, 'num_match_days' => 1, 'match_dates' => [] ] ] );
-        $competition->standings = [];
-        $competition->current_season = [ 'name' => '2026' ];
+        $competition = Competition_Test_Factory::create(
+            id: 10,
+            name: 'Tournament',
+            type: Competition_Type::TOURNAMENT,
+            seasons: [ '2026' => [ 'name' => '2026', 'home_away' => 0, 'num_match_days' => 1, 'match_dates' => [] ] ],
+            settings: [ 'mode' => 'tournament' ],
+            current_season: [ 'name' => '2026' ]
+        );
+        $competition->set_is_tournament( true );
+        $competition->set_is_championship( false );
+        $competition->set_is_player_entry( true );
+        $competition->set_is_team_entry( false );
+        $competition->set_is_league( false );
 
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
         $this->competition_service->method( 'get_event_by_id' )->willThrowException( new Event_Not_Found_Exception() );
@@ -209,19 +210,19 @@ final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $season_2025 = [ 'name' => '2025', 'home_away' => 0, 'num_match_days' => 1, 'match_dates' => [] ];
         $season_2026 = [ 'name' => '2026', 'home_away' => 0, 'num_match_days' => 1, 'match_dates' => [] ];
 
-        $competition = $this->createMock( Competition::class );
-        $competition->id = 10;
-        $competition->is_tournament = true;
-        $competition->is_championship = false;
-        $competition->is_player_entry = true;
-        $competition->is_team_entry = false;
-        $competition->is_league = true;
-        $competition->type = Competition_Type::TOURNAMENT;
-        $competition->settings = new Competition_Settings( [ 'mode' => 'tournament' ] );
-        $competition->seasons = new Season_Collection( [ '2025' => $season_2025, '2026' => $season_2026 ] );
-        $competition->standings = [];
-        $competition->current_season = [ 'name' => '2025' ];
-        $competition->method( 'get_seasons' )->willReturn( [ '2025' => $season_2025, '2026' => $season_2026 ] );
+        $competition = Competition_Test_Factory::create(
+            id: 10,
+            name: 'Tournament',
+            type: Competition_Type::TOURNAMENT,
+            seasons: [ '2025' => $season_2025, '2026' => $season_2026 ],
+            settings: [ 'mode' => 'tournament' ],
+            current_season: [ 'name' => '2025' ]
+        );
+        $competition->set_is_tournament( true );
+        $competition->set_is_championship( false );
+        $competition->set_is_player_entry( true );
+        $competition->set_is_team_entry( false );
+        $competition->set_is_league( true );
 
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
         $this->competition_service->method( 'get_event_by_id' )->willThrowException( new Event_Not_Found_Exception() );
@@ -262,18 +263,19 @@ final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $_POST['num_rubbers']    = '1';
         $_GET['competition_id']  = '10';
 
-        $competition = $this->createMock( Competition::class );
-        $competition->id = 10;
-        $competition->is_tournament = true;
-        $competition->is_championship = true;
-        $competition->is_player_entry = true;
-        $competition->is_team_entry = false;
-        $competition->is_league = false;
-        $competition->type = Competition_Type::TOURNAMENT;
-        $competition->settings = new Competition_Settings( [ 'mode' => 'championship' ] );
-        $competition->seasons = new Season_Collection( [ '2026' => [ 'name' => '2026', 'home_away' => 0, 'num_match_days' => 1, 'match_dates' => [] ] ] );
-        $competition->standings = [];
-        $competition->current_season = [ 'name' => '2026' ];
+        $competition = Competition_Test_Factory::create(
+            id: 10,
+            name: 'Tournament',
+            type: Competition_Type::TOURNAMENT,
+            seasons: [ '2026' => [ 'name' => '2026', 'home_away' => 0, 'num_match_days' => 1, 'match_dates' => [] ] ],
+            settings: [ 'mode' => 'championship' ],
+            current_season: [ 'name' => '2026' ]
+        );
+        $competition->set_is_tournament( true );
+        $competition->set_is_championship( true );
+        $competition->set_is_player_entry( true );
+        $competition->set_is_team_entry( false );
+        $competition->set_is_league( false );
 
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
         $this->competition_service->method( 'get_event_by_id' )->willThrowException( new Event_Not_Found_Exception() );
@@ -330,18 +332,19 @@ final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $_GET['competition_id']     = '10';
         $_GET['event_id']           = '456';
 
-        $competition = $this->createMock( Competition::class );
-        $competition->id = 10;
-        $competition->is_tournament = true;
-        $competition->is_championship = false;
-        $competition->is_player_entry = true;
-        $competition->is_team_entry = false;
-        $competition->is_league = false;
-        $competition->type = Competition_Type::TOURNAMENT;
-        $competition->settings = new Competition_Settings( [ 'mode' => 'tournament' ] );
-        $competition->seasons = new Season_Collection( [ '2026' => [ 'name' => '2026', 'home_away' => 0, 'num_match_days' => 1, 'match_dates' => [] ] ] );
-        $competition->standings = [];
-        $competition->current_season = [ 'name' => '2026' ];
+        $competition = Competition_Test_Factory::create(
+            id: 10,
+            name: 'Tournament',
+            type: Competition_Type::TOURNAMENT,
+            seasons: [ '2026' => [ 'name' => '2026', 'home_away' => 0, 'num_match_days' => 1, 'match_dates' => [] ] ],
+            settings: [ 'mode' => 'tournament' ],
+            current_season: [ 'name' => '2026' ]
+        );
+        $competition->set_is_tournament( true );
+        $competition->set_is_championship( false );
+        $competition->set_is_player_entry( true );
+        $competition->set_is_team_entry( false );
+        $competition->set_is_league( false );
 
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
 
@@ -397,18 +400,19 @@ final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $_GET['competition_id']     = '10';
         $_GET['event_id']           = '456';
 
-        $competition = $this->createMock( Competition::class );
-        $competition->id = 10;
-        $competition->is_tournament = true;
-        $competition->is_championship = false;
-        $competition->is_player_entry = true;
-        $competition->is_team_entry = false;
-        $competition->is_league = false;
-        $competition->type = Competition_Type::TOURNAMENT;
-        $competition->settings = new Competition_Settings( [ 'mode' => 'tournament' ] );
-        $competition->seasons = new Season_Collection( [ '2026' => [ 'name' => '2026', 'home_away' => 0, 'num_match_days' => 1, 'match_dates' => [] ] ] );
-        $competition->standings = [];
-        $competition->current_season = [ 'name' => '2026' ];
+        $competition = Competition_Test_Factory::create(
+            id: 10,
+            name: 'Tournament',
+            type: Competition_Type::TOURNAMENT,
+            seasons: [ '2026' => [ 'name' => '2026', 'home_away' => 0, 'num_match_days' => 1, 'match_dates' => [] ] ],
+            settings: [ 'mode' => 'tournament' ],
+            current_season: [ 'name' => '2026' ]
+        );
+        $competition->set_is_tournament( true );
+        $competition->set_is_championship( false );
+        $competition->set_is_player_entry( true );
+        $competition->set_is_team_entry( false );
+        $competition->set_is_league( false );
 
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
 
@@ -465,18 +469,19 @@ final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $_GET['competition_id']     = '10';
         $_GET['event_id']           = '456';
 
-        $competition = $this->createMock( Competition::class );
-        $competition->id = 10;
-        $competition->is_tournament = true;
-        $competition->is_championship = false;
-        $competition->is_player_entry = true;
-        $competition->is_team_entry = false;
-        $competition->is_league = false;
-        $competition->type = Competition_Type::TOURNAMENT;
-        $competition->settings = new Competition_Settings( [ 'mode' => 'tournament' ] );
-        $competition->seasons = new Season_Collection( [ '2026' => [ 'name' => '2026', 'home_away' => 0, 'num_match_days' => 1, 'match_dates' => [] ] ] );
-        $competition->standings = [];
-        $competition->current_season = [ 'name' => '2026' ];
+        $competition = Competition_Test_Factory::create(
+            id: 10,
+            name: 'Tournament',
+            type: Competition_Type::TOURNAMENT,
+            seasons: [ '2026' => [ 'name' => '2026', 'home_away' => 0, 'num_match_days' => 1, 'match_dates' => [] ] ],
+            settings: [ 'mode' => 'tournament' ],
+            current_season: [ 'name' => '2026' ]
+        );
+        $competition->set_is_tournament( true );
+        $competition->set_is_championship( false );
+        $competition->set_is_player_entry( true );
+        $competition->set_is_team_entry( false );
+        $competition->set_is_league( false );
 
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
 
@@ -531,16 +536,16 @@ final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $existing_event       = new stdClass();
         $existing_event->name = 'Men\'s Singles';
 
-        $competition = $this->createMock( Competition::class );
-        $competition->id = 10;
-        $competition->method( 'get_id' )->willReturn( 10 );
-        $competition->is_tournament = true;
-        $competition->is_championship = false;
-        $competition->type = Competition_Type::TOURNAMENT;
-        $competition->settings = new Competition_Settings( [ 'mode' => 'tournament' ] );
-        $competition->seasons = new Season_Collection( [ '2026' => [ 'name' => '2026', 'home_away' => 0, 'num_match_days' => 1, 'match_dates' => [] ] ] );
-        $competition->standings = [];
-        $competition->current_season = [ 'name' => '2026' ];
+        $competition = Competition_Test_Factory::create(
+            id: 10,
+            name: 'Tournament',
+            type: Competition_Type::TOURNAMENT,
+            seasons: [ '2026' => [ 'name' => '2026', 'home_away' => 0, 'num_match_days' => 1, 'match_dates' => [] ] ],
+            settings: [ 'mode' => 'tournament' ],
+            current_season: [ 'name' => '2026' ]
+        );
+        $competition->set_is_tournament( true );
+        $competition->set_is_championship( false );
         $this->competition_service->expects( $this->once() )->method( 'get_events_for_competition' )->willReturn( [ $existing_event ] );
 
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
@@ -565,8 +570,8 @@ final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
             settings: [ 'mode' => 'championship' ],
             current_season: [ 'name' => '2026' ]
         );
-        $competition->is_championship = true;
-        $competition->is_tournament   = true;
+        $competition->set_is_championship( true );
+        $competition->set_is_tournament( true );
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
 
         $league1        = new stdClass();
@@ -621,8 +626,8 @@ final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
             settings: [ 'mode' => 'championship' ],
             current_season: [ 'name' => '2026' ]
         );
-        $competition->is_championship = true;
-        $competition->is_tournament   = true;
+        $competition->set_is_championship( true );
+        $competition->set_is_tournament( true );
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
 
         $league1        = new stdClass();
@@ -668,8 +673,8 @@ final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
             settings: [ 'mode' => 'tournament' ],
             current_season: [ 'name' => '2026' ]
         );
-        $competition->is_championship = false;
-        $competition->is_tournament   = true;
+        $competition->set_is_championship( false );
+        $competition->set_is_tournament( true );
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
 
         $event_raw                 = new stdClass();
@@ -716,8 +721,8 @@ final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
                 'match_dates'    => [],
             ]
         );
-        $competition->is_championship = false;
-        $competition->is_tournament   = true;
+        $competition->set_is_championship( false );
+        $competition->set_is_tournament( true );
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
 
         $this->event_repository->expects( $this->once() )
@@ -778,8 +783,8 @@ final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
                 'match_dates'    => [],
             ]
         );
-        $competition->is_championship = false;
-        $competition->is_tournament   = true;
+        $competition->set_is_championship( false );
+        $competition->set_is_tournament( true );
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
 
         $this->event_repository->expects( $this->once() )

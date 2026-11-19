@@ -16,6 +16,7 @@ use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Standings\Standings_Service;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 /**
@@ -37,10 +38,12 @@ final class Standings_Service_Resolve_League_Team_Test extends TestCase {
     }
 
     private function event(): Event {
-        $competition                  = $this->createStub( Competition::class );
-        $competition->settings        = new Competition_Settings( [ 'team_ranking' => 'auto' ] );
-        $competition->standings       = [];
-        $competition->is_player_entry = false;
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+            settings: [ 'team_ranking' => 'auto' ],
+        );
+        $competition->set_standings( [] );
+        $competition->set_is_player_entry( false );
         return Event::from_object( (object) [ 'name' => 'League', 'type' => 'singles', 'competition_id' => 1, 'seasons' => [] ], $competition );
     }
 

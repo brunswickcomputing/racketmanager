@@ -663,12 +663,12 @@ class Player_Query_Service implements Player_Query_Service_Interface {
                 $competition_dtl = $this->get_competition_repository()->find_by_id( (int) $competition->id );
             }
             if ( $competition_dtl ) {
-                $competition_dtl->season = (int) $competition->season;
-                $competition_season      = $competition_dtl->seasons->get( (string) $competition->season );
+                $competition_dtl->set_season( (int) $competition->season );
+                $competition_season = $competition_dtl->seasons->get( (string) $competition->season );
                 if ( null !== $competition_season ) {
-                    $competition_dtl->date_start = $competition_season['date_start'] ?? null;
-                    $competition_dtl->date_end   = $competition_season['date_end'] ?? null;
-                    $competitions[ $i ]          = $competition_dtl;
+                    $competition_dtl->set_date_start( $competition_season['date_start'] ?? null );
+                    $competition_dtl->set_date_end( $competition_season['date_end'] ?? null );
+                    $competitions[ $i ] = $competition_dtl;
                 } else {
                     unset( $competitions [ $i ] );
                 }

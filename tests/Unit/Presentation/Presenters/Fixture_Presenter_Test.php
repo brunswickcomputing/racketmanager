@@ -20,6 +20,7 @@ use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use ReflectionClass;
 
 class Fixture_Presenter_Test extends TestCase {
@@ -403,9 +404,7 @@ class Fixture_Presenter_Test extends TestCase {
         $event->method( 'get_num_sets' )->willReturn( 3 );
         $event->name       = 'Mixed League';
         $dto->event        = $event;
-        $competition       = $this->createStub( \Racketmanager\Domain\Competition\Competition::class );
-        $competition->method( 'get_type' )->willReturn( 'league' );
-        $competition->type = \Racketmanager\Domain\Competition\Competition_Type::LEAGUE;
+        $competition       = Competition_Test_Factory::create( type: \Racketmanager\Domain\Competition\Competition_Type::LEAGUE );
         $dto->competition  = $competition;
 
         $reflection = new ReflectionClass( Fixture_Presenter::class );

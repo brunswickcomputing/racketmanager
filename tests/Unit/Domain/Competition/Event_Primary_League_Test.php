@@ -15,6 +15,7 @@ use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition_Service;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
@@ -39,15 +40,13 @@ class Event_Primary_League_Test extends TestCase {
         $this->league_repository = $this->createMock( League_Repository_Interface::class );
         $this->event_query_service = new Event_Query_Service( $this->event_repository, league_repository: $this->league_repository );
 
-        $this->competition = $this->createMock( Competition::class );
-        $competition_settings = new Competition_Settings( [ 'mode' => 'tournament' ] );
-        $this->competition->settings = $competition_settings;
-        $this->competition->type = Competition_Type::TOURNAMENT;
-        $this->competition->is_tournament = true;
-        $this->competition->is_championship = false;
-        $this->competition->is_player_entry = true;
-        $this->competition->standings = [];
-        $this->competition->current_season = [ 'name' => '2026' ];
+        $this->competition = Competition_Test_Factory::create(
+            id: 1,
+            type: Competition_Type::TOURNAMENT,
+            settings: [ 'mode' => 'tournament' ],
+            current_season: [ 'name' => '2026' ]
+        );
+        $this->competition->set_standings( [] );
 
         $event_raw                 = new stdClass();
         $event_raw->id             = 42;
@@ -303,15 +302,13 @@ class Event_Primary_League_Test extends TestCase {
     }
 
     public function test_set_config_does_not_write_primary_league_for_standard_league_competition_when_not_passed(): void {
-        $league_competition = $this->createMock( Competition::class );
-        $league_competition->type = Competition_Type::LEAGUE;
-        $league_competition->is_tournament = false;
-        $league_competition->is_championship = false;
-        $league_competition->is_league = true;
-        $league_competition->is_player_entry = false;
-        $league_competition->is_team_entry = false;
-        $league_competition->standings = [];
-        $league_competition->current_season = [ 'name' => '2026' ];
+        $league_competition = Competition_Test_Factory::create(
+            id: 1,
+            type: Competition_Type::LEAGUE,
+            current_season: [ 'name' => '2026' ]
+        );
+        $league_competition->set_is_team_entry( false );
+        $league_competition->set_standings( [] );
 
         $this->event->competition = $league_competition;
         $this->event->primary_league = 0;
@@ -352,7 +349,7 @@ class Event_Primary_League_Test extends TestCase {
     }
 
     public function test_set_config_preserves_offset_for_non_tournament(): void {
-        $this->event->competition->is_tournament = false;
+        $this->event->competition->set_is_tournament( false );
         $this->event->offset = 3;
 
         $config = new stdClass();

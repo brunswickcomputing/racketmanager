@@ -28,6 +28,7 @@ use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Fixture\Fixture_Relation_Loader;
 use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Services\Team_Service;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
@@ -49,11 +50,13 @@ class Event_Matches_Hydration_Test extends TestCase {
 		$this->fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
 		$this->rubber_repository  = $this->createMock( Rubber_Repository_Interface::class );
 
-		$competition                  = $this->createMock( Competition::class );
-		$competition->settings        = new Competition_Settings( array( 'mode' => 'league' ) );
-		$competition->type            = Competition_Type::LEAGUE;
-		$competition->is_player_entry = false;
-		$competition->standings       = array();
+		$competition = Competition_Test_Factory::create(
+			1,
+			'Summer League',
+			Competition_Type::LEAGUE,
+			null,
+			array( 'mode' => 'league' )
+		);
 
 		$event_raw                 = new stdClass();
 		$event_raw->id             = 42;

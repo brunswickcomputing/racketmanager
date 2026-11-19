@@ -372,7 +372,7 @@ final class Tournament_Test extends TestCase {
     public function test_is_event_allowed_does_not_read_hidden_competition_events_state(): void {
         $competition = $this->create_competition();
         $this->register_competitions( [ 10 => $competition ] );
-        $competition->events = [ $this->create_event( 101 ) ];
+        $competition->set_events( [ $this->create_event( 101 ) ] );
         $tournament          = $this->create_tournament( null );
 
         $this->assertFalse( $tournament->is_event_allowed( 101, true ) );

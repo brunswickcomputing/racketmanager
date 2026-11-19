@@ -20,6 +20,7 @@ use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Test_Container;
 
 #[AllowMockObjectsWithoutExpectations]
@@ -336,8 +337,7 @@ class Email_Shortcode_Adapter_Test extends TestCase {
         );
         $this->template_renderer->expects( $this->once() )->method( 'render' )->willReturn( 'ok' );
 
-        $competition     = $this->createStub( Competition::class );
-        $competition->id = 42;
+        $competition     = Competition_Test_Factory::create( id: 42 );
         $raw_event       = (object) [
             'id'          => 30,
             'name'        => 'Raw Event',

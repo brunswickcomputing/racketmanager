@@ -17,6 +17,7 @@ use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Services\Competition_Service;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
@@ -34,12 +35,13 @@ class Event_Mutation_Test extends TestCase {
 
 		$this->event_repository = $this->createMock( Event_Repository_Interface::class );
 
-		$competition          = $this->createMock( Competition::class );
-		$competition_settings = new Competition_Settings( [ 'mode' => 'league' ] );
-		$competition->settings = $competition_settings;
-		$competition->type = Competition_Type::LEAGUE;
-		$competition->is_player_entry = false;
-		$competition->standings = [];
+		$competition = Competition_Test_Factory::create(
+			1,
+			'Summer League',
+			Competition_Type::LEAGUE,
+			null,
+			[ 'mode' => 'league' ]
+		);
 
 		$event_raw = new stdClass();
 		$event_raw->id = 42;

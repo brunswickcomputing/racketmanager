@@ -28,6 +28,7 @@ use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Services\Player_Service;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
 
 class Matches_Query_Handlers_Test extends TestCase {
@@ -104,8 +105,7 @@ class Matches_Query_Handlers_Test extends TestCase {
         $clubs    = $this->createMock( Club_Repository_Interface::class );
         $clubs->expects( $this->once() )->method( 'find_by_id' )->with( 'Leigh Park', 'shortcode' )->willReturn( $club );
 
-        $competition     = $this->createStub( Competition::class );
-        $competition->id = 77;
+        $competition = Competition_Test_Factory::create( 77, 'winter league' );
         $competitions    = $this->createMock( Competition_Repository_Interface::class );
         $competitions->expects( $this->once() )->method( 'find_by_name' )->with( 'winter league' )->willReturn( $competition );
 

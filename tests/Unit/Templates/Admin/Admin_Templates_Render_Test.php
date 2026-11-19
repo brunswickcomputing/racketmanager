@@ -32,6 +32,7 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Racketmanager\Tests\Helpers\Creates_View_Renderer;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
@@ -56,38 +57,30 @@ final class Admin_Templates_Render_Test extends TestCase {
     }
 
     public function test_render_competition_config_template_with_errors_and_values(): void {
-        $competition = new class() extends Competition {
-            public function __construct() {
-                $this->id = 1;
-                $this->name = 'Premier League';
-                $this->type = Competition_Type::LEAGUE;
-                $this->is_league = true;
-                $this->is_cup = false;
-                $this->is_tournament = false;
-                $this->is_championship = false;
-                $this->settings = new Competition_Settings( array(
-                    'mode' => 'league',
-                    'sport' => 'tennis',
-                    'grade' => 'A',
-                    'point_rule' => 'standard',
-                    'max_teams' => 12,
-                    'scoring' => 'sets',
-                    'num_sets' => 3,
-                    'num_rubbers' => 4,
-                    'start_time' => array(
-                        'weekday' => array( 'min' => '18:30', 'max' => '21:00' ),
-                        'weekend' => array( 'min' => '10:00', 'max' => '16:00' ),
-                    ),
-                    'default_match_start_time' => array( 'hour' => 19, 'hours' => 19, 'minutes' => 30 ),
-                ) );
-                $this->config = (object) $this->get_settings();
-                $this->config->type = 'league';
-                $this->config->age_group = 'open';
-            }
-            public function get_events( array $args = array(), ?\Racketmanager\Repositories\Interfaces\Competition_Repository_Interface $competition_repository = null ): array {
-                return array();
-            }
-        };
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+            name: 'Premier League',
+            type: Competition_Type::LEAGUE,
+            settings: array(
+                'mode' => 'league',
+                'sport' => 'tennis',
+                'grade' => 'A',
+                'point_rule' => 'standard',
+                'max_teams' => 12,
+                'scoring' => 'sets',
+                'num_sets' => 3,
+                'num_rubbers' => 4,
+                'start_time' => array(
+                    'weekday' => array( 'min' => '18:30', 'max' => '21:00' ),
+                    'weekend' => array( 'min' => '10:00', 'max' => '16:00' ),
+                ),
+                'default_match_start_time' => array( 'hour' => 19, 'hours' => 19, 'minutes' => 30 ),
+            ),
+        );
+        $config = (object) $competition->get_settings();
+        $config->type = 'league';
+        $config->age_group = 'open';
+        $competition->set_config( $config );
 
         $errors = new Error_Bag( array(
             'name' => 'Competition name is required',
@@ -121,17 +114,11 @@ final class Admin_Templates_Render_Test extends TestCase {
     }
 
     public function test_render_event_config_template_with_errors_and_values(): void {
-        $competition = new class() extends Competition {
-            public function __construct() {
-                $this->id = 1;
-                $this->name = 'Premier League';
-                $this->type = Competition_Type::LEAGUE;
-                $this->is_league = true;
-                $this->is_cup = false;
-                $this->is_tournament = false;
-                $this->is_championship = false;
-            }
-        };
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+            name: 'Premier League',
+            type: Competition_Type::LEAGUE,
+        );
 
         $event = new stdClass();
         $event->id = 5;
@@ -174,20 +161,11 @@ final class Admin_Templates_Render_Test extends TestCase {
     }
 
     public function test_render_season_edit_template_with_errors_and_values(): void {
-        $competition = new class() extends Competition {
-            public function __construct() {
-                $this->id = 1;
-                $this->name = 'Premier League';
-                $this->type = Competition_Type::LEAGUE;
-                $this->is_league = true;
-                $this->is_cup = false;
-                $this->is_tournament = false;
-                $this->is_championship = false;
-            }
-            public function get_seasons(): array {
-                return array();
-            }
-        };
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+            name: 'Premier League',
+            type: Competition_Type::LEAGUE,
+        );
 
         $current_season = (object) array(
             'name' => '2025',
@@ -996,18 +974,13 @@ final class Admin_Templates_Render_Test extends TestCase {
     }
 
     public function test_render_admin_event_config_template_with_precomputed_leagues(): void {
-        $competition = new class() extends Competition {
-            public function __construct() {
-                $this->id              = 1;
-                $this->name            = 'Mixed League';
-                $this->type            = Competition_Type::LEAGUE;
-                $this->is_league       = true;
-                $this->is_tournament   = false;
-                $this->is_championship = true;
-                $this->age_group       = 'open';
-                $this->settings        = new Competition_Settings( array( 'mode' => 'league' ) );
-            }
-        };
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+            name: 'Mixed League',
+            type: Competition_Type::LEAGUE,
+            settings: array( 'mode' => 'league' ),
+        );
+        $competition->set_is_championship( true );
 
         $event = (object) array(
             'id'       => 10,
@@ -1043,16 +1016,11 @@ final class Admin_Templates_Render_Test extends TestCase {
     }
 
     public function test_render_teams_list_template_with_view_model(): void {
-        $competition = new class() extends Competition {
-            public function __construct() {
-                $this->id   = 1;
-                $this->name = 'Premier League';
-                $this->type = Competition_Type::LEAGUE;
-            }
-            public function get_type(): string {
-                return 'league';
-            }
-        };
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+            name: 'Premier League',
+            type: Competition_Type::LEAGUE,
+        );
 
         $event = (object) array(
             'id'          => 10,
@@ -1099,16 +1067,11 @@ final class Admin_Templates_Render_Test extends TestCase {
     }
 
     public function test_render_setup_template_with_view_model(): void {
-        $competition = new class() extends Competition {
-            public function __construct() {
-                $this->id   = 1;
-                $this->name = 'Premier League';
-                $this->type = Competition_Type::LEAGUE;
-            }
-            public function get_type(): string {
-                return 'league';
-            }
-        };
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+            name: 'Premier League',
+            type: Competition_Type::LEAGUE,
+        );
 
         $vm = new Setup_Page_View_Model(
             competition: $competition,
@@ -1138,16 +1101,11 @@ final class Admin_Templates_Render_Test extends TestCase {
     }
 
     public function test_render_event_setup_template_sets_round_dates_without_fixture_action(): void {
-        $competition = new class() extends Competition {
-            public function __construct() {
-                $this->id   = 1;
-                $this->name = 'Premier League';
-                $this->type = Competition_Type::LEAGUE;
-            }
-            public function get_type(): string {
-                return 'league';
-            }
-        };
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+            name: 'Premier League',
+            type: Competition_Type::LEAGUE,
+        );
         $event = (object) array( 'id' => 12, 'name' => 'Men Singles', 'competition' => $competition );
         $vm    = new Setup_Page_View_Model(
             competition: $competition,

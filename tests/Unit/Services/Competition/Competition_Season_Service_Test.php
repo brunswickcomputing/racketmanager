@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Unit\Services\Competition;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Events\Competition_Season_Cascaded_Event;
 use Racketmanager\Domain\Competition\League;
@@ -413,9 +414,8 @@ class Competition_Season_Service_Test extends TestCase {
 	}
 
 	public function test_add_season_to_event_skips_seeding_for_non_league_event(): void {
-		$competition            = $this->createStub( Competition::class );
-		$competition->is_league = false;
-		$event                  = $this->make_event( 5, [ '2025' => [ 'name' => '2025' ] ], $competition );
+		$competition = Competition_Test_Factory::create( id: 10, type: Competition_Type::TOURNAMENT );
+		$event       = $this->make_event( 5, [ '2025' => [ 'name' => '2025' ] ], $competition );
 
 		$event_repo = $this->createMock( Event_Repository_Interface::class );
 		$event_repo->expects( $this->once() )->method( 'update_seasons' )->willReturn( true );
@@ -435,9 +435,8 @@ class Competition_Season_Service_Test extends TestCase {
 	}
 
 	public function test_add_season_to_event_skips_seeding_when_there_is_no_previous_season(): void {
-		$competition            = $this->createStub( Competition::class );
-		$competition->is_league = true;
-		$event                  = $this->make_event( 5, [], $competition );
+		$competition = Competition_Test_Factory::create( id: 10, type: Competition_Type::LEAGUE );
+		$event       = $this->make_event( 5, [], $competition );
 
 		$event_repo = $this->createMock( Event_Repository_Interface::class );
 		$event_repo->expects( $this->once() )->method( 'update_seasons' )->willReturn( true );
@@ -457,9 +456,8 @@ class Competition_Season_Service_Test extends TestCase {
 	}
 
 	public function test_add_season_to_event_seeds_previous_season_constitution_in_rank_order(): void {
-		$competition            = $this->createStub( Competition::class );
-		$competition->is_league = true;
-		$event                  = $this->make_event( 50, [ '2025' => [ 'name' => '2025' ] ], $competition );
+		$competition = Competition_Test_Factory::create( id: 10, type: Competition_Type::LEAGUE );
+		$event       = $this->make_event( 50, [ '2025' => [ 'name' => '2025' ] ], $competition );
 
 		$team_one = (object) [
 			'team_id'       => 101,
@@ -555,9 +553,8 @@ class Competition_Season_Service_Test extends TestCase {
 	}
 
 	public function test_add_season_to_event_skips_missing_league(): void {
-		$competition            = $this->createStub( Competition::class );
-		$competition->is_league = true;
-		$event                  = $this->make_event( 50, [ '2025' => [ 'name' => '2025' ] ], $competition );
+		$competition = Competition_Test_Factory::create( id: 10, type: Competition_Type::LEAGUE );
+		$event       = $this->make_event( 50, [ '2025' => [ 'name' => '2025' ] ], $competition );
 
 		$team_row = (object) [
 			'team_id'       => 101,

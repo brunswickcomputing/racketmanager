@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Services;
 
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Presenters\Admin_Championship_Finals_Presenter;
@@ -105,11 +106,10 @@ final class Tournament_Service_Draw_View_Model_Test extends TestCase {
             ->with( 55 )
             ->willReturn( $league_entity );
 
-        $competition                = $this->createStub( Competition::class );
-        $competition->id            = 1;
-        $competition->type          = Competition_Type::TOURNAMENT;
-        $competition->is_tournament = true;
-        $competition->is_cup        = false;
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+            type: Competition_Type::TOURNAMENT,
+        );
 
         $fixture_league     = $this->createStub( League::class );
         $fixture_league->id = 55;

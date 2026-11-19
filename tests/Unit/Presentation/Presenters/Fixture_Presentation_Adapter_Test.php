@@ -25,6 +25,7 @@ use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Team_Service;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use ReflectionClass;
 use stdClass;
 use TypeError;
@@ -62,10 +63,7 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
         $event->method( 'get_type' )->willReturn( 'league' );
         $event->method( 'get_competition_id' )->willReturn( 30 );
 
-        $competition = $this->createMock( Competition::class );
-        $competition->method( 'get_id' )->willReturn( 30 );
-        $competition->method( 'get_name' )->willReturn( 'Summer League' );
-        $competition->type = Competition_Type::LEAGUE;
+        $competition = Competition_Test_Factory::create( 30, 'Summer League', Competition_Type::LEAGUE );
 
         $league_repo = $this->createMock( League_Repository_Interface::class );
         $league_repo->expects( $this->once() )->method( 'find_by_id' )->with( 10 )->willReturn( $league );

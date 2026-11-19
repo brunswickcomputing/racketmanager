@@ -23,6 +23,7 @@ use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use stdClass;
 
 class Email_Shortcode_Presenter_Test extends TestCase {
@@ -131,17 +132,17 @@ class Email_Shortcode_Presenter_Test extends TestCase {
         $event->method( 'get_name' )->willReturn( $fixture_data['event_name'] ?? 'Men Singles' );
         $event->method( 'get_competition_id' )->willReturn( $comp_id );
 
-        $competition = $this->createStub( Competition::class );
-        $competition->id              = $comp_id;
-        $competition->name            = $fixture_data['comp_name'] ?? 'Summer Tournament';
-        $comp_type                    = $fixture_data['comp_type'] ?? 'tournament';
-        $competition->type            = Competition_Type::tryFrom( $comp_type ) ?? Competition_Type::TOURNAMENT;
-        $competition->is_tournament   = ( 'tournament' === $comp_type );
-        $competition->is_cup          = ( 'cup' === $comp_type );
-        $competition->is_championship = ( ! empty( $fixture_data['is_championship'] ) );
-        $competition->method( 'get_id' )->willReturn( $comp_id );
-        $competition->method( 'get_name' )->willReturn( $fixture_data['comp_name'] ?? 'Summer Tournament' );
-        $competition->method( 'get_type' )->willReturn( $comp_type );
+        $comp_name                    = $fixture_data['comp_name'] ?? 'Summer Tournament';
+        $comp_type_str                = $fixture_data['comp_type'] ?? 'tournament';
+        $comp_type                    = Competition_Type::tryFrom( $comp_type_str ) ?? Competition_Type::TOURNAMENT;
+        $competition                  = Competition_Test_Factory::create(
+            id: $comp_id,
+            name: $comp_name,
+            type: $comp_type
+        );
+        if ( ! empty( $fixture_data['is_championship'] ) ) {
+            $competition->set_is_championship( true );
+        }
 
         $event->competition = $competition;
         $league->event      = $event;

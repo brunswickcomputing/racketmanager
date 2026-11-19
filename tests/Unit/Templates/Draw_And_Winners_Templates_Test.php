@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Templates;
 
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Competition\Queries\Get_Competition_Winners_Handler;
 use Racketmanager\Application\Competition\Queries\Get_Competition_Winners_Query;
@@ -14,6 +15,8 @@ use Racketmanager\Application\Tournament\Queries\Get_Tournament_Winners_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Winners_Query;
 use Racketmanager\Domain\Tournament\Championship;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Competition_Type;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
@@ -45,6 +48,7 @@ use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use Racketmanager\Util\Util;
 use Racketmanager\Tests\Helpers\Creates_Competition_Season_Service;
 
+#[AllowMockObjectsWithoutExpectations]
 class Draw_And_Winners_Templates_Test extends TestCase {
     use \Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
     use \Racketmanager\Tests\Helpers\Creates_League_Query_Service;
@@ -139,9 +143,11 @@ class Draw_And_Winners_Templates_Test extends TestCase {
     }
 
     public function test_render_competition_winners_template_with_producer_links_and_zero_warnings(): void {
-        $competition = $this->createStub( Competition::class );
-        $competition->method( 'get_id' )->willReturn( 10 );
-        $competition->current_season = [ 'name' => '2026' ];
+        $competition = Competition_Test_Factory::create(
+            id: 10,
+            type: Competition_Type::CUP,
+            current_season: [ 'name' => '2026' ],
+        );
 
         $winner_item = (object) [
             'competition_type' => 'cup',
@@ -242,13 +248,17 @@ class Draw_And_Winners_Templates_Test extends TestCase {
     private League_Query_Service $stub_league_query;
 
     private function build_cup_event_context( array $matches_by_final ): array {
-        $competition = $this->createStub( Competition::class );
-        $competition->method( 'get_type' )->willReturn( 'cup' );
-        $competition->method( 'get_name' )->willReturn( 'Summer Cups' );
+        $competition = $this->getMockBuilder( Competition::class )
+            ->disableOriginalConstructor()
+            ->onlyMethods( [ 'is_event_allowed' ] )
+            ->getMock();
         $competition->method( 'is_event_allowed' )->willReturn( true );
-        $competition->is_tournament   = false;
-        $competition->is_team_entry   = true;
-        $competition->is_championship = true;
+        $competition->set_settings( [] );
+        $competition->set_type( Competition_Type::CUP );
+        $competition->set_name( 'Summer Cups' );
+        $competition->set_is_tournament( false );
+        $competition->set_is_team_entry( true );
+        $competition->set_is_championship( true );
 
         $event              = $this->createStub( Event::class );
         $event->id          = 8;
@@ -466,10 +476,12 @@ class Draw_And_Winners_Templates_Test extends TestCase {
         $tournament->method( 'get_name' )->willReturn( 'Summer 2026' );
         $tournament->method( 'is_event_allowed' )->willReturn( true );
 
-        $competition = $this->createStub( Competition::class );
-        $competition->is_player_entry = true;
-        $competition->is_tournament = true;
-        $competition->method( 'get_name' )->willReturn( 'Tournament Competition' );
+        $competition = Competition_Test_Factory::create(
+            name: 'Tournament Competition',
+            type: Competition_Type::TOURNAMENT,
+        );
+        $competition->set_is_player_entry( true );
+        $competition->set_is_tournament( true );
 
         $event = $this->createStub( Event::class );
         $event->id = 20;

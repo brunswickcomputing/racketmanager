@@ -16,6 +16,7 @@ use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\View_Models\Competition_List_Item_View_Model;
 use Racketmanager\Presentation\View_Models\Competition_View_Model;
 use Racketmanager\Presentation\View_Models\Draw_Fixture_View_Model;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use RuntimeException;
 
 final class Competition_Shortcode_Presenter_Test extends TestCase {
@@ -773,10 +774,11 @@ final class Competition_Shortcode_Presenter_Test extends TestCase {
         $renderer  = $this->createMock( View_Renderer_Interface::class );
         $presenter = $this->create_presenter( renderer: $renderer );
 
-        $competition = $this->createStub( Competition::class );
-        $competition->name = 'Summer League';
-        $competition->type = Competition_Type::LEAGUE;
-        $competition->current_season = [ 'name' => '2026' ];
+        $competition = Competition_Test_Factory::create(
+            name: 'Summer League',
+            type: Competition_Type::LEAGUE,
+            current_season: [ 'name' => '2026' ]
+        );
 
         // 1. Rendering Competition_Page_Result
         $page_result = new Competition_Page_Result(

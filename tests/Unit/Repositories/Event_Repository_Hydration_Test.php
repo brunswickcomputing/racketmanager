@@ -12,6 +12,7 @@ use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Repositories\Tournament_Repository;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Container\Simple_Container;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use Racketmanager\Tests\Helpers\Recording_Wpdb;
 
@@ -48,11 +49,11 @@ final class Event_Repository_Hydration_Test extends TestCase {
 	}
 
 	private function make_competition(): Competition {
-		$competition           = $this->createStub( Competition::class );
-		$competition->id       = 9;
-		$competition->settings = new Competition_Settings( array( 'mode' => 'championship' ) );
-		$competition->type     = Competition_Type::TOURNAMENT;
-		return $competition;
+		return Competition_Test_Factory::create(
+			id: 9,
+			type: Competition_Type::TOURNAMENT,
+			settings: array( 'mode' => 'championship' ),
+		);
 	}
 
 	public function test_find_by_id_attaches_competition_from_injected_repository(): void {

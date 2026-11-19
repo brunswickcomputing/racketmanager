@@ -30,6 +30,7 @@ use Racketmanager\Application\Tournament\Queries\Get_Tournament_Winners_Query;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Withdrawal_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Withdrawal_Query;
 use Racketmanager\Domain\Club\Club;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
@@ -112,8 +113,8 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
         $tournament = $this->createStub( Tournament::class );
         $tournament->season = '2026';
 
-        $competition = $this->createStub( Competition::class );
-        $competition->age_group = 'seniors';
+        $competition = Competition_Test_Factory::create();
+        $competition->set_age_group( 'seniors' );
 
         $club = $this->createStub( Club::class );
         $club->method( 'get_shortcode' )->willReturn( 'WTC' );
@@ -154,8 +155,8 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
                 $tournament->date_end = '2026-06-07';
                 $tournament->is_open = $is_open;
 
-                $competition = $this->createStub( Competition::class );
-                $competition->age_group = 'seniors';
+                $competition = Competition_Test_Factory::create();
+                $competition->set_age_group( 'seniors' );
                 $club = $this->createStub( Club::class );
                 $club->method( 'get_shortcode' )->willReturn( $venue );
                 $details = new Tournament_Details_DTO( $tournament, $competition, $club );
@@ -556,8 +557,8 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
         $tournament = $this->createStub( Tournament::class );
         $tournament->season = '2026';
 
-        $competition = $this->createStub( Competition::class );
-        $competition->age_group = 'seniors';
+        $competition = Competition_Test_Factory::create();
+        $competition->set_age_group( 'seniors' );
 
         $club = $this->createStub( Club::class );
         $club->method( 'get_shortcode' )->willReturn( 'WTC' );

@@ -52,13 +52,15 @@ class Get_Competition_Teams_Handler {
             return Competition_Teams_Result::error( $e->getMessage() );
         }
 
-        $competition->teams = $this->competition_service->get_teams_by_query(
-            $competition,
-            [
-                'status'  => 1,
-                'season'  => $season_name,
-                'orderby' => [ 'name' => 'ASC' ],
-            ]
+        $competition->set_teams(
+            $this->competition_service->get_teams_by_query(
+                $competition,
+                [
+                    'status'  => 1,
+                    'season'  => $season_name,
+                    'orderby' => [ 'name' => 'ASC' ],
+                ]
+            )
         );
 
         $template = '' !== $query->template ? 'teams-' . $query->template : 'teams';

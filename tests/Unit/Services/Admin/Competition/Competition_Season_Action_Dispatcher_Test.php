@@ -17,6 +17,7 @@ use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Validator\Competition_Config_Validator_Factory;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
@@ -52,10 +53,13 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
         bool $is_team_entry = true,
         mixed $season_data = false
     ): Competition {
-        $competition                = $this->createMock( Competition::class );
-        $competition->id            = $id;
-        $competition->is_league     = $is_league;
-        $competition->is_team_entry = $is_team_entry;
+        $competition = $this->getMockBuilder( Competition::class )
+            ->disableOriginalConstructor()
+            ->onlyMethods( array( 'add_season', 'update_season', 'get_season_by_name' ) )
+            ->getMock();
+        $competition->set_id( $id );
+        $competition->set_is_league( $is_league );
+        $competition->set_is_team_entry( $is_team_entry );
         if ( false !== $season_data ) {
             $competition->method( 'get_season_by_name' )->willReturn( $season_data );
         }
@@ -377,11 +381,11 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
         $finance_service     = $this->createMock( Finance_Service::class );
         $guard               = $this->createStub( Action_Guard_Interface::class );
 
-        $competition = $this->createStub( Competition::class );
-        $competition->id   = 1;
-        $competition->type = Competition_Type::LEAGUE;
-        $competition->name = 'Summer League';
-        $competition->method( 'get_type' )->willReturn( 'league' );
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+            name: 'Summer League',
+            type: Competition_Type::LEAGUE,
+        );
 
         $competition_service->expects( self::once() )
             ->method( 'get_competition' )

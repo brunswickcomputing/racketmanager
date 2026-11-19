@@ -26,6 +26,7 @@ use Racketmanager\Services\Season_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Application\Ports\View_Renderer_Interface;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Admin_Delivery_Container;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
@@ -117,12 +118,7 @@ final class Admin_Competition_Delivery_Test extends TestCase {
     }
 
     public function test_get_config_page_renders_view_model(): void {
-        $competition            = $this->createStub( Competition::class );
-        $competition->id        = 1;
-        $competition->name      = 'Premier League';
-        $competition->age_group = 'open';
-        $competition->method( 'get_type' )->willReturn( 'league' );
-        $competition->method( 'get_settings' )->willReturn( array() );
+        $competition = Competition_Test_Factory::create( 1, 'Premier League' );
 
         $this->competition_service->expects( self::atLeastOnce() )
             ->method( 'get_by_id' )
@@ -154,11 +150,7 @@ final class Admin_Competition_Delivery_Test extends TestCase {
     }
 
     public function test_config_get_uses_own_competition_service_when_global_is_unavailable(): void {
-        $competition = $this->createStub( Competition::class );
-        $competition->id = 1;
-        $competition->name = 'Injected Competition';
-        $competition->method( 'get_type' )->willReturn( 'league' );
-        $competition->method( 'get_settings' )->willReturn( array() );
+        $competition = Competition_Test_Factory::create( 1, 'Injected Competition' );
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
         $this->competition_service->method( 'get_rules_options' )->willReturn( array() );
         $this->club_service->method( 'get_clubs' )->willReturn( array() );
@@ -203,7 +195,6 @@ final class Admin_Competition_Delivery_Test extends TestCase {
 
     public function test_missing_season_in_edit_mode_renders_notice_without_template(): void {
         $competition       = $this->createStub( Competition::class );
-        $competition->id   = 1;
         $competition->method( 'get_id' )->willReturn( 1 );
         $competition->method( 'get_type' )->willReturn( 'league' );
         $competition->method( 'get_seasons' )->willReturn( array(
@@ -230,8 +221,7 @@ final class Admin_Competition_Delivery_Test extends TestCase {
     }
 
     public function test_missing_tournament_renders_error_without_config_template(): void {
-        $competition = $this->createStub( Competition::class );
-        $competition->id = 1;
+        $competition = Competition_Test_Factory::create( 1 );
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
         $tournament_service = $this->createMock( Tournament_Service::class );
         $tournament_service->expects( self::once() )->method( 'get_tournament' )->with( 999999 )->willThrowException(
@@ -264,12 +254,7 @@ final class Admin_Competition_Delivery_Test extends TestCase {
     }
 
     public function test_config_events_tab_binds_events_to_rendered_view_model(): void {
-        $competition = $this->createStub( Competition::class );
-        $competition->id = 1;
-        $competition->name = 'Premier League';
-        $competition->method( 'get_id' )->willReturn( 1 );
-        $competition->method( 'get_type' )->willReturn( 'league' );
-        $competition->method( 'get_settings' )->willReturn( array() );
+        $competition = Competition_Test_Factory::create( 1, 'Premier League' );
         $event = $this->createStub( Event::class );
         $event->id = 42;
         $event->name = 'Mixed Doubles';
@@ -286,11 +271,7 @@ final class Admin_Competition_Delivery_Test extends TestCase {
     }
 
     public function test_config_get_rehydrates_sanitized_flash_values_without_saving(): void {
-        $competition = $this->createStub( Competition::class );
-        $competition->id = 1;
-        $competition->name = 'Original';
-        $competition->method( 'get_type' )->willReturn( 'league' );
-        $competition->method( 'get_settings' )->willReturn( array() );
+        $competition = Competition_Test_Factory::create( 1, 'Original' );
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
         $this->competition_service->expects( self::never() )->method( 'amend_details' );
         $this->club_service->method( 'get_clubs' )->willReturn( array() );
@@ -313,12 +294,13 @@ final class Admin_Competition_Delivery_Test extends TestCase {
     }
 
     public function test_get_config_page_rehydrates_flash_form_data_and_errors(): void {
-        $competition            = $this->createStub( Competition::class );
-        $competition->id        = 1;
-        $competition->name      = 'Premier League';
-        $competition->age_group = 'open';
-        $competition->method( 'get_type' )->willReturn( 'league' );
-        $competition->method( 'get_settings' )->willReturn( array( 'max_teams' => 10, 'reverse_rubbers' => true ) );
+        $competition = Competition_Test_Factory::create(
+            1,
+            'Premier League',
+            Competition_Type::LEAGUE,
+            null,
+            array( 'max_teams' => 10, 'reverse_rubbers' => true )
+        );
 
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
         $this->competition_service->method( 'get_rules_options' )->willReturn( array() );
@@ -370,28 +352,26 @@ final class Admin_Competition_Delivery_Test extends TestCase {
     }
 
     public function test_post_season_modify_redirects_and_sets_flash(): void {
-        $competition                = $this->createMock( Competition::class );
-        $competition->id            = 1;
-        $competition->is_league     = true;
-        $competition->is_team_entry = true;
-        $competition->method( 'get_season_by_name' )->willReturn( array(
-            'name'             => '2025',
-            'grade'            => 'B',
-            'date_open'        => '2025-01-01',
-            'date_end'         => '2025-06-30',
-            'date_closing'     => '2025-01-15',
-            'date_start'       => '2025-02-01',
-            'max_teams'        => 10,
-            'teams_per_club'   => 2,
-            'teams_prom_relg'  => 2,
-            'lowest_promotion' => 1,
-            'num_match_days'   => 10,
-            'round_length'     => 7,
-            'home_away_diff'   => 0,
-            'filler_weeks'     => 0,
-            'match_dates'      => array(),
+        $competition = Competition_Test_Factory::create( 1, 'Premier League', Competition_Type::LEAGUE );
+        $competition->set_seasons( array(
+            '2025' => array(
+                'name'             => '2025',
+                'grade'            => 'B',
+                'date_open'        => '2025-01-01',
+                'date_end'         => '2025-06-30',
+                'date_closing'     => '2025-01-15',
+                'date_start'       => '2025-02-01',
+                'max_teams'        => 10,
+                'teams_per_club'   => 2,
+                'teams_prom_relg'  => 2,
+                'lowest_promotion' => 1,
+                'num_match_days'   => 10,
+                'round_length'     => 7,
+                'home_away_diff'   => 0,
+                'filler_weeks'     => 0,
+                'match_dates'      => array(),
+            ),
         ) );
-        $competition->expects( self::never() )->method( 'update_season' );
 
         $this->guard->expects( self::once() )->method( 'assert_allowed' );
         $this->competition_service->expects( self::once() )->method( 'update_season' )->with( $competition, self::isArray() )->willReturn( true );
@@ -432,17 +412,12 @@ final class Admin_Competition_Delivery_Test extends TestCase {
     }
 
     public function test_get_season_modify_page_renders_view_model(): void {
-        $competition       = $this->createStub( Competition::class );
-        $competition->id   = 1;
-        $competition->name = 'Premier League';
-        $competition->method( 'get_id' )->willReturn( 1 );
-        $competition->method( 'get_type' )->willReturn( 'league' );
-        $competition->method( 'get_seasons' )->willReturn( array(
-            '2025' => array( 'name' => '2025' ),
-        ) );
-        $competition->method( 'get_season_by_name' )->willReturn( array(
-            'name'  => '2025',
-            'grade' => 'A',
+        $competition = Competition_Test_Factory::create( 1, 'Premier League', Competition_Type::LEAGUE );
+        $competition->set_seasons( array(
+            '2025' => array(
+                'name'  => '2025',
+                'grade' => 'A',
+            ),
         ) );
 
         $this->competition_service->expects( self::once() )
@@ -510,25 +485,24 @@ final class Admin_Competition_Delivery_Test extends TestCase {
     }
 
     public function test_real_template_render_binds_persisted_settings_and_leaves_entity_unmodified(): void {
-        $competition            = $this->createStub( Competition::class );
-        $competition->id        = 1;
-        $competition->name      = 'Premier League';
-        $competition->type      = Competition_Type::LEAGUE;
-        $competition->is_league = true;
-        $competition->method( 'get_id' )->willReturn( 1 );
-        $competition->method( 'get_type' )->willReturn( 'league' );
-        $competition->method( 'get_settings' )->willReturn( array(
-            'max_teams'             => 6,
-            'teams_per_club'        => 2,
-            'sport'                 => 'tennis',
-            'num_sets'              => 3,
-            'num_rubbers'           => 4,
-            'round_length'          => 14,
-            'home_away_diff'        => 5,
-            'num_matches_per_page'  => 30,
-            'fixed_match_dates'     => true,
-            'home_away'             => true,
-        ) );
+        $competition = Competition_Test_Factory::create(
+            1,
+            'Premier League',
+            Competition_Type::LEAGUE,
+            null,
+            array(
+                'max_teams'            => 6,
+                'teams_per_club'       => 2,
+                'sport'                => 'tennis',
+                'num_sets'             => 3,
+                'num_rubbers'          => 4,
+                'round_length'         => 14,
+                'home_away_diff'       => 5,
+                'num_matches_per_page' => 30,
+                'fixed_match_dates'    => true,
+                'home_away'            => true,
+            )
+        );
 
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
         $this->competition_service->method( 'get_events_for_competition' )->willReturn( array() );
@@ -567,17 +541,16 @@ final class Admin_Competition_Delivery_Test extends TestCase {
     }
 
     public function test_real_template_render_binds_flashed_settings_and_leaves_entity_unmodified(): void {
-        $competition            = $this->createStub( Competition::class );
-        $competition->id        = 1;
-        $competition->name      = 'Original Title';
-        $competition->type      = Competition_Type::LEAGUE;
-        $competition->is_league = true;
-        $competition->method( 'get_id' )->willReturn( 1 );
-        $competition->method( 'get_type' )->willReturn( 'league' );
-        $competition->method( 'get_settings' )->willReturn( array(
-            'max_teams' => 6,
-            'sport'     => 'badminton',
-        ) );
+        $competition = Competition_Test_Factory::create(
+            1,
+            'Original Title',
+            Competition_Type::LEAGUE,
+            null,
+            array(
+                'max_teams' => 6,
+                'sport'     => 'badminton',
+            )
+        );
 
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
         $this->competition_service->method( 'get_events_for_competition' )->willReturn( array() );

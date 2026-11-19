@@ -40,6 +40,7 @@ use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use stdClass;
 
 class Match_Detail_And_Tournament_Templates_Test extends TestCase {
@@ -178,9 +179,7 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$event       = $this->createStub( Event::class );
 		$event->name = 'Mens Singles';
 
-		$competition       = $this->createStub( Competition::class );
-		$competition->type = Competition_Type::TOURNAMENT;
-		$competition->method( 'get_type' )->willReturn( 'tournament' );
+		$competition = Competition_Test_Factory::create( type: Competition_Type::TOURNAMENT );
 
 		$club = $this->createStub( Club::class );
 		$club->method( 'get_shortcode' )->willReturn( 'SW19' );
@@ -282,9 +281,7 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$event       = $this->createStub( Event::class );
 		$event->name = 'Mens Singles';
 
-		$competition       = $this->createStub( Competition::class );
-		$competition->type = Competition_Type::TOURNAMENT;
-		$competition->method( 'get_type' )->willReturn( 'tournament' );
+		$competition = Competition_Test_Factory::create( type: Competition_Type::TOURNAMENT );
 
 		$club = $this->createStub( Club::class );
 		$club->method( 'get_shortcode' )->willReturn( 'SW19' );
@@ -381,9 +378,7 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$event->name   = 'Box League';
 		$event->is_box = true;
 
-		$competition       = $this->createStub( Competition::class );
-		$competition->type = Competition_Type::TOURNAMENT;
-		$competition->method( 'get_type' )->willReturn( 'tournament' );
+		$competition = Competition_Test_Factory::create( type: Competition_Type::TOURNAMENT );
 
 		$club = $this->createStub( Club::class );
 		$club->method( 'get_shortcode' )->willReturn( 'LTC' );
@@ -498,8 +493,7 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$event       = $this->createStub( Event::class );
 		$event->name = 'Mens Doubles';
 
-		$competition       = $this->createStub( Competition::class );
-		$competition->type = Competition_Type::LEAGUE;
+		$competition = Competition_Test_Factory::create( type: Competition_Type::LEAGUE );
 
 		$dto = new Fixture_Details_DTO(
 			fixture: $fixture,
@@ -593,8 +587,7 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$event       = $this->createStub( Event::class );
 		$event->name = 'Mens Doubles';
 
-		$competition       = $this->createStub( Competition::class );
-		$competition->type = Competition_Type::LEAGUE;
+		$competition = Competition_Test_Factory::create( type: Competition_Type::LEAGUE );
 
 		$dto = new Fixture_Details_DTO(
 			fixture: $fixture,
@@ -720,9 +713,7 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$event       = $this->createStub( Event::class );
 		$event->name = 'Mens Singles';
 
-		$competition       = $this->createStub( Competition::class );
-		$competition->type = Competition_Type::TOURNAMENT;
-		$competition->method( 'get_type' )->willReturn( 'tournament' );
+		$competition = Competition_Test_Factory::create( type: Competition_Type::TOURNAMENT );
 
 		$club = $this->createStub( Club::class );
 		$club->method( 'get_shortcode' )->willReturn( 'SW19' );

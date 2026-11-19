@@ -28,8 +28,8 @@ class League_Archive_Presenter_Test extends TestCase {
             age_group: 'Open',
             id: 10
         );
-        $competition->is_team_entry   = true;
-        $competition->is_championship = false;
+        $competition->set_is_team_entry( true );
+        $competition->set_is_championship( false );
         $competition->set_seasons( [
             '2026' => [
                 'name'       => '2026',
@@ -138,8 +138,8 @@ class League_Archive_Presenter_Test extends TestCase {
             age_group: 'Open',
             id: 11
         );
-        $competition->is_team_entry   = false;
-        $competition->is_championship = false;
+        $competition->set_is_team_entry( false );
+        $competition->set_is_championship( false );
 
         $event = new class( $competition ) extends Event {
             public function __construct( Competition $competition ) {
@@ -185,8 +185,8 @@ class League_Archive_Presenter_Test extends TestCase {
             age_group: 'Open',
             id: 12
         );
-        $competition->is_team_entry   = true;
-        $competition->is_championship = true;
+        $competition->set_is_team_entry( true );
+        $competition->set_is_championship( true );
 
         $event = new class( $competition ) extends Event {
             public function __construct( Competition $competition ) {

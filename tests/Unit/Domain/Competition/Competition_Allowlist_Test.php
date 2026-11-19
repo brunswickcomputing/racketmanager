@@ -202,7 +202,7 @@ final class Competition_Allowlist_Test extends TestCase {
     public function test_event_lookups_do_not_read_hidden_events_property(): void {
         $event               = $this->create_event( 10 );
         $competition         = $this->create_competition( [ '2026' => [ 'name' => '2026' ] ] );
-        $competition->events = [ $event ];
+        $competition->set_events( [ $event ] );
 
         $this->assertNull( $competition->resolve_event( 10, '2026' ) );
         $this->assertNull( $competition->resolve_event( 'men-doubles', '2026' ) );
@@ -238,8 +238,8 @@ final class Competition_Allowlist_Test extends TestCase {
         $events              = [ $this->create_event( 10, 'Men Doubles' ) ];
         $competition         = $this->create_competition( [ '2026' => [ 'name' => '2026' ] ] );
         $sentinel            = $this->create_event( 99, 'Cached' );
-        $competition->events = [ $sentinel ];
-        $competition->event_index = [ 99 => 0 ];
+        $competition->set_events( [ $sentinel ] );
+        $competition->set_event_index( [ 99 => 0 ] );
 
         $this->assertTrue( $competition->is_event_allowed( 'Men Doubles', '2026', true, $events ) );
 
@@ -278,7 +278,7 @@ final class Competition_Allowlist_Test extends TestCase {
     public function test_get_entry_events_does_not_mutate_cached_events(): void {
         $events              = [ $this->create_event( 10 ) ];
         $competition         = $this->create_competition( [ '2026' => [ 'name' => '2026' ] ] );
-        $competition->events = [];
+        $competition->set_events( [] );
 
         $competition->get_entry_events( '2026', $events );
 

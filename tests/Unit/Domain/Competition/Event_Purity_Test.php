@@ -7,7 +7,9 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Settings;
+use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use ReflectionClass;
 use stdClass;
 
@@ -34,11 +36,16 @@ class Event_Purity_Test extends TestCase {
 	}
 
 	public function test_constructor_uses_supplied_competition_without_locator(): void {
-		$competition            = $this->createStub( Competition::class );
-		$competition->standings = array( 'points' => 1 );
-		$competition->settings  = new Competition_Settings( array( 'mode' => 'league' ) );
-		$competition->is_player_entry = false;
-		$competition->current_season  = array( 'name' => '2026' );
+		$competition = Competition_Test_Factory::create(
+			4,
+			'Mixed Doubles Competition',
+			Competition_Type::LEAGUE,
+			null,
+			array( 'mode' => 'league' ),
+			null,
+			array( 'name' => '2026' )
+		);
+		$competition->set_standings( array( 'points' => 1 ) );
 
 		$event_raw                 = new stdClass();
 		$event_raw->id             = 12;

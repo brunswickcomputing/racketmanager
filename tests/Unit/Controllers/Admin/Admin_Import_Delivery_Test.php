@@ -19,6 +19,7 @@ use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Application\Ports\View_Renderer_Interface;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Admin_Delivery_Container;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
@@ -105,9 +106,10 @@ final class Admin_Import_Delivery_Test extends TestCase {
 		$club->id   = 12;
 		$club->name = 'Westcliff Lawn Tennis Club';
 
-		$competition       = ( new \ReflectionClass( Competition::class ) )->newInstanceWithoutConstructor();
-		$competition->id   = 34;
-		$competition->name = 'Summer League 2026';
+		$competition = Competition_Test_Factory::create(
+			id: 34,
+			name: 'Summer League 2026',
+		);
 
 		$club_service = $this->createMock( Club_Service::class );
 		$club_service->expects( self::once() )

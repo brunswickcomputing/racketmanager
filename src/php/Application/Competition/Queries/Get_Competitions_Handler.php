@@ -44,7 +44,7 @@ class Get_Competitions_Handler {
             $args['orderby']  = [ 'date_end' => 'DESC' ];
             $competitions = $this->tournament_service->get_tournaments( $args );
             foreach ( $competitions as $competition ) {
-                $competition->type = $type;
+                $competition->set_type( $type );
             }
             if ( $player ) {
                 $user_competitions = $this->tournament_service->get_tournaments_for_player( $player->get_id() );

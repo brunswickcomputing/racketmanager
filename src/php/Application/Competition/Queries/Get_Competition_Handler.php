@@ -151,7 +151,7 @@ readonly class Get_Competition_Handler {
                 } elseif ( is_object( $clubs ) && isset( $clubs->shortcode ) ) {
                     $entry_link .= Util::seo_url( (string) $clubs->shortcode ) . '/';
                 }
-                $competition->entry_link = $entry_link;
+                $competition->set_entry_link( $entry_link );
             }
         }
 

@@ -18,6 +18,7 @@ use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Application\Ports\View_Renderer_Interface;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 
 class Fixture_Presenter_Phase2_Test extends TestCase {
     private Fixture_Presenter $presenter;
@@ -58,9 +59,7 @@ class Fixture_Presenter_Phase2_Test extends TestCase {
         $event->method('get_name')->willReturn('Summer League');
         $event->name = 'Summer League';
         
-        $competition = $this->createStub(Competition::class);
-        $competition->method('get_type')->willReturn('league');
-        $competition->type = Competition_Type::LEAGUE;
+        $competition = Competition_Test_Factory::create( type: Competition_Type::LEAGUE );
 
         $is_update_allowed = (object)[
             'user_can_update' => true,
@@ -133,9 +132,7 @@ class Fixture_Presenter_Phase2_Test extends TestCase {
         $event->scoring = 'TB';
         $event->method('get_name')->willReturn('Summer League');
         $event->name = 'Summer League';
-        $competition = $this->createStub(Competition::class);
-        $competition->method('get_type')->willReturn('league');
-        $competition->type = Competition_Type::LEAGUE;
+        $competition = Competition_Test_Factory::create( type: Competition_Type::LEAGUE );
 
         $club = $this->createStub(\Racketmanager\Domain\Club\Club::class);
         $club->method('get_name')->willReturn('Home Club');
@@ -240,9 +237,7 @@ class Fixture_Presenter_Phase2_Test extends TestCase {
         $event->method('get_num_sets')->willReturn(3);
         $event->name = 'Event';
         $dto->event = $event;
-        $competition = $this->createStub(Competition::class);
-        $competition->method('get_type')->willReturn('league');
-        $competition->type = Competition_Type::LEAGUE;
+        $competition = Competition_Test_Factory::create( type: Competition_Type::LEAGUE );
         $dto->competition = $competition;
 
         // Accessing private map_rubber via reflection
@@ -289,9 +284,7 @@ class Fixture_Presenter_Phase2_Test extends TestCase {
         $event->method( 'get_num_sets' )->willReturn( 3 );
         $event->name       = 'Event';
         $dto->event        = $event;
-        $competition       = $this->createStub( Competition::class );
-        $competition->method( 'get_type' )->willReturn( 'league' );
-        $competition->type = Competition_Type::LEAGUE;
+        $competition       = Competition_Test_Factory::create( type: Competition_Type::LEAGUE );
         $dto->competition  = $competition;
 
         $reflection = new \ReflectionClass( Fixture_Presenter::class );
@@ -342,9 +335,7 @@ class Fixture_Presenter_Phase2_Test extends TestCase {
         $event->method( 'get_num_sets' )->willReturn( 3 );
         $event->name       = 'Event';
         $dto->event        = $event;
-        $competition       = $this->createStub( Competition::class );
-        $competition->method( 'get_type' )->willReturn( 'league' );
-        $competition->type = Competition_Type::LEAGUE;
+        $competition       = Competition_Test_Factory::create( type: Competition_Type::LEAGUE );
         $dto->competition  = $competition;
 
         $reflection = new \ReflectionClass( Fixture_Presenter::class );

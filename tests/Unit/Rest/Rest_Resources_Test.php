@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Rest;
 
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Finance\Commands\Update_Payment_Command;
@@ -213,9 +214,10 @@ class Rest_Resources_Test extends TestCase {
         $request->set_param( 'competition', 'test-competition' );
         $request->set_param( 'season', '2024' );
 
-        $competition = $this->createStub( Competition::class );
-        $competition->id = 123;
-        $competition->method( 'get_seasons' )->willReturn( array( '2024' => array( 'id' => 1 ) ) );
+        $competition = Competition_Test_Factory::create(
+            id: 123,
+            seasons: Competition_Test_Factory::season_map( '2024' ),
+        );
 
         $competition_service = $this->createMock( Competition_Service::class );
         $competition_service->expects( self::atLeastOnce() )

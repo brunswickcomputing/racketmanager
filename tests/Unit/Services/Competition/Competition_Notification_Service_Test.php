@@ -147,7 +147,7 @@ class Competition_Notification_Service_Test extends TestCase {
 
     public function test_contact_teams_queries_a_real_event_through_the_injected_repository(): void {
         $competition = \Racketmanager\Tests\Helpers\Competition_Test_Factory::create( id: 10, name: 'Summer League' );
-        $competition->is_player_entry = false;
+        $competition->set_is_player_entry( false );
         $event = Event::from_object( (object) [ 'id' => 93, 'name' => 'Mens Doubles', 'type' => 'doubles', 'competition_id' => 10, 'seasons' => '{"2026":{"name":"2026"}}' ] );
         $event->set_season( '2026' );
         $repository = $this->createMock( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class );

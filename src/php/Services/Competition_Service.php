@@ -729,12 +729,8 @@ class Competition_Service implements Competition_Service_Interface {
 
     public function set_court_availability( int $competition_id, int $club_id, int $num_courts_available ): void {
         $competition = $this->get_by_id( $competition_id );
-        if ( empty( $competition->settings['num_courts_available'] ) ) {
-            $competition->settings['num_courts_available'] = array();
-        }
         $competition->set_num_courts_available( $club_id, $num_courts_available );
         $this->competition_repository->save( $competition );
-
     }
 
     /**

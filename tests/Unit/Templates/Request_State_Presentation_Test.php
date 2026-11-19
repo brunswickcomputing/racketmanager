@@ -17,6 +17,7 @@ use Racketmanager\Application\Tournament\Queries\Get_Tournament_Query;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
@@ -122,8 +123,8 @@ class Request_State_Presentation_Test extends TestCase {
         $tournament->id = 8;
         $tournament->name = 'Summer Open';
         $tournament->season = '2026';
-        $competition = $this->createStub( Competition::class );
-        $competition->age_group = 'seniors';
+        $competition = Competition_Test_Factory::create();
+        $competition->set_age_group( 'seniors' );
         $service = $this->createStub( Tournament_Service::class );
         $service->method( 'get_tournament_with_details' )->willReturn( new Tournament_Details_DTO( $tournament, $competition, $this->createStub( Club::class ) ) );
         $service->method( 'get_tournaments' )->willReturn( [ $tournament ] );

@@ -13,6 +13,8 @@ use Racketmanager\Admin\View_Models\Cup_Plan_Page_View_Model;
 use Racketmanager\Admin\View_Models\Error_Bag;
 use Racketmanager\Admin\View_Models\Tournament_Plan_Page_View_Model;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Competition_Type;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
@@ -745,11 +747,7 @@ class Admin_Plan_Templates_Test extends TestCase {
             'season' => '2026',
         ];
 
-        $competition = $this->createStub( Competition::class );
-        $competition->method( 'get_id' )->willReturn( 55 );
-        $competition->method( 'get_type' )->willReturn( 'league' );
-        $competition->id   = 55;
-        $competition->name = 'Premier Leagues';
+        $competition = Competition_Test_Factory::create( id: 55, name: 'Premier Leagues', type: Competition_Type::LEAGUE );
 
         $comp_service = $this->createMock( Competition_Service::class );
         $comp_service->expects( $this->once() )
@@ -793,11 +791,7 @@ class Admin_Plan_Templates_Test extends TestCase {
             'season' => '2026',
         ];
 
-        $competition = $this->createStub( Competition::class );
-        $competition->method( 'get_id' )->willReturn( 55 );
-        $competition->method( 'get_type' )->willReturn( 'league' );
-        $competition->id   = 55;
-        $competition->name = 'Premier Leagues';
+        $competition = Competition_Test_Factory::create( id: 55, name: 'Premier Leagues', type: Competition_Type::LEAGUE );
 
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_competition' )->willReturn( $competition );
@@ -847,11 +841,7 @@ class Admin_Plan_Templates_Test extends TestCase {
     }
 
     public function test_admin_league_schedule_delivery_with_no_events(): void {
-        $competition = $this->createStub( Competition::class );
-        $competition->method( 'get_id' )->willReturn( 55 );
-        $competition->method( 'get_type' )->willReturn( 'league' );
-        $competition->id   = 55;
-        $competition->name = 'Empty Competition';
+        $competition = Competition_Test_Factory::create( id: 55, name: 'Empty Competition', type: Competition_Type::LEAGUE );
 
         $comp_service = $this->createMock( Competition_Service::class );
         $comp_service->expects( $this->once() )

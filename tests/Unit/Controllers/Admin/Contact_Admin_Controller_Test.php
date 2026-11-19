@@ -20,6 +20,7 @@ use Racketmanager\Services\Competition\Competition_Notification_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Tournament_Service;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use ReflectionClass;
 
 require_once __DIR__ . '/../../../wp-stubs.php';
@@ -96,11 +97,11 @@ final class Contact_Admin_Controller_Test extends TestCase {
     }
 
     private function competition( int $id = 12, string $name = 'Main Competition', string $season = '2025' ): Competition {
-        $comp = $this->createMock( Competition::class );
-        $comp->id = $id;
-        $comp->name = $name;
-        $comp->method( 'get_season' )->willReturn( $season );
-        return $comp;
+        return Competition_Test_Factory::create(
+            id: $id,
+            name: $name,
+            current_season: [ 'name' => $season ],
+        );
     }
 
     public function test_tournament_get_returns_view_model(): void {

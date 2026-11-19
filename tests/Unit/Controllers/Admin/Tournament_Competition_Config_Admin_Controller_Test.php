@@ -14,6 +14,7 @@ use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use stdClass;
 
 require_once __DIR__ . '/../../../wp-stubs.php';
@@ -77,11 +78,12 @@ class Tournament_Competition_Config_Admin_Controller_Test extends TestCase {
         $_GET['competition_id'] = '123';
         $_POST = [];
 
-        $competition = $this->createMock( Competition::class );
-        $competition->id = 123;
-        $competition->type = Competition_Type::LEAGUE;
-        $competition->age_group = 'age';
-        $competition->method( 'get_settings' )->willReturn( [] );
+        $competition = Competition_Test_Factory::create(
+            id: 123,
+            name: 'Summer Tournament',
+            type: Competition_Type::LEAGUE,
+        );
+        $competition->set_age_group( 'age' );
 
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
         $this->competition_service->method( 'get_rules_options' )->willReturn( [] );
@@ -99,8 +101,9 @@ class Tournament_Competition_Config_Admin_Controller_Test extends TestCase {
         $_POST['competition_id'] = '123';
         $_POST['competition_title'] = 'New Title';
 
-        $competition = $this->createMock( Competition::class );
-        $competition->id = 123;
+        $competition = Competition_Test_Factory::create(
+            id: 123,
+        );
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
         
         $this->competition_service->expects( self::once() )

@@ -108,7 +108,7 @@ class Parent_Page_Templates_Test extends TestCase {
             ],
             id: 15
         );
-        $competition->is_cup = false;
+        $competition->set_is_cup( false );
 
         $club = Club::from_object( (object) [
             'id'        => 1,
@@ -184,7 +184,7 @@ class Parent_Page_Templates_Test extends TestCase {
             ],
             id: 22
         );
-        $competition->is_cup = true;
+        $competition->set_is_cup( true );
 
         $club = Club::from_object( (object) [
             'id'        => 2,
@@ -300,8 +300,8 @@ class Parent_Page_Templates_Test extends TestCase {
             seasons: [ '2026' => [ 'name' => '2026', 'events' => [ 50 ] ] ],
             id: 10
         );
-        $competition->is_championship = false;
-        $competition->current_season = [ 'name' => '2026', 'events' => [ 50 ] ];
+        $competition->set_is_championship( false );
+        $competition->apply_current_season( [ 'name' => '2026', 'events' => [ 50 ] ] );
 
         $event = $this->create_event( 50, "Men's Division 1", $competition, false );
 
@@ -349,8 +349,8 @@ class Parent_Page_Templates_Test extends TestCase {
             seasons: [ '2026' => [ 'name' => '2026', 'events' => [ 60 ] ] ],
             id: 12
         );
-        $competition->is_championship = true;
-        $competition->current_season = [ 'name' => '2026', 'events' => [ 60 ] ];
+        $competition->set_is_championship( true );
+        $competition->apply_current_season( [ 'name' => '2026', 'events' => [ 60 ] ] );
 
         $event = $this->create_event( 60, "Men's Singles", $competition, false );
 
@@ -395,8 +395,8 @@ class Parent_Page_Templates_Test extends TestCase {
             seasons: [ '2026' => [ 'name' => '2026', 'events' => [ 70 ] ] ],
             id: 30
         );
-        $competition->is_championship = false;
-        $competition->current_season = [ 'name' => '2026', 'events' => [ 70 ] ];
+        $competition->set_is_championship( false );
+        $competition->apply_current_season( [ 'name' => '2026', 'events' => [ 70 ] ] );
 
         $event = $this->create_event( 70, 'Box 1', $competition, true );
 

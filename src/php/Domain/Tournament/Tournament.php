@@ -539,6 +539,16 @@ class Tournament {
         $this->num_courts = $num_courts;
     }
 
+    /**
+     * Set type.
+     *
+     * @param string $type Tournament type.
+     * @return void
+     */
+    public function set_type( string $type ): void {
+        $this->type = $type;
+    }
+
     public function get_start_time(): ?string {
         return $this->start_time;
     }

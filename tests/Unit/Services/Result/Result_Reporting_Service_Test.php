@@ -22,6 +22,7 @@ use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Settings;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Team\Team;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
@@ -62,18 +63,21 @@ class Result_Reporting_Service_Test extends TestCase {
 	}
 
 	private function create_standard_competition( array $overrides = [] ): Competition {
-		$competition = $this->createStub( Competition::class );
 		$season_info = array_key_exists( 'season_info', $overrides )
 			? $overrides['season_info']
 			: [ 'competition_code' => 'COMP123', 'date_start' => '2024-01-01', 'date_end' => '2024-12-31' ];
-		$competition->method( 'get_season_by_name' )->willReturn( $season_info );
-		$competition->name = $overrides['name'] ?? 'Test Competition';
-		$competition->date_start = $overrides['date_start'] ?? '2024-01-01';
-		$competition->date_end = $overrides['date_end'] ?? '2024-12-31';
-		$competition->type = $overrides['type'] ?? Competition_Type::LEAGUE;
-		$competition->settings = $overrides['settings'] ?? new Competition_Settings( [ 'grade' => 4 ] );
+		$seasons = $season_info !== null ? [ '2024' => $season_info ] : null;
+		$competition = Competition_Test_Factory::create(
+			id: $overrides['id'] ?? 5,
+			name: $overrides['name'] ?? 'Test Competition',
+			type: $overrides['type'] ?? Competition_Type::LEAGUE,
+			seasons: $seasons,
+			settings: $overrides['settings'] ?? [ 'grade' => 4 ],
+		);
+		$competition->set_date_start( $overrides['date_start'] ?? '2024-01-01' );
+		$competition->set_date_end( $overrides['date_end'] ?? '2024-12-31' );
 		if ( array_key_exists( 'competition_code', $overrides ) ) {
-			$competition->competition_code = $overrides['competition_code'];
+			$competition->set_competition_code( $overrides['competition_code'] );
 		}
 		return $competition;
 	}

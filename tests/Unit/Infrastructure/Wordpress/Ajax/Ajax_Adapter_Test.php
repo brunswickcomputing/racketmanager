@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Ajax;
 
 use Racketmanager\Tests\Helpers\League_Test_Factory;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Event\Queries\Get_Team_Order_Players_Handler;
 use Racketmanager\Application\Event\Queries\Get_Team_Order_Players_Query;
@@ -36,10 +37,12 @@ use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 use WP_Error;
 
+#[AllowMockObjectsWithoutExpectations]
 class Ajax_Adapter_Test extends TestCase {
     use \Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
     use Manages_Wordpress_Globals;
@@ -69,10 +72,10 @@ class Ajax_Adapter_Test extends TestCase {
     public function test_tab_data_rejects_invalid_link_id_and_does_not_execute_callback(): void {
         $adapter = $this->create_frontend_adapter();
 
-        $comp = $this->createStub( Competition::class );
-        $comp->id = 10;
-        $comp->method( 'get_id' )->willReturn( 10 );
-        $comp->method( 'get_seasons' )->willReturn( [ '2026' => [ 'name' => '2026' ] ] );
+        $comp = Competition_Test_Factory::create(
+            id: 10,
+            seasons: [ '2026' => [ 'name' => '2026' ] ],
+        );
         $GLOBALS['test_competition_obj'] = $comp;
 
         $called = false;
@@ -97,10 +100,10 @@ class Ajax_Adapter_Test extends TestCase {
     public function test_tab_data_accepts_valid_link_id_and_valid_season(): void {
         $adapter = $this->create_frontend_adapter();
 
-        $comp = $this->createStub( Competition::class );
-        $comp->id = 10;
-        $comp->method( 'get_id' )->willReturn( 10 );
-        $comp->method( 'get_seasons' )->willReturn( [ '2026' => [ 'name' => '2026' ] ] );
+        $comp = Competition_Test_Factory::create(
+            id: 10,
+            seasons: [ '2026' => [ 'name' => '2026' ] ],
+        );
         $GLOBALS['test_competition_obj'] = $comp;
 
         $passed_id   = null;
@@ -130,10 +133,10 @@ class Ajax_Adapter_Test extends TestCase {
     public function test_tab_data_omits_manipulated_season_from_callback_args(): void {
         $adapter = $this->create_frontend_adapter();
 
-        $comp = $this->createStub( Competition::class );
-        $comp->id = 10;
-        $comp->method( 'get_id' )->willReturn( 10 );
-        $comp->method( 'get_seasons' )->willReturn( [ '2026' => [ 'name' => '2026' ] ] );
+        $comp = Competition_Test_Factory::create(
+            id: 10,
+            seasons: [ '2026' => [ 'name' => '2026' ] ],
+        );
         $GLOBALS['test_competition_obj'] = $comp;
 
         $passed_args = null;
@@ -334,9 +337,7 @@ class Ajax_Adapter_Test extends TestCase {
         ] );
         $this->assertSame( 'Target ref not found', $res_no_target->get_content() );
 
-        $comp = $this->createStub( Competition::class );
-        $comp->id = 10;
-        $comp->method( 'get_id' )->willReturn( 10 );
+        $comp = Competition_Test_Factory::create( id: 10 );
         $GLOBALS['test_competition_obj'] = $comp;
 
         $res2 = $adapter->tab_data( [
@@ -400,8 +401,11 @@ class Ajax_Adapter_Test extends TestCase {
         $settings_service = $this->createStub( Settings_Service::class );
         $settings_service->method( 'get_category' )->willReturn( [ 'ageLimitCheck' => true ] );
 
-        $comp = $this->createStub( Competition::class );
-        $comp->id = 10;
+        $comp = $this->getMockBuilder( Competition::class )
+            ->disableOriginalConstructor()
+            ->onlyMethods( [ 'is_event_allowed' ] )
+            ->getMock();
+        $comp->set_id( 10 );
         $comp->method( 'is_event_allowed' )->willReturn( true );
 
         // 1. Test Senior ('S') event type
@@ -445,8 +449,11 @@ class Ajax_Adapter_Test extends TestCase {
         $settings_service = $this->createStub( Settings_Service::class );
         $settings_service->method( 'get_category' )->willReturn( [ 'ageLimitCheck' => false ] );
 
-        $comp = $this->createStub( Competition::class );
-        $comp->id = 10;
+        $comp = $this->getMockBuilder( Competition::class )
+            ->disableOriginalConstructor()
+            ->onlyMethods( [ 'is_event_allowed' ] )
+            ->getMock();
+        $comp->set_id( 10 );
         $comp->method( 'is_event_allowed' )->willReturn( true );
 
         // 2. Test Open ('O') event type

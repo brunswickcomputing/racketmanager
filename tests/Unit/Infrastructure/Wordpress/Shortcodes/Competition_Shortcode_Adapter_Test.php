@@ -339,9 +339,11 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
     }
 
     public function test_competition_clubs_handler_decorates_nonempty_players(): void {
-        $competition = $this->createStub( \Racketmanager\Domain\Competition\Competition::class );
-        $competition->current_season = [ 'name' => '2026' ];
-        $competition->method( 'get_id' )->willReturn( 5 );
+        $competition = Competition_Test_Factory::create(
+            id: 5,
+            seasons: Competition_Test_Factory::season_map( '2026' ),
+            current_season: [ 'name' => '2026' ]
+        );
 
         [ $low, $high, $stats ] = $this->build_stat_players( $competition, '2026', 'competition' );
 

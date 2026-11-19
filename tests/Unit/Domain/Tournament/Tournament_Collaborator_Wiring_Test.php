@@ -5,6 +5,7 @@ namespace Racketmanager\Tests\Unit\Domain\Tournament;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Hydration_DTO;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Domain\Tournament\Tournament_Factory;
@@ -13,6 +14,7 @@ use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Tournament_Repository;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Container\Container_Bootstrap;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use wpdb;
 
@@ -88,8 +90,7 @@ final class Tournament_Collaborator_Wiring_Test extends TestCase {
 		$this->assertArrayNotHasKey( 'racketmanager', $GLOBALS );
 		$this->assertArrayNotHasKey( 'wp', $GLOBALS );
 
-		$competition = $this->createStub( Competition::class );
-		$competition->id = 15;
+		$competition = Competition_Test_Factory::create( 15, 'Autumn Open', Competition_Type::TOURNAMENT );
 
 		$raw = (object) [
 			'id'             => 7,
@@ -152,8 +153,7 @@ final class Tournament_Collaborator_Wiring_Test extends TestCase {
 	}
 
 	public function test_tournament_repository_wires_competition_on_hydrated_tournaments(): void {
-		$competition = $this->createStub( Competition::class );
-		$competition->id = 12;
+		$competition = Competition_Test_Factory::create( 12, 'Tournament', Competition_Type::TOURNAMENT );
 
 		$comp_service = $this->createMock( Competition_Service::class );
 		$comp_service->expects( $this->once() )
@@ -217,8 +217,7 @@ final class Tournament_Collaborator_Wiring_Test extends TestCase {
 		};
 		$GLOBALS['wp'] = $wp_spy;
 
-		$competition = $this->createStub( Competition::class );
-		$competition->id = 12;
+		$competition = Competition_Test_Factory::create( 12, 'Tournament', Competition_Type::TOURNAMENT );
 
 		$comp_service = $this->createMock( Competition_Service::class );
 		$comp_service->expects( $this->once() )
@@ -259,8 +258,7 @@ final class Tournament_Collaborator_Wiring_Test extends TestCase {
 		$GLOBALS['wp_stubs_cache_enabled'] = true;
 		$GLOBALS['wp_stubs_cache_mode']    = 'serialize';
 
-		$competition = $this->createStub( Competition::class );
-		$competition->id = 12;
+		$competition = Competition_Test_Factory::create( 12, 'Tournament', Competition_Type::TOURNAMENT );
 
 		$comp_service = $this->createMock( Competition_Service::class );
 		$comp_service->expects( $this->atLeastOnce() )

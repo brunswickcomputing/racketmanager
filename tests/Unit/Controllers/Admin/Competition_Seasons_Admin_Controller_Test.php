@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Controllers\Competition_Seasons_Admin_Controller;
 use Racketmanager\Admin\View_Models\Competition_Seasons_Page_View_Model;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
@@ -15,6 +16,7 @@ use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Services\Admin\League\Season_Delete_Action_Dispatcher;
 use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Competition_Service;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 
 require_once __DIR__ . '/../../../wp-stubs.php';
 
@@ -47,11 +49,11 @@ final class Competition_Seasons_Admin_Controller_Test extends TestCase {
     }
 
     private function competition( int $id = 10, string $name = 'Summer League' ): Competition {
-        $comp = $this->createMock( Competition::class );
-        $comp->id = $id;
-        $comp->name = $name;
-        $comp->method( 'get_type' )->willReturn( 'league' );
-        return $comp;
+        return Competition_Test_Factory::create(
+            id: $id,
+            name: $name,
+            type: Competition_Type::LEAGUE,
+        );
     }
 
     public function test_get_returns_view_model(): void {

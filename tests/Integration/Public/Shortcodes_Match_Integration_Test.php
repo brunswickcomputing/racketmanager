@@ -57,6 +57,7 @@ namespace Racketmanager\Tests\Integration\Public {
     use Racketmanager\Services\Tournament_Service;
     use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
     use Racketmanager\Application\Ports\View_Renderer_Interface;
+    use Racketmanager\Tests\Helpers\Competition_Test_Factory;
     use Racketmanager\Tests\Helpers\Creates_Test_Container;
 
     #[AllowMockObjectsWithoutExpectations]
@@ -135,10 +136,10 @@ namespace Racketmanager\Tests\Integration\Public {
             $event->name = 'Men\'s Singles';
             $competition_service->method( 'get_event_by_id' )->willReturn( $event );
 
-            $competition = $this->createMock( Competition::class );
-            $competition->method( 'get_id' )->willReturn( 30 );
-            $competition->type          = Competition_Type::LEAGUE;
-            $competition->is_tournament = false;
+            $competition = Competition_Test_Factory::create(
+                id: 30,
+                type: Competition_Type::LEAGUE
+            );
             $competition_service->method( 'get_by_id' )->willReturn( $competition );
 
             $renderer = $this->createStub( View_Renderer_Interface::class );

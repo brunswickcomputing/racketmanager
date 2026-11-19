@@ -69,6 +69,7 @@ use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
 use Racketmanager\Tests\Helpers\Creates_League_Query_Service;
 use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
@@ -193,16 +194,14 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
     }
 
     private function create_competition( Competition_Type $type, int $id = 1 ): Competition {
-        $competition                  = $this->createStub( Competition::class );
-        $competition->id              = $id;
-        $competition->name            = 'Championship Tourney';
-        $competition->type            = $type;
-        $competition->is_team_entry   = $type->is_team_entry();
-        $competition->is_player_entry = $type->is_player_entry();
-        $competition->is_championship = true;
-        $competition->current_season  = [ 'name' => '2026' ];
-        $competition->method( 'get_id' )->willReturn( $id );
-        $competition->method( 'is_event_allowed' )->willReturn( true );
+        $competition = Competition_Test_Factory::create(
+            id: $id,
+            name: 'Championship Tourney',
+            type: $type,
+            seasons: [ '2026' => [ 'name' => '2026', 'config' => [] ] ],
+            current_season: [ 'name' => '2026' ]
+        );
+        $competition->set_is_championship( true );
         return $competition;
     }
 
@@ -210,10 +209,12 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $event = new class() extends Event {
             public function __construct() {
                 $this->id             = 12;
+                $this->competition_id = 1;
                 $this->name           = 'Mens Singles';
                 $this->type           = 'MS';
                 $this->is_box         = true;
                 $this->current_season = [ 'name' => '2026' ];
+                $this->seasons        = [ '2026' => [ 'name' => '2026' ] ];
             }
             public function set_season( ?string $season = null, bool $force_overwrite = false, bool $strict = false ): void {}
         };
@@ -592,7 +593,6 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
 
     public function test_event_teams_handler_renders_player_entry_cards_in_real_team_details_template(): void {
         $competition          = $this->create_competition( Competition_Type::TOURNAMENT );
-        $competition->method( 'is_event_allowed' )->willReturn( true );
         $event                = $this->create_event( $competition );
         $league               = $this->create_league( $event, [] );
         [ $fixture, $detail ] = $this->build_played_fixture( $league, $event, $competition );
@@ -607,8 +607,10 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $event_stub = new class() extends Event {
             public function __construct() {
                 $this->id             = 12;
+                $this->competition_id = 1;
                 $this->name           = 'Mens Singles';
                 $this->current_season = [ 'name' => '2026' ];
+                $this->seasons        = [ '2026' => [ 'name' => '2026' ] ];
             }
             public function set_season( ?string $season = null, bool $force_overwrite = false, bool $strict = false ): void {}
         };
@@ -650,8 +652,10 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $event       = new class() extends Event {
             public function __construct() {
                 $this->id             = 12;
+                $this->competition_id = 1;
                 $this->name           = 'Mens Singles';
                 $this->current_season = [ 'name' => '2026' ];
+                $this->seasons        = [ '2026' => [ 'name' => '2026' ] ];
             }
 
             public function set_season( ?string $season = null, bool $force_overwrite = false, bool $strict = false ): void {}

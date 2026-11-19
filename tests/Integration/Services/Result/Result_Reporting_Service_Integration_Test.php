@@ -22,6 +22,7 @@ use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Result\Result_Reporting_Service;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
@@ -82,21 +83,27 @@ class Result_Reporting_Service_Integration_Test extends TestCase {
 		$event->age_limit = 'Open';
 		$event->type = 'MS';
 
-		$competition = $this->getMockBuilder( Competition::class )
-			->disableOriginalConstructor()
-			->getMock();
-		$competition->method( 'get_id' )->willReturn( 301 );
-		$competition->method( 'get_season_by_name' )->willReturn( [
-			'competition_code' => 'INT-COMP',
-			'date_start'       => '2024-01-01',
-			'date_end'         => '2024-12-31',
-		] );
-		$competition->name = 'Int Competition';
-		$competition->type = Competition_Type::LEAGUE;
-		$competition->competition_code = 'COMP-CODE';
-		$competition->date_start = '2024-01-01';
-		$competition->date_end = '2024-12-31';
-		$competition->settings = new Competition_Settings( [ 'grade' => 3 ] );
+		$competition = Competition_Test_Factory::create(
+			id: 301,
+			name: 'Int Competition',
+			type: Competition_Type::LEAGUE,
+			settings: [ 'grade' => 3 ],
+			seasons: [
+				'2024' => [
+					'competition_code' => 'INT-COMP',
+					'date_start'       => '2024-01-01',
+					'date_end'         => '2024-12-31',
+				],
+			],
+			current_season: [
+				'competition_code' => 'INT-COMP',
+				'date_start'       => '2024-01-01',
+				'date_end'         => '2024-12-31',
+			]
+		);
+		$competition->set_competition_code( 'COMP-CODE' );
+		$competition->set_date_start( '2024-01-01' );
+		$competition->set_date_end( '2024-12-31' );
 
 		$home_team = $this->getMockBuilder( Team::class )
 			->disableOriginalConstructor()

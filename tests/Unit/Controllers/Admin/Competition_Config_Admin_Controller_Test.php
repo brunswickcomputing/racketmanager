@@ -20,6 +20,7 @@ use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Season_Service;
 use Racketmanager\Services\Tournament_Service;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 
 require_once __DIR__ . '/../../../wp-stubs.php';
 
@@ -96,14 +97,12 @@ final class Competition_Config_Admin_Controller_Test extends TestCase {
     }
 
     public function test_get_config_page_returns_view_model(): void {
-        $competition            = $this->createStub( Competition::class );
-        $competition->id        = 10;
-        $competition->name      = 'League 1';
-        $competition->type      = Competition_Type::LEAGUE;
-        $competition->is_league = true;
-        $competition->method( 'get_id' )->willReturn( 10 );
-        $competition->method( 'get_type' )->willReturn( 'league' );
-        $competition->method( 'get_settings' )->willReturn( array( 'sport' => 'tennis' ) );
+        $competition = Competition_Test_Factory::create(
+            id: 10,
+            name: 'League 1',
+            type: Competition_Type::LEAGUE,
+            settings: array( 'sport' => 'tennis' ),
+        );
 
         $this->competition_service->expects( self::once() )
             ->method( 'get_by_id' )

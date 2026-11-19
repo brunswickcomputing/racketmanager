@@ -760,8 +760,8 @@ class Club_Shortcode_Adapter_Test extends TestCase {
     }
 
     public function test_show_club_event_passes_primary_league_for_championship_event(): void {
-        $competition       = $this->create_test_competition( 10, [ 101 ] );
-        $competition->type = Competition_Type::CUP;
+        $competition = $this->create_test_competition( 10, [ 101 ] );
+        $competition->set_type( Competition_Type::CUP );
 
         $championship = $this->createStub( Championship::class );
         $championship->method( 'get_finals' )->willReturn(
@@ -798,8 +798,8 @@ class Club_Shortcode_Adapter_Test extends TestCase {
     }
 
     public function test_show_club_event_renders_championship_rounds_with_real_renderer(): void {
-        $competition       = $this->create_test_competition( 10, [ 101 ] );
-        $competition->type = Competition_Type::CUP;
+        $competition = $this->create_test_competition( 10, [ 101 ] );
+        $competition->set_type( Competition_Type::CUP );
 
         $championship = $this->createStub( Championship::class );
         $championship->method( 'get_finals' )->willReturn(

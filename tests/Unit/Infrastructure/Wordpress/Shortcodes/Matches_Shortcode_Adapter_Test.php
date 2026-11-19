@@ -41,6 +41,7 @@ use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Application\Ports\View_Renderer_Interface;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use Racketmanager\Tests\Helpers\Creates_Test_Container;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
@@ -330,8 +331,7 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
         $league->title = 'Division 1 Men';
         $event         = $this->createStub( Event::class );
         $event->name   = 'Division 1';
-        $competition   = $this->createStub( Competition::class );
-        $competition->type = Competition_Type::LEAGUE;
+        $competition   = Competition_Test_Factory::create( type: Competition_Type::LEAGUE );
         $dto           = $this->details_dto( $this->fixture( 42, '1', '2', 10 ), $league, $event, $competition );
 
         $output = $this->build_native_adapter( $this->details_service( $dto ) )->show_match_header( [ 'id' => 42 ] );

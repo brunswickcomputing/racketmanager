@@ -1278,8 +1278,10 @@ class Competition_Entry_Service_Test extends TestCase {
         $tournament = $this->create_tournament( 1, '2026', '2026-08-30' );
         $tournament->competition_id = 1;
 
-        $competition = $this->createStub( Competition::class );
-        $competition->seasons = new Season_Collection( [ '2024' => [ 'name' => '2024' ], '2025' => [ 'name' => '2025' ] ] );
+        $competition = Competition_Test_Factory::create(
+            id: 1,
+            seasons: [ '2024' => [ 'name' => '2024' ], '2025' => [ 'name' => '2025' ] ],
+        );
         $this->competition_to_return = $competition;
 
         $dto = $this->create_tournament_entry_request( [
@@ -3176,7 +3178,7 @@ class Competition_Entry_Service_Test extends TestCase {
 
     public function test_request_cup_entry_returns_error_when_event_has_no_primary_league(): void {
         $competition = $this->create_competition();
-        $competition->is_open = true;
+        $competition->set_is_open( true );
         $this->competition_to_return = $competition;
 
         $event = $this->create_tournament_event( 30, 'MD' );
@@ -3186,7 +3188,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->event_repository->method( 'query_leagues' )
             ->willReturn( [] );
 
-        $competition->events = [ 30 => $event ];
+        $competition->set_events( [ 30 => $event ] );
         $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
 
         $request = (object) [

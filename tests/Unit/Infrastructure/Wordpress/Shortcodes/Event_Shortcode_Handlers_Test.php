@@ -538,7 +538,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( $team_stub, $event_stub->team );
 
         // Championship fallback to 'list'
-        $event_stub->competition->is_championship = true;
+        $event_stub->competition->set_is_championship( true );
         $vm_champ = $this->create_event_adapter()->present_teams( $handler->handle( new Get_Event_Teams_Query( event_id: 15, team: null ) ) );
         $this->assertSame( 'teams-list', $vm_champ->template );
     }
@@ -1407,11 +1407,11 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
         foreach ( $cases as $case ) {
             $competition = $this->create_test_competition( 10, [ 101 ], $case['type'] );
-            $competition->current_season = [
+            $competition->apply_current_season( [
                 'name'       => '2026',
                 'date_start' => '2026-06-01',
                 'date_end'   => '2026-06-07',
-            ];
+            ] );
             $event       = $this->create_test_event( 101, 10, $competition );
             $event->name = 'Mens Singles';
 

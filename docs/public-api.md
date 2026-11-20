@@ -195,6 +195,6 @@ Testing around `Racketmanager\Public_Api` is organized into two distinct layers 
 - **Environment Handling:** Resolves the theme file dynamically via `SYDNEY_CHILD_THEME_PATH` or `dirname( __DIR__, 4 ) . '/themes/sydney-child/functions.php'`. When the theme checkout is not present (such as in standalone plugin checkouts), the test suite cleanly calls `$this->markTestSkipped()`.
 
 ### 3. CI Issue Policy & Skip Flags
-- **Strict Issue Checking:** CI workflows (`.github/workflows/ci.yml` and `.github/workflows/sonarcloud.yml`) run PHPUnit with `--display-all-issues --fail-on-all-issues --do-not-fail-on-skipped`.
+- **Strict Issue Checking:** CI workflows (`.github/workflows/ci.yml`) run PHPUnit with `--display-all-issues --fail-on-all-issues --do-not-fail-on-skipped`.
 - **Zero False Alarms:** Because PHPUnit's `--fail-on-all-issues` includes `--fail-on-skipped` by default, `--do-not-fail-on-skipped` is paired with it so that intentional skips due to missing external repositories do not fail builds.
 - **Defect Detection Preserved:** Real regressions (warnings, deprecations, notices, risky tests, or failing assertions) continue to immediately fail CI builds with exit status code 1.

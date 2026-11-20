@@ -123,11 +123,10 @@ Test doubles (primarily `createStub()` or `createMock()` objects marked with `#[
    - **JavaScript Quality Gate:** Jest test suite (`npm test`) passes 10/10 tests across 4 suites in ~0.68s.
    - **What was actually verified locally:**
      - JUnit XML only: `--log-junit` produces a valid report for 1,626 tests / 7,769 assertions in ~0.8s.
-     - YAML syntax of `ci.yml`, `sonarcloud.yml`, and `qodana.yaml` via Ruby's YAML loader.
+     - YAML syntax of `ci.yml`, and `qodana.yaml` via Ruby's YAML loader.
      - **Not verified, locally or in GitHub Actions:** SonarCloud analysis, Clover coverage generation/ingestion, and Qodana. This environment has no PCOV/Xdebug, no `sonar-scanner`, no Qodana CLI, and no Docker; GitHub Actions was not exercised in this migration.
    - **CI/CD Static Analysis & Coverage Wiring (configuration only, not executed):**
      - `sonar-project.properties`: `sonar.organization=brunswickcomputing`, `sonar.projectKey=brunswickcomputing_racketmanager`, `sonar.sources=src/php`, `sonar.tests=tests`, `sonar.php.tests.reportPath=build/logs/junit.xml`, `sonar.php.coverage.reportPaths=build/logs/clover.xml`.
-     - `.github/workflows/sonarcloud.yml`: Sole Sonar workflow. Same job: checkout (`fetch-depth: 0`), PHP 8.4 with `coverage: pcov`, Composer install, PHPUnit JUnit+Clover, then `SonarSource/sonarqube-scan-action@v8.3.0`.
      - Scan gating: `SONAR_TOKEN` is set at **job-level** `env` from `secrets.SONAR_TOKEN`, and the scan step uses `if: ${{ env.SONAR_TOKEN != '' }}` (a step's own `env` is not visible to its `if`). Fork PRs get empty secrets, so the scan is skipped without failing the job.
      - Prerequisites (must exist in GitHub/SonarCloud; not created here): repository secret `SONAR_TOKEN`; SonarCloud organization `brunswickcomputing` and project `brunswickcomputing_racketmanager`; SonarCloud Automatic Analysis disabled (Administration > Analysis Method) so CI analysis is used.
      - Removed redundant `.github/workflows/sonarqube.yml`.

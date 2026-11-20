@@ -193,8 +193,8 @@ class Event_Query_Service implements Event_Query_Service_Interface {
             }
         }
         if ( ! $consolation ) {
-            $event->leagues      = $leagues;
-            $event->league_index = $league_index;
+            $event->set_leagues( $leagues );
+            $event->set_league_index( $league_index );
         }
 
         return $leagues;
@@ -346,7 +346,7 @@ class Event_Query_Service implements Event_Query_Service_Interface {
             $event_teams[ $i ] = $event_team;
         }
 
-        $event->event_teams = $event_teams;
+        $event->set_event_teams( $event_teams );
 
         return $event_teams;
     }
@@ -463,7 +463,7 @@ class Event_Query_Service implements Event_Query_Service_Interface {
             $event_players[] = $player_entity;
         }
         asort( $event_players );
-        $event->players = $event_players;
+        $event->set_players( $event_players );
         return $event->players;
     }
 
@@ -503,7 +503,7 @@ class Event_Query_Service implements Event_Query_Service_Interface {
             $constitutions[ $i ]            = $constitution;
         }
 
-        $event->constitutions = $constitutions;
+        $event->set_constitutions( $constitutions );
 
         return $constitutions;
     }
@@ -523,7 +523,7 @@ class Event_Query_Service implements Event_Query_Service_Interface {
         $constitutions = $this->event_repository->build_constitution( (int) $event->id, $args );
         $constitutions = Competition_Season_Service::normalize_constitution_rows( is_array( $constitutions ) ? $constitutions : array() );
 
-        $event->constitutions = $constitutions;
+        $event->set_constitutions( $constitutions );
 
         return $constitutions;
     }
@@ -574,7 +574,7 @@ class Event_Query_Service implements Event_Query_Service_Interface {
             $event_clubs[ $i ]         = $loaded_club;
         }
 
-        $event->clubs = $event_clubs;
+        $event->set_clubs( $event_clubs );
 
         return $event_clubs;
     }
@@ -595,7 +595,7 @@ class Event_Query_Service implements Event_Query_Service_Interface {
 
     public function set_num_leagues( Event $event, bool $total = false ): void {
         if ( true === $total && isset( $event->id ) ) {
-            $event->num_leagues = $this->event_repository->count_leagues( (int) $event->id );
+            $event->set_league_count( $this->event_repository->count_leagues( (int) $event->id ) );
         }
     }
 
@@ -635,7 +635,7 @@ class Event_Query_Service implements Event_Query_Service_Interface {
             return $this->get_league_repository()->find_by_id( $primary_league_id );
         }
 
-        $leagues = ! empty( $event->leagues ) ? $event->leagues : ( isset( $event->id ) ? $this->get_leagues( $event ) : array() );
+        $leagues = ! empty( $event->leagues ) ? $event->leagues : ( ! empty( $event->id ) ? $this->get_leagues( $event ) : array() );
         if ( is_array( $leagues ) && ! empty( $leagues ) ) {
             $first_league = reset( $leagues );
             if ( $first_league instanceof League ) {
@@ -646,7 +646,9 @@ class Event_Query_Service implements Event_Query_Service_Interface {
                 if ( $hydrated instanceof League ) {
                     $first_key = array_key_first( $leagues );
                     if ( null !== $first_key && is_array( $event->leagues ) && isset( $event->leagues[ $first_key ] ) ) {
-                        $event->leagues[ $first_key ] = $hydrated;
+                        $updated_leagues               = $event->leagues;
+                        $updated_leagues[ $first_key ] = $hydrated;
+                        $event->set_leagues( $updated_leagues );
                     }
                     return $hydrated;
                 }
@@ -680,9 +682,7 @@ class Event_Query_Service implements Event_Query_Service_Interface {
             return;
         }
         $settings = $this->event_repository->get_settings( (int) $event->id );
-        foreach ( $settings as $key => $value ) {
-            $event->$key = $value;
-        }
+        $event->apply_settings( $settings );
     }
 
     public function set_settings( Event $event, array $settings ): void {

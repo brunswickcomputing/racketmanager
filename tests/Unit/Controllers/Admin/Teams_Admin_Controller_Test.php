@@ -46,8 +46,8 @@ final class Teams_Admin_Controller_Test extends TestCase {
 
     private function league(): League {
         $league        = $this->createMock( League::class );
-        $event              = $this->createMock( Event::class );
-        $event->competition = (object) array( 'id' => 55 );
+        $event = new Event();
+        $event->set_competition( (object) array( 'id' => 55 ) );
         $league->event      = $event;
         return $league;
     }

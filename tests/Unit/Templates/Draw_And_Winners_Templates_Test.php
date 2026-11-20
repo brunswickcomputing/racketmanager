@@ -260,12 +260,12 @@ class Draw_And_Winners_Templates_Test extends TestCase {
         $competition->set_is_team_entry( true );
         $competition->set_is_championship( true );
 
-        $event              = $this->createStub( Event::class );
-        $event->id          = 8;
-        $event->name        = 'Mens Jubilee Cup';
-        $event->type        = 'MD';
-        $event->competition = $competition;
-        $event->current_season = [ 'name' => '2025' ];
+        $event = new Event();
+        $event->set_id( 8 );
+        $event->set_name( 'Mens Jubilee Cup' );
+        $event->set_type( 'MD' );
+        $event->set_competition( $competition );
+        $event->set_current_season( [ 'name' => '2025' ] );
 
         $championship = $this->createStub( Championship::class );
         $championship->method( 'get_finals' )->willReturn( [
@@ -483,11 +483,11 @@ class Draw_And_Winners_Templates_Test extends TestCase {
         $competition->set_is_player_entry( true );
         $competition->set_is_tournament( true );
 
-        $event = $this->createStub( Event::class );
-        $event->id = 20;
-        $event->name = 'Mens Doubles';
-        $event->type = 'MD';
-        $event->competition = $competition;
+        $event = new Event();
+        $event->set_id( 20 );
+        $event->set_name( 'Mens Doubles' );
+        $event->set_type( 'MD' );
+        $event->set_competition( $competition );
 
         $championship = $this->createStub( Championship::class );
 
@@ -566,7 +566,7 @@ class Draw_And_Winners_Templates_Test extends TestCase {
         ];
 
         $league->finals = [ $final ];
-        $event->leagues = [ $league ];
+        $event->set_leagues( [ $league ] );
 
         $tournament_service = $this->createStub( Tournament_Service::class );
         $tournament_service->method( 'get_tournament' )->willReturn( $tournament );

@@ -161,12 +161,12 @@ final class Admin_Event_Delivery_Test extends TestCase {
         $competition->set_is_tournament( false );
         $competition->set_is_championship( false );
 
-        $event              = $this->createStub( Event::class );
-        $event->id          = 10;
-        $event->name        = 'Men Singles';
-        $event->settings    = array();
-        $event->num_sets    = 3;
-        $event->num_rubbers = 4;
+        $event = new Event();
+        $event->set_id( 10 );
+        $event->set_name( 'Men Singles' );
+        $event->set_settings( array() );
+        $event->set_num_sets( 3 );
+        $event->set_num_rubbers( 4 );
 
         $this->competition_service->expects( self::once() )
             ->method( 'get_by_id' )
@@ -261,14 +261,14 @@ final class Admin_Event_Delivery_Test extends TestCase {
         $competition->set_is_championship( false );
 
         $event                 = new Event();
-        $event->id             = 10;
-        $event->competition_id = 1;
-        $event->competition    = $competition;
-        $event->name           = 'Men Singles';
-        $event->type           = 'singles';
-        $event->num_sets       = 3;
-        $event->num_rubbers    = 4;
-        $event->settings       = array();
+        $event->set_id( 10 );
+        $event->set_competition_id( 1 );
+        $event->set_competition( $competition );
+        $event->set_name( 'Men Singles' );
+        $event->set_type( 'singles' );
+        $event->set_num_sets( 3 );
+        $event->set_num_rubbers( 4 );
+        $event->set_settings( array() );
 
         $this->guard->expects( self::once() )->method( 'assert_allowed' );
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );

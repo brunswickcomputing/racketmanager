@@ -162,9 +162,9 @@ class Ajax_Adapter_Test extends TestCase {
         $adapter = $this->create_frontend_adapter();
 
         // Real event instance / stub where seasons property is stored as a JSON string
-        $event = $this->createStub( Event::class );
-        $event->id = 20;
-        $event->seasons = json_encode( [ '2026' => [ 'name' => '2026' ], '2025' => [ 'name' => '2025' ] ] );
+        $event = $this->getMockBuilder( Event::class )->disableOriginalConstructor()->onlyMethods( array( 'get_seasons' ) )->getMock();
+        $event->set_id( 20 );
+        $event->set_seasons( [ '2026' => [ 'name' => '2026' ], '2025' => [ 'name' => '2025' ] ] );
         $event->method( 'get_seasons' )->willReturn( [ '2026' => [ 'name' => '2026' ], '2025' => [ 'name' => '2025' ] ] );
         $GLOBALS['test_event_obj'] = $event;
 
@@ -199,8 +199,8 @@ class Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_tab_data_loads_league_event_through_injected_event_repository_when_only_event_id_is_known(): void {
-        $event = $this->createStub( Event::class );
-        $event->id = 30;
+        $event = $this->getMockBuilder( Event::class )->disableOriginalConstructor()->onlyMethods( array( 'get_seasons' ) )->getMock();
+        $event->set_id( 30 );
         $event->method( 'get_seasons' )->willReturn( [ '2026' => [ 'name' => '2026' ] ] );
 
         $event_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class );
@@ -244,9 +244,9 @@ class Ajax_Adapter_Test extends TestCase {
     public function test_tab_data_validates_league_target_with_event_json_seasons(): void {
         $adapter = $this->create_frontend_adapter();
 
-        $event = $this->createStub( Event::class );
-        $event->id = 30;
-        $event->seasons = json_encode( [ '2026' => [ 'name' => '2026' ] ] );
+        $event = $this->getMockBuilder( Event::class )->disableOriginalConstructor()->onlyMethods( array( 'get_seasons' ) )->getMock();
+        $event->set_id( 30 );
+        $event->set_seasons( [ '2026' => [ 'name' => '2026' ] ] );
         $event->method( 'get_seasons' )->willReturn( [ '2026' => [ 'name' => '2026' ] ] );
 
         $league = League_Test_Factory::from_object( (object) [ 'id' => 50, 'title' => 'Division 1' ] );
@@ -409,14 +409,14 @@ class Ajax_Adapter_Test extends TestCase {
         $comp->method( 'is_event_allowed' )->willReturn( true );
 
         // 1. Test Senior ('S') event type
-        $event_s = $this->createStub( Event::class );
-        $event_s->id = 77;
-        $event_s->type = 'SD'; // Senior Open Doubles
-        $event_s->age_limit = '45';
-        $event_s->age_offset = '5';
-        $event_s->competition_id = 10;
-        $event_s->competition = $comp;
-        $event_s->current_season = [ 'name' => '2026' ];
+        $event_s = new Event();
+        $event_s->set_id( 77 );
+        $event_s->set_type( 'SD' ); // Senior Open Doubles
+        $event_s->set_age_limit( '45' );
+        $event_s->set_age_offset( '5' );
+        $event_s->set_competition_id( 10 );
+        $event_s->set_competition( $comp );
+        $event_s->set_current_season( [ 'name' => '2026' ] );
 
         $club = $this->createStub( Club::class );
         $club->id = 100;
@@ -457,13 +457,13 @@ class Ajax_Adapter_Test extends TestCase {
         $comp->method( 'is_event_allowed' )->willReturn( true );
 
         // 2. Test Open ('O') event type
-        $event_o = $this->createStub( Event::class );
-        $event_o->id = 88;
-        $event_o->type = 'OD'; // Open Doubles
-        $event_o->age_limit = null;
-        $event_o->competition_id = 10;
-        $event_o->competition = $comp;
-        $event_o->current_season = [ 'name' => '2026' ];
+        $event_o = new Event();
+        $event_o->set_id( 88 );
+        $event_o->set_type( 'OD' ); // Open Doubles
+        $event_o->set_age_limit( null );
+        $event_o->set_competition_id( 10 );
+        $event_o->set_competition( $comp );
+        $event_o->set_current_season( [ 'name' => '2026' ] );
 
         $club = $this->createStub( Club::class );
         $club->id = 100;

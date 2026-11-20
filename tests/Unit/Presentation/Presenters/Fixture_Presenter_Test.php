@@ -250,7 +250,7 @@ class Fixture_Presenter_Test extends TestCase {
         $league = $this->createStub( \Racketmanager\Domain\Competition\League::class );
         $league->title = 'Division 1';
         $event  = $this->createStub( \Racketmanager\Domain\Competition\Event::class );
-        $event->name = 'Men Singles';
+        $event->set_name( 'Men Singles' );
         $comp   = $this->createStub( \Racketmanager\Domain\Competition\Competition::class );
         $comp->method( 'get_type' )->willReturn( 'league' );
 
@@ -402,7 +402,7 @@ class Fixture_Presenter_Test extends TestCase {
         $dto               = new \Racketmanager\Application\Fixture\DTOs\Fixture_Details_DTO( fixture: $fixture );
         $event             = $this->createStub( \Racketmanager\Domain\Competition\Event::class );
         $event->method( 'get_num_sets' )->willReturn( 3 );
-        $event->name       = 'Mixed League';
+        $event->set_name( 'Mixed League' );
         $dto->event        = $event;
         $competition       = Competition_Test_Factory::create( type: \Racketmanager\Domain\Competition\Competition_Type::LEAGUE );
         $dto->competition  = $competition;

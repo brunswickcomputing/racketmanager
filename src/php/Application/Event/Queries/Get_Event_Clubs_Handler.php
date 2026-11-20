@@ -55,8 +55,8 @@ readonly class Get_Event_Clubs_Handler {
             $event      = $this->resolve_event( $query );
             $event_club = $this->resolve_event_club( $event, $query->club_id );
 
-            $event->clubs = $this->event_query_service->get_clubs( $event, [ 'status' => 1 ] );
-            $filename     = ! empty( $query->template ) ? 'clubs-' . $query->template : 'clubs';
+            $event->set_clubs( $this->event_query_service->get_clubs( $event, [ 'status' => 1 ] ) );
+            $filename = ! empty( $query->template ) ? 'clubs-' . $query->template : 'clubs';
 
             return new Event_Clubs_Result(
                 event: $event,

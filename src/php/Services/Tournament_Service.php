@@ -744,7 +744,7 @@ class Tournament_Service implements Tournament_Service_Interface {
             $leagues[ $index ] = $league;
         }
 
-        $event->leagues = $leagues;
+        $event->set_leagues( $leagues );
 
         // 3. Map the full match list with details for the meta-field
         $fixtures = array_map(

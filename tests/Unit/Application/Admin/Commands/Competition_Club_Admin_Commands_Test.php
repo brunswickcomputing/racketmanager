@@ -158,8 +158,8 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
         $competition_service = $this->createMock( Competition_Service_Interface::class );
         $event_repository    = $this->createMock( Event_Repository_Interface::class );
 
-        $event = $this->createStub( Event::class );
-        $event->name = 'Men Singles';
+        $event = new Event();
+        $event->set_name( 'Men Singles' );
 
         $event_repository->expects( self::once() )
             ->method( 'find_by_id' )
@@ -652,13 +652,13 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
 
         // Event with valid ID 101
         $valid_event     = ( new \ReflectionClass( Event::class ) )->newInstanceWithoutConstructor();
-        $valid_event->id = 101;
-        $valid_event->seasons = [ $season_year => $existing_season ];
+        $valid_event->set_id( 101 );
+        $valid_event->set_seasons( [ $season_year => $existing_season ] );
 
         // Event with empty ID 0
         $empty_event     = ( new \ReflectionClass( Event::class ) )->newInstanceWithoutConstructor();
-        $empty_event->id = 0;
-        $empty_event->seasons = [ $season_year => $existing_season ];
+        $empty_event->set_id( 0 );
+        $empty_event->set_seasons( [ $season_year => $existing_season ] );
 
         $comp_service->expects( self::once() )
             ->method( 'get_events_for_competition' )

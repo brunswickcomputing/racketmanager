@@ -47,7 +47,7 @@ class Event_Query_Service_Test extends TestCase {
             'competition_id' => 1,
             'seasons' => '{"2026":{"name":"2026"}}',
         ] );
-        $event->current_season = [ 'name' => '2026' ];
+        $event->set_current_season( [ 'name' => '2026' ] );
         return $event;
     }
 

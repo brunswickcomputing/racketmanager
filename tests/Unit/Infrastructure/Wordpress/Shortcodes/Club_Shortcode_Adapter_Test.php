@@ -685,23 +685,15 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         ?Competition $competition = null,
         string $season = '2026'
     ): Event {
-        $event                 = new class() extends Event {
-            public ?League $primary_league_obj = null;
-            public function __construct() {
-                // no-op
-            }
-            public function get_seasons(): array {
-                return json_decode( $this->seasons, true ) ?? [];
-            }
-        };
-        $event->id             = $id;
-        $event->name           = $name;
-        $event->competition_id = $competition_id;
-        $event->seasons        = json_encode( [ $season => [ 'name' => $season ] ] );
-        $event->current_season = [ 'name' => $season ];
+        $event = new Event();
+        $event->set_id( $id );
+        $event->set_name( $name );
         if ( $competition ) {
-            $event->competition = $competition;
+            $event->set_competition( $competition );
         }
+        $event->set_competition_id( $competition_id );
+        $event->set_seasons( [ $season => [ 'name' => $season ] ] );
+        $event->set_current_season( [ 'name' => $season ] );
 
         return $event;
     }
@@ -777,8 +769,8 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $primary_league->championship = $championship;
 
         $event                      = $this->create_test_event( 101, 'Cup Event', 10, $competition );
-        $event->is_championship     = true;
-        $event->primary_league_obj  = $primary_league;
+        $event->set_is_championship( true );
+        $event->set_primary_league_obj( $primary_league );
 
         $GLOBALS['wp_stubs_events']['cup event'] = $event;
         $GLOBALS['query_vars']['season']         = '2026';
@@ -815,8 +807,8 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $primary_league->championship = $championship;
 
         $event                      = $this->create_test_event( 101, 'Cup Event', 10, $competition );
-        $event->is_championship     = true;
-        $event->primary_league_obj  = $primary_league;
+        $event->set_is_championship( true );
+        $event->set_primary_league_obj( $primary_league );
 
         $GLOBALS['wp_stubs_events']['cup event'] = $event;
         $GLOBALS['query_vars']['season']         = '2026';
@@ -875,7 +867,7 @@ class Club_Shortcode_Adapter_Test extends TestCase {
             ]
         );
         $event = $this->create_test_event( 101, 'Mens Doubles', 10, $competition, '2026' );
-        $event->seasons = json_encode(
+        $event->set_seasons(
             [
                 '2025' => [ 'name' => '2025' ],
                 '2026' => [ 'name' => '2026' ],
@@ -1096,15 +1088,18 @@ class Club_Shortcode_Adapter_Test extends TestCase {
      * @param array<string, mixed>|null $team
      */
     private function event_with_teams( int $id, string $name, ?array $team = null, bool $with_season = true ): Event {
-        $event = $this->createStub( Event::class );
-        $event->id   = $id;
-        $event->name = $name;
-        // Event_Query_Service::get_teams_info() returns no teams for an event whose get_season() is empty, so the
-        // season stays resolvable here; only the `current_season` property (used for URLs) is left unset.
-        $event->method( 'get_season' )->willReturn( '2026' );
+        $event = new class() extends Event {
+            public ?string $mock_season = null;
+            public function get_season(): ?string {
+                return $this->mock_season ?? parent::get_season();
+            }
+        };
+        $event->set_id( $id );
+        $event->set_name( $name );
+        $event->mock_season = '2026';
         if ( $with_season ) {
-            $event->current_season = [ 'name' => '2026' ];
-            $event->method( 'get_seasons' )->willReturn( [ '2026' => [ 'name' => '2026' ] ] );
+            $event->set_current_season( [ 'name' => '2026' ] );
+            $event->set_seasons( [ '2026' => [ 'name' => '2026' ] ] );
         }
         $this->event_teams[ $id ] = null === $team ? [] : [ (object) $team ];
 

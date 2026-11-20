@@ -148,12 +148,12 @@ class Entry_And_Match_Templates_Test extends TestCase {
 
         $event = new class extends Event {
             public function __construct() {
-                $this->id          = 101;
-                $this->name        = 'Men Premier';
-                $this->type        = 'MD';
-                $this->status      = '';
-                $this->teams       = [];
-                $this->event_teams = [];
+                $this->set_id( 101 );
+                $this->set_name( 'Men Premier' );
+                $this->set_type( 'MD' );
+                $this->set_status( '' );
+                $this->set_teams( [] );
+                $this->set_event_teams( [] );
             }
             public function get_id(): int {
                 return 101;
@@ -273,11 +273,11 @@ class Entry_And_Match_Templates_Test extends TestCase {
 
         $event = new class extends Event {
             public function __construct() {
-                $this->id     = 201;
-                $this->name   = 'Men Cup Event';
-                $this->type   = 'MD';
-                $this->status = '';
-                $this->teams  = [];
+                $this->set_id( 201 );
+                $this->set_name( 'Men Cup Event' );
+                $this->set_type( 'MD' );
+                $this->set_status( '' );
+                $this->set_teams( [] );
             }
             public function get_id(): int {
                 return 201;
@@ -415,9 +415,9 @@ class Entry_And_Match_Templates_Test extends TestCase {
                 public ?string $gender = 'M';
                 public ?bool $is_singles = true;
                 public function __construct() {
-                    $this->id   = 301;
-                    $this->name = "Men's Singles";
-                    $this->type = 'MS';
+                    $this->set_id( 301 );
+                    $this->set_name( "Men's Singles" );
+                    $this->set_type( 'MS' );
                 }
                 public function get_id(): int {
                     return 301;
@@ -559,13 +559,14 @@ class Entry_And_Match_Templates_Test extends TestCase {
                 $this->current_season = [ 'name' => '2026' ];
                 $this->event          = new class extends Event {
                     public function __construct() {
-                        $this->id          = 20;
-                        $this->name        = 'Men Premier';
-                        $this->competition = Competition_Test_Factory::create(
+                        $this->set_id( 20 );
+                        $this->set_name( 'Men Premier' );
+                        $comp = Competition_Test_Factory::create(
                             type: Competition_Type::LEAGUE,
                         );
-                        $this->competition->set_is_team_entry( true );
-                        $this->competition->set_is_player_entry( false );
+                        $comp->set_is_team_entry( true );
+                        $comp->set_is_player_entry( false );
+                        $this->set_competition( $comp );
                     }
                 };
             }

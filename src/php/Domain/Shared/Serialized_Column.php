@@ -45,7 +45,7 @@ final class Serialized_Column {
         if ( 'b:0;' === $serialized ) {
             return false;
         }
-        $decoded = @unserialize( $serialized, array( 'allowed_classes' => array( stdClass::class ) ) );
+        $decoded = self::unserialize_safe( $serialized, array( stdClass::class ) );
         return false === $decoded ? $value : $decoded;
     }
 
@@ -68,7 +68,25 @@ final class Serialized_Column {
         if ( ! self::is_serialized( $serialized ) ) {
             return $value;
         }
-        return @unserialize( $serialized, array( 'allowed_classes' => array( stdClass::class ) ) );
+        return self::unserialize_safe( $serialized, array( stdClass::class ) );
+    }
+
+    /**
+     * Safely unserialize PHP serialized data without raising warnings on malformed input.
+     *
+     * @param string     $serialized      Serialized string.
+     * @param array|bool $allowed_classes Classes allowed to be unserialized (default false).
+     * @return mixed Deserialized value, or false on error.
+     */
+    public static function unserialize_safe( string $serialized, array|bool $allowed_classes = false ): mixed {
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler -- Safe temporary error handler to suppress warnings on malformed serialized payload.
+        set_error_handler( static fn() => true );
+        try {
+            // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_unserialize -- Safe deserialization restricted to allowed classes or primitives only.
+            return unserialize( $serialized, array( 'allowed_classes' => $allowed_classes ) );
+        } finally {
+            restore_error_handler();
+        }
     }
 
     /**
@@ -161,12 +179,13 @@ final class Serialized_Column {
             case 'a':
             case 'O':
             case 'E':
-                return (bool) preg_match( "/^{$token}:[0-9]+:/s", $data );
+                return (bool) preg_match( "/^$token:[0-9]+:/s", $data );
             case 'b':
             case 'i':
             case 'd':
-                return (bool) preg_match( "/^{$token}:[0-9.E+-]+;$/", $data );
+                return (bool) preg_match( "/^$token:[0-9.E+-]+;$/", $data );
+            default:
+                return false;
         }
-        return false;
     }
 }

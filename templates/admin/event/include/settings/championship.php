@@ -19,7 +19,11 @@ $event    = $event ?? $vm->event ?? null;
 $leagues  = $leagues ?? $vm->leagues ?? array();
 $tab_name = 'championship';
 if ( ! isset( $event->config ) || ! is_object( $event->config ) ) {
-    $event->config = new \stdClass();
+    if ( $event instanceof \Racketmanager\Domain\Competition\Event ) {
+        $event->set_config_object( new \stdClass() );
+    } else {
+        $event->config = new \stdClass();
+    }
 }
 if ( ! isset( $event->config->primary_league ) ) {
     $event->config->primary_league = null;

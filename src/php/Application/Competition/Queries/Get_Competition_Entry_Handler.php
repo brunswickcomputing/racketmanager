@@ -252,8 +252,8 @@ final readonly class Get_Competition_Entry_Handler {
                 unset( $events[ $i ] );
                 continue;
             }
-            $event->status = '';
-            $event_teams   = $this->event_query_service->get_teams(
+            $event->set_status( '' );
+            $event_teams = $this->event_query_service->get_teams(
                 $event,
                 [
                     'season' => $season,
@@ -261,9 +261,9 @@ final readonly class Get_Competition_Entry_Handler {
                 ]
             );
             foreach ( $event_teams as $event_team ) {
-                $event_team->team_info     = $this->event_query_service->get_team_info( $event, (int) $event_team->team_id );
-                $event->team               = $event_team;
-                $event->status             = 'checked';
+                $event_team->team_info = $this->event_query_service->get_team_info( $event, (int) $event_team->team_id );
+                $event->set_team( $event_team );
+                $event->set_status( 'checked' );
                 $club->entry[ $event->id ] = $event;
             }
         }
@@ -320,8 +320,8 @@ final readonly class Get_Competition_Entry_Handler {
                 unset( $events[ $i ] );
                 continue;
             }
-            $event->status = '';
-            $event_teams   = $this->event_query_service->get_teams(
+            $event->set_status( '' );
+            $event_teams = $this->event_query_service->get_teams(
                 $event,
                 [
                     'season' => $season,
@@ -332,35 +332,34 @@ final readonly class Get_Competition_Entry_Handler {
                 $event_team->team_info = $this->event_query_service->get_team_info( $event, (int) $event_team->team_id );
                 if ( '0' === $event_team->profile || '1' === $event_team->profile || '2' === $event_team->profile ) {
                     $event_team->status = 'checked';
-                    $event->status      = 'checked';
+                    $event->set_status( 'checked' );
                 } else {
                     $event_team->status = '';
                 }
                 $event_teams[ $c ] = $event_team;
             }
-            $event->event_teams = $event_teams;
-            $event_type         = $event->type;
+            $event_type = $event->type;
             if ( 'LD' === $event->type ) {
                 $event_type = 'XD';
             }
-            $event->teams = $this->team_service->get_teams_for_club( (int) $club_id, $event_type );
-            $key          = 0;
-            foreach ( $event->teams as $team ) {
-                $found = in_array( $team->id, array_column( $event->event_teams, 'team_id' ), true );
+            $teams = $this->team_service->get_teams_for_club( (int) $club_id, $event_type );
+            $key   = 0;
+            foreach ( $teams as $team ) {
+                $found = in_array( $team->id, array_column( $event_teams, 'team_id' ), true );
                 if ( false !== $found ) {
-                    unset( $event->teams[ $key ] );
+                    unset( $teams[ $key ] );
                 }
                 ++$key;
             }
             $key = 0;
-            foreach ( $event->teams as $team ) {
+            foreach ( $teams as $team ) {
                 if ( ! empty( $team->league_id ) ) {
                     $event_team            = new stdClass();
                     $event_team->team_id   = $team->id;
                     $event_team->name      = $team->title ?? $team->name ?? '';
                     $event_team->league_id = 0;
                     $event_team->status    = null;
-                    $event->event_teams[]  = $event_team;
+                    $event_teams[]         = $event_team;
                 }
                 ++$key;
             }
@@ -369,8 +368,10 @@ final readonly class Get_Competition_Entry_Handler {
             $event_team->name      = __( 'New team', 'racketmanager' );
             $event_team->league_id = 0;
             $event_team->status    = null;
-            $event->event_teams[]  = $event_team;
-            $events[ $i ]          = $event;
+            $event_teams[]         = $event_team;
+            $event->set_event_teams( $event_teams );
+            $event->set_teams( $teams );
+            $events[ $i ] = $event;
             if ( ! empty( $event->status ) ) {
                 $club->entry[ $event->id ] = true;
             }

@@ -46,14 +46,17 @@ final class Competition_Allowlist_Test extends TestCase {
         int $id,
         string $name = 'Men Doubles',
         int $competition_id = 100,
-        array $seasons = [ '2026' => [ 'name' => '2026' ] ]
+        array $seasons = array( '2026' => array( 'name' => '2026' ) )
     ): Event {
-        $event                 = ( new ReflectionClass( Event::class ) )->newInstanceWithoutConstructor();
-        $event->id             = $id;
-        $event->name           = $name;
-        $event->competition_id = $competition_id;
-        $event->seasons        = json_encode( $seasons );
-        return $event;
+        return Event::from_array(
+            array(
+                'id'             => $id,
+                'name'           => $name,
+                'competition_id' => $competition_id,
+                'type'           => 'doubles',
+                'seasons'        => wp_json_encode( $seasons ),
+            )
+        );
     }
 
     public function test_is_event_allowed_with_populated_allowlist(): void {
@@ -116,9 +119,10 @@ final class Competition_Allowlist_Test extends TestCase {
 
     public function test_is_event_allowed_rejects_event_without_competition(): void {
         $competition = $this->create_competition( [ '2026' => [ 'name' => '2026' ] ] );
-        $event       = ( new ReflectionClass( Event::class ) )->newInstanceWithoutConstructor();
-        $event->id   = 10;
-        $event->seasons = json_encode( [ '2026' => [ 'name' => '2026' ] ] );
+        $event       = new Event();
+        $event->set_id( 10 );
+        $event->set_name( 'Men Doubles' );
+        $event->set_seasons( [ '2026' => [ 'name' => '2026' ] ] );
 
         $this->assertFalse( $competition->is_event_allowed( $event, '2026', false ) );
     }

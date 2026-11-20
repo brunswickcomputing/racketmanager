@@ -145,7 +145,7 @@ class League_Schedule_Service_Import_Test extends TestCase {
 
 	public function test_generate_box_league_matches_without_repository_hydrates_raw_rows_and_skips_bare_ids(): void {
 		$event     = ( new \ReflectionClass( \Racketmanager\Domain\Competition\Event::class ) )->newInstanceWithoutConstructor();
-		$event->id = 12;
+		$event->set_id( 12 );
 		$event_query = $this->createMock( \Racketmanager\Services\Competition\Event_Query_Service::class );
 		$event_query->expects( $this->once() )->method( 'get_event' )->with( 12 )->willReturn( $event );
 		$league_query = $this->createMock( \Racketmanager\Services\Competition\League_Query_Service::class );

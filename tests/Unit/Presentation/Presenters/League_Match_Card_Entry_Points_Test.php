@@ -208,17 +208,17 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
     private function create_event( Competition $competition ): Event {
         $event = new class() extends Event {
             public function __construct() {
-                $this->id             = 12;
-                $this->competition_id = 1;
-                $this->name           = 'Mens Singles';
-                $this->type           = 'MS';
-                $this->is_box         = true;
-                $this->current_season = [ 'name' => '2026' ];
-                $this->seasons        = [ '2026' => [ 'name' => '2026' ] ];
+                $this->set_id( 12 );
+                $this->set_competition_id( 1 );
+                $this->set_name( 'Mens Singles' );
+                $this->set_type( 'MS' );
+                $this->set_is_box( true );
+                $this->set_current_season( [ 'name' => '2026' ] );
+                $this->set_seasons( [ '2026' => [ 'name' => '2026' ] ] );
             }
             public function set_season( ?string $season = null, bool $force_overwrite = false, bool $strict = false ): void {}
         };
-        $event->competition = $competition;
+        $event->set_competition( $competition );
         return $event;
     }
 
@@ -606,15 +606,15 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
 
         $event_stub = new class() extends Event {
             public function __construct() {
-                $this->id             = 12;
-                $this->competition_id = 1;
-                $this->name           = 'Mens Singles';
-                $this->current_season = [ 'name' => '2026' ];
-                $this->seasons        = [ '2026' => [ 'name' => '2026' ] ];
+                $this->set_id( 12 );
+                $this->set_competition_id( 1 );
+                $this->set_name( 'Mens Singles' );
+                $this->set_current_season( [ 'name' => '2026' ] );
+                $this->set_seasons( [ '2026' => [ 'name' => '2026' ] ] );
             }
             public function set_season( ?string $season = null, bool $force_overwrite = false, bool $strict = false ): void {}
         };
-        $event_stub->competition  = $competition;
+        $event_stub->set_competition( $competition );
 
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
@@ -651,16 +651,16 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $competition = $this->create_competition( Competition_Type::LEAGUE );
         $event       = new class() extends Event {
             public function __construct() {
-                $this->id             = 12;
-                $this->competition_id = 1;
-                $this->name           = 'Mens Singles';
-                $this->current_season = [ 'name' => '2026' ];
-                $this->seasons        = [ '2026' => [ 'name' => '2026' ] ];
+                $this->set_id( 12 );
+                $this->set_competition_id( 1 );
+                $this->set_name( 'Mens Singles' );
+                $this->set_current_season( [ 'name' => '2026' ] );
+                $this->set_seasons( [ '2026' => [ 'name' => '2026' ] ] );
             }
 
             public function set_season( ?string $season = null, bool $force_overwrite = false, bool $strict = false ): void {}
         };
-        $event->competition = $competition;
+        $event->set_competition( $competition );
 
         $fixture = Fixture_Test_Factory::create(
             id: 706,
@@ -707,7 +707,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $this->assertFalse( $row->show_header );
         $this->assertSame( 'W', $row->status_text );
 
-        $event->is_championship       = false;
+        $event->set_is_championship( false );
         $event->team->standings       = (object) [
             'rank'           => 1,
             'done_matches'   => 1,

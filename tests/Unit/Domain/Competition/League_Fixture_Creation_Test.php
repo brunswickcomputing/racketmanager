@@ -86,9 +86,9 @@ class League_Fixture_Creation_Test extends TestCase {
         $competition->method( 'get_season_by_name' )
             ->willReturn( [ 'home_away_diff' => 2 ] );
 
-        $event = $this->createMock( Event::class );
-        $event->current_season = [ 'home_away' => 1 ];
-        $event->competition = $competition;
+        $event = new Event();
+        $event->set_current_season( [ 'home_away' => 1 ] );
+        $event->set_competition( $competition );
 
         $league = (new \ReflectionClass( League::class ))->newInstanceWithoutConstructor();
         $league->id = 50;
@@ -116,9 +116,9 @@ class League_Fixture_Creation_Test extends TestCase {
 
     public function test_championship_legs_not_created_when_final_round(): void {
         $competition = $this->createMock( \Racketmanager\Domain\Competition\Competition::class );
-        $event = $this->createMock( Event::class );
-        $event->current_season = [ 'home_away' => 1 ];
-        $event->competition = $competition;
+        $event = new Event();
+        $event->set_current_season( [ 'home_away' => 1 ] );
+        $event->set_competition( $competition );
 
         $league = (new \ReflectionClass( League::class ))->newInstanceWithoutConstructor();
         $league->id = 50;

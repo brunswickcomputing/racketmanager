@@ -234,11 +234,9 @@ class Result_Service_Test extends TestCase {
         $fixture_data->league_id = 456;
         $fixture = Fixture_Factory::from_object( $fixture_data );
 
-        $event = new class extends Event {
-            public function __construct() {
-                $this->competition = (object) [ 'type' => Competition_Type::LEAGUE ];
-            }
-        };
+        $competition = \Racketmanager\Tests\Helpers\Competition_Test_Factory::create( id: 1, type: Competition_Type::LEAGUE );
+        $event       = new Event();
+        $event->set_competition( $competition );
 
         $league = $this->createMock( League::class );
         $league->event = $event;
@@ -264,12 +262,10 @@ class Result_Service_Test extends TestCase {
         $fixture_data->away_team = '20';
         $fixture = Fixture_Factory::from_object( $fixture_data );
 
-        $event = new class extends Event {
-            public function __construct() {
-                $this->id = 789;
-                $this->competition = (object) [ 'type' => Competition_Type::LEAGUE ];
-            }
-        };
+        $competition = \Racketmanager\Tests\Helpers\Competition_Test_Factory::create( id: 1, type: Competition_Type::LEAGUE );
+        $event       = new Event();
+        $event->set_id( 789 );
+        $event->set_competition( $competition );
 
         $league = $this->createMock( League::class );
         $league->id = 456;

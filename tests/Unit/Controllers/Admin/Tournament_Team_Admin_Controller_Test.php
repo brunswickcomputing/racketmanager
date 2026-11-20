@@ -83,8 +83,8 @@ class Tournament_Team_Admin_Controller_Test extends TestCase {
     public function test_handle_uses_injected_league_query_service_when_league_given(): void {
         $competition                  = new stdClass();
         $competition->is_player_entry = false;
-        $event                        = $this->createStub( \Racketmanager\Domain\Competition\Event::class );
-        $event->competition           = $competition;
+        $event                        = new \Racketmanager\Domain\Competition\Event();
+        $event->set_competition( $competition );
         $league                       = $this->createStub( \Racketmanager\Domain\Competition\League::class );
         $league->event                = $event;
 

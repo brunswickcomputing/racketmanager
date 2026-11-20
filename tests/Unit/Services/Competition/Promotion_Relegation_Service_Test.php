@@ -100,9 +100,9 @@ final class Promotion_Relegation_Service_Test extends TestCase {
 			->disableOriginalConstructor()
 			->onlyMethods( array() )
 			->getMock();
-		$event->id          = 42;
-		$event->competition = $competition;
-		$event->leagues     = $leagues;
+		$event->set_id( 42 );
+		$event->set_competition( $competition );
+		$event->set_leagues( $leagues );
 
 		return $event;
 	}
@@ -131,9 +131,9 @@ final class Promotion_Relegation_Service_Test extends TestCase {
 			->disableOriginalConstructor()
 			->onlyMethods( array() )
 			->getMock();
-		$event->id          = 42;
-		$event->competition = $competition;
-		$event->leagues     = array();
+		$event->set_id( 42 );
+		$event->set_competition( $competition );
+		$event->set_leagues( array() );
 
 		$service = $this->service( $league_team_repository, event_repository: $event_repository );
 

@@ -10,106 +10,116 @@ use Racketmanager\Domain\DTO\Competition\Event_Hydration_DTO;
  * Factory for creating Event entities.
  */
 final class Event_Factory {
-	/**
-	 * Create an Event entity from a hydration DTO.
-	 *
-	 * @param Event_Hydration_DTO $dto
-	 * @param Competition|null $competition
-	 * @return Event
-	 * @throws InvalidArgumentException
-	 */
-	public static function create_from_dto(
-		Event_Hydration_DTO $dto,
-		?Competition $competition = null
-	): Event {
-		if ( '' === trim( $dto->name ) ) {
-			throw new InvalidArgumentException( 'Event name is required.' );
-		}
+    /**
+     * Create an Event entity from a hydration DTO.
+     *
+     * @param Event_Hydration_DTO $dto         Hydration DTO.
+     * @param Competition|null    $competition Parent competition.
+     * @return Event
+     * @throws InvalidArgumentException When required properties are missing or mismatched.
+     */
+    public static function create_from_dto(
+        Event_Hydration_DTO $dto,
+        ?Competition $competition = null
+    ): Event {
+        if ( '' === trim( $dto->name ) ) {
+            throw new InvalidArgumentException( 'Event name is required.' );
+        }
 
-		if ( '' === trim( $dto->type ) ) {
-			throw new InvalidArgumentException( 'Event type is required.' );
-		}
+        if ( '' === trim( $dto->type ) ) {
+            throw new InvalidArgumentException( 'Event type is required.' );
+        }
 
-		if ( null === $dto->competition_id && ( null === $competition || empty( $competition->id ) ) ) {
-			throw new InvalidArgumentException( 'Event competition_id is required.' );
-		}
+        if ( null === $dto->competition_id && ( null === $competition || empty( $competition->id ) ) ) {
+            throw new InvalidArgumentException( 'Event competition_id is required.' );
+        }
 
-		if ( null !== $dto->competition_id && null !== $competition && ! empty( $competition->id ) && (int) $dto->competition_id !== (int) $competition->id ) {
-			throw new InvalidArgumentException( sprintf( 'Event competition_id %d does not match Competition id %d.', $dto->competition_id, (int) $competition->id ) );
-		}
+        if ( null !== $dto->competition_id && null !== $competition && ! empty( $competition->id ) && (int) $dto->competition_id !== (int) $competition->id ) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
+            throw new InvalidArgumentException( sprintf( 'Event competition_id %d does not match Competition id %d.', $dto->competition_id, (int) $competition->id ) );
+        }
 
-		// The constructor derives competition_id from the Competition when the DTO value is null.
-		return new Event(
-			self::with_legacy_defaults( $dto ),
-			$competition
-		);
-	}
+        // The constructor derives competition_id from the Competition when the DTO value is null.
+        return new Event(
+            self::with_legacy_defaults( $dto ),
+            $competition
+        );
+    }
 
-	/** Default number of sets applied by the validating path when the row column is NULL. */
-	public const DEFAULT_NUM_SETS = 3;
-	/** Default number of rubbers applied by the validating path when the row column is NULL. */
-	public const DEFAULT_NUM_RUBBERS = 0;
+    /** Default number of sets applied by the validating path when the row column is NULL. */
+    public const DEFAULT_NUM_SETS = 3;
+    /** Default number of rubbers applied by the validating path when the row column is NULL. */
+    public const DEFAULT_NUM_RUBBERS = 0;
 
-	/**
-	 * Restore the legacy column defaults (`num_sets` 3, `num_rubbers` 0) for NULL/absent row values.
-	 *
-	 * The DTO itself keeps these nullable; defaults are applied here as column fallbacks, so
-	 * `settings` still take precedence inside the Event constructor.
-	 *
-	 * @param Event_Hydration_DTO $dto
-	 * @return Event_Hydration_DTO
-	 */
-	private static function with_legacy_defaults( Event_Hydration_DTO $dto ): Event_Hydration_DTO {
-		if ( null !== $dto->num_sets && null !== $dto->num_rubbers ) {
-			return $dto;
-		}
+    /**
+     * Restore the legacy column defaults (`num_sets` 3, `num_rubbers` 0) for NULL/absent row values.
+     *
+     * The DTO itself keeps these nullable; defaults are applied here as column fallbacks, so
+     * `settings` still take precedence inside the Event constructor.
+     *
+     * @param Event_Hydration_DTO $dto Hydration DTO.
+     * @return Event_Hydration_DTO
+     */
+    private static function with_legacy_defaults( Event_Hydration_DTO $dto ): Event_Hydration_DTO {
+        if ( null !== $dto->num_sets && null !== $dto->num_rubbers ) {
+            return $dto;
+        }
 
-		return new Event_Hydration_DTO(
-			id: $dto->id,
-			name: $dto->name,
-			type: $dto->type,
-			num_sets: $dto->num_sets ?? self::DEFAULT_NUM_SETS,
-			num_rubbers: $dto->num_rubbers ?? self::DEFAULT_NUM_RUBBERS,
-			competition_id: $dto->competition_id,
-			settings: $dto->settings,
-			seasons: $dto->seasons
-		);
-	}
+        return new Event_Hydration_DTO(
+            id: $dto->id,
+            name: $dto->name,
+            type: $dto->type,
+            num_sets: $dto->num_sets ?? self::DEFAULT_NUM_SETS,
+            num_rubbers: $dto->num_rubbers ?? self::DEFAULT_NUM_RUBBERS,
+            competition_id: $dto->competition_id,
+            settings: $dto->settings,
+            seasons: $dto->seasons,
+            matches: $dto->matches,
+            stages: $dto->stages,
+            rounds: $dto->rounds,
+            champion: $dto->champion,
+            runner_up: $dto->runner_up,
+            parent_league: $dto->parent_league,
+            draw: $dto->draw,
+            status: $dto->status,
+            primary_league: $dto->primary_league
+        );
+    }
 
-	/**
-	 * Create an Event entity from a generic object (e.g. database row).
-	 *
-	 * @param object $row
-	 * @param Competition|null $competition
-	 * @return Event
-	 * @throws InvalidArgumentException
-	 */
-	public static function from_object(
-		object $row,
-		?Competition $competition = null
-	): Event {
-		if ( null === $competition && isset( $row->competition ) && $row->competition instanceof Competition ) {
-			$competition = $row->competition;
-		}
-		$dto = Event_Hydration_DTO::from_object( $row );
-		return self::create_from_dto(
-			$dto,
-			$competition
-		);
-	}
+    /**
+     * Create an Event entity from a generic object (e.g. database row).
+     *
+     * @param object           $row         Row data.
+     * @param Competition|null $competition Parent competition.
+     * @return Event
+     * @throws InvalidArgumentException When validation fails.
+     */
+    public static function from_object(
+        object $row,
+        ?Competition $competition = null
+    ): Event {
+        if ( null === $competition && isset( $row->competition ) && $row->competition instanceof Competition ) {
+            $competition = $row->competition;
+        }
+        $dto = Event_Hydration_DTO::from_object( $row );
+        return self::create_from_dto(
+            $dto,
+            $competition
+        );
+    }
 
-	/**
-	 * Create an Event entity from an associative array.
-	 *
-	 * @param array $data
-	 * @param Competition|null $competition
-	 * @return Event
-	 * @throws InvalidArgumentException
-	 */
-	public static function from_array(
-		array $data,
-		?Competition $competition = null
-	): Event {
-		return self::from_object( (object) $data, $competition );
-	}
+    /**
+     * Create an Event entity from an associative array.
+     *
+     * @param array            $data        Row data.
+     * @param Competition|null $competition Parent competition.
+     * @return Event
+     * @throws InvalidArgumentException When validation fails.
+     */
+    public static function from_array(
+        array $data,
+        ?Competition $competition = null
+    ): Event {
+        return self::from_object( (object) $data, $competition );
+    }
 }

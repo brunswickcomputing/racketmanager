@@ -329,8 +329,8 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
     public function test_show_match_header_renders_via_handler_and_presenter(): void {
         $league        = $this->createStub( League::class );
         $league->title = 'Division 1 Men';
-        $event         = $this->createStub( Event::class );
-        $event->name   = 'Division 1';
+        $event         = new Event();
+        $event->set_name( 'Division 1' );
         $competition   = Competition_Test_Factory::create( type: Competition_Type::LEAGUE );
         $dto           = $this->details_dto( $this->fixture( 42, '1', '2', 10 ), $league, $event, $competition );
 

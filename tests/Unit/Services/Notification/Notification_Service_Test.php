@@ -213,9 +213,9 @@ class Notification_Service_Test extends TestCase {
             $competition->name = $comp_name;
         }
 
-        $event                 = $this->createMock( Event::class );
-        $event->competition    = $competition;
-        $event->competition_id = $competition_id;
+        $event = new Event();
+        $event->set_competition( $competition );
+        $event->set_competition_id( $competition_id );
         $league->event         = $event;
 
         return $league;
@@ -529,8 +529,8 @@ class Notification_Service_Test extends TestCase {
 
         // Case 2: Admin email is empty
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
-        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
-        $event->competition = (object)['type' => 'league'];
+        $event = new Event();
+        $event->set_competition( (object)['type' => 'league'] );
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
         $this->option_service->method('get_confirmation_email')->willReturn('');
@@ -1041,7 +1041,7 @@ class Notification_Service_Test extends TestCase {
         $this->club_repository->method('find_by_id')->willReturn($club);
 
         $event = \Racketmanager\Domain\Competition\Event::from_object( (object) [ 'id' => 93, 'name' => 'Summer League', 'type' => 'singles', 'competition_id' => 1, 'seasons' => '{"2026":{"name":"2026"}}' ] );
-        $event->competition = (object) ['type' => Competition_Type::LEAGUE];
+        $event->set_competition( (object) ['type' => Competition_Type::LEAGUE] );
         $this->event_repository->expects($this->once())->method('query_leagues')->with(93, $this->anything())
             ->willReturn([(object) ['id' => 456]]);
 
@@ -1098,10 +1098,10 @@ class Notification_Service_Test extends TestCase {
         ]);
         $this->league_repository->method('find_by_id')->willReturn($league);
 
-        $event              = $this->createMock(Event::class);
-        $event->id           = 93;
-        $event->name        = 'Summer League';
-        $event->competition = (object) ['type' => 'league'];
+        $event = new Event();
+        $event->set_id( 93 );
+        $event->set_name( 'Summer League' );
+        $event->set_competition( (object) ['type' => 'league'] );
         $this->event_repository->method('query_leagues')->willReturn([(object) ['id' => 456]]);
 
         $GLOBALS['wp_mail_calls'] = [];
@@ -1112,9 +1112,9 @@ class Notification_Service_Test extends TestCase {
     public function test_send_event_fixtures_skips_league_when_repository_returns_null(): void {
         $this->league_repository->method('find_by_id')->willReturn(null);
 
-        $event              = $this->createMock(Event::class);
-        $event->id           = 93;
-        $event->competition = (object) ['type' => 'league'];
+        $event = new Event();
+        $event->set_id( 93 );
+        $event->set_competition( (object) ['type' => 'league'] );
         $this->event_repository->method('query_leagues')->willReturn([(object) ['id' => 99]]);
 
         $GLOBALS['wp_mail_calls'] = [];

@@ -157,15 +157,16 @@ class Team_List_Render_Regression_Test extends TestCase {
                 $this->current_season = [ 'name' => '2026' ];
                 $this->event          = new class extends Event {
                     public function __construct() {
-                        $this->id          = 20;
-                        $this->name        = 'Men Premier';
-                        $this->competition = new class extends Competition {
+                        $this->set_id( 20 );
+                        $this->set_name( 'Men Premier' );
+                        $comp = new class() extends Competition {
                             public function __construct() {
                                 parent::__construct( name: 'Premier Division', type: Competition_Type::LEAGUE, age_group: 'adults' );
                                 $this->set_is_team_entry( true );
                                 $this->set_is_player_entry( false );
                             }
                         };
+                        $this->set_competition( $comp );
                     }
                 };
             }
@@ -289,10 +290,10 @@ class Team_List_Render_Regression_Test extends TestCase {
 
         $event = new class extends Event {
             public function __construct() {
-                $this->id             = 40;
-                $this->name           = 'Championship Cup Event';
-                $this->current_season = [ 'name' => '2026' ];
-                $this->competition    = new class extends Competition {
+                $this->set_id( 40 );
+                $this->set_name( 'Championship Cup Event' );
+                $this->set_current_season( [ 'name' => '2026' ] );
+                $comp = new class() extends Competition {
                     public function __construct() {
                         parent::__construct( name: 'Championship Cup', type: Competition_Type::CUP, age_group: 'adults', id: 5 );
                         $this->set_is_championship( true );
@@ -304,6 +305,7 @@ class Team_List_Render_Regression_Test extends TestCase {
                         return true;
                     }
                 };
+                $this->set_competition( $comp );
             }
             public function set_season( ?string $season = null, bool $force_overwrite = false, bool $strict = false ): void {}
         };
@@ -389,20 +391,20 @@ class Team_List_Render_Regression_Test extends TestCase {
 
         $event = new class extends Event {
             public function __construct() {
-                $this->id             = 50;
-                $this->name           = 'Division 1 Event';
-                $this->is_box         = false;
-                $this->current_season = [ 'name' => '2026' ];
-                $this->competition    = new class extends Competition {
+                $this->set_id( 50 );
+                $this->set_name( 'Division 1 Event' );
+                $this->set_is_box( false );
+                $this->set_current_season( [ 'name' => '2026' ] );
+                $comp = new class() extends Competition {
                     public function __construct() {
                         parent::__construct( name: 'Summer League', type: Competition_Type::LEAGUE, age_group: 'adults', id: 8 );
                         $this->set_is_championship( false );
-                        $this->apply_current_season( [ 'name' => '2026' ] );
                     }
                     public function is_event_allowed( object|string|int $event, string|int|null $season = null, bool $for_entry = false, iterable $events = [] ): bool {
                         return true;
                     }
                 };
+                $this->set_competition( $comp );
             }
             public function set_season( ?string $season = null, bool $force_overwrite = false, bool $strict = false ): void {}
         };

@@ -23,6 +23,7 @@ use Racketmanager\Domain\Competition\Competition_Settings;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\Event_Test_Factory;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
@@ -83,16 +84,19 @@ class Result_Reporting_Service_Test extends TestCase {
 	}
 
 	private function create_standard_event( array $overrides = [] ): Event {
-		$event = $this->createStub( Event::class );
-		$event->method( 'get_competition_id' )->willReturn( $overrides['competition_id'] ?? 30 );
 		$season_info = array_key_exists( 'season_info', $overrides )
 			? $overrides['season_info']
 			: [ 'grade' => 4 ];
-		$event->method( 'get_season_by_name' )->willReturn( $season_info );
-		$event->name = $overrides['name'] ?? 'Test Event';
-		$event->age_limit = $overrides['age_limit'] ?? 'Open';
-		$event->type = $overrides['type'] ?? 'MS';
-		$event->primary_league = $overrides['primary_league'] ?? 10;
+		$seasons = null !== $season_info ? [ '2024' => $season_info ] : [];
+
+		$event = Event_Test_Factory::create(
+			name: $overrides['name'] ?? 'Test Event',
+			type: $overrides['type'] ?? 'MS',
+			competition_id: $overrides['competition_id'] ?? 30,
+			seasons: $seasons,
+			primary_league: $overrides['primary_league'] ?? 10,
+		);
+		$event->set_age_limit( $overrides['age_limit'] ?? 'Open' );
 		return $event;
 	}
 

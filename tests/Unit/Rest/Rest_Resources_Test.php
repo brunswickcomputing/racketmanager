@@ -595,8 +595,8 @@ class Rest_Resources_Test extends TestCase {
         $request->set_param( 'league', 'premier-league' );
         $request->set_param( 'season', '2026' );
 
-        $event = $this->createStub( Event::class );
-        $event->id = 50;
+        $event = new Event();
+        $event->set_id( 50 );
 
         $league = League_Test_Factory::from_object( (object) [ 'id' => 10, 'title' => 'Premier League', 'seasons' => [ '2026' => [ 'name' => '2026' ] ] ] );
         $league->current_season = [ 'name' => '2026' ];

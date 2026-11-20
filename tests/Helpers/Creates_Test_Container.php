@@ -74,10 +74,10 @@ trait Creates_Test_Container {
         $comp_service = $this->createStub( Competition_Service::class );
         $league_repo  = $this->createStub( League_Repository::class );
         $league_mock  = $this->createStub( League::class );
-        $event_mock   = $this->createStub( Event::class );
+        $event_mock   = new Event();
 
         $comp_mock               = (object) [ 'type' => $type ];
-        $event_mock->competition = $comp_mock;
+        $event_mock->set_competition( $comp_mock );
         $league_mock->method( 'get_name' )->willReturn( $title );
         $league_mock->title = $title;
         $league_mock->id    = $league_id;

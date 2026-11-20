@@ -238,10 +238,10 @@ class Request_State_Presentation_Test extends TestCase {
         $league->title = 'Division 1';
         $league->current_season = [ 'name' => '2026' ];
         $league->is_championship = false;
-        $event = $this->createStub( Event::class );
-        $event->id = 5;
-        $event->is_box = false;
-        $event->competition = (object) [ 'type' => 'league', 'is_championship' => false, 'is_team_entry' => true, 'is_player_entry' => false ];
+        $event = new Event();
+        $event->set_id( 5 );
+        $event->set_is_box( false );
+        $event->set_competition( (object) [ 'type' => 'league', 'is_championship' => false, 'is_team_entry' => true, 'is_player_entry' => false ] );
         $league->event = $event;
         return $league;
     }

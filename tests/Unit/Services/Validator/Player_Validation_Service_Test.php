@@ -245,10 +245,10 @@ class Player_Validation_Service_Test extends TestCase {
         $fixture = Fixture_Factory::from_object( $fixture_data );
 
         $league = $this->createMock( League::class );
-        $event = $this->createMock( Event::class );
+        $event = $this->getMockBuilder( Event::class )->disableOriginalConstructor()->onlyMethods( array( 'get_season_by_name', 'get_type' ) )->getMock();
         $competition = Competition_Test_Factory::create( id: 1, type: Competition_Type::LEAGUE, seasons: [ '2026' => [] ] );
         $competition->set_rules( [ 'wtn_check' => true ] );
-        $event->competition = $competition;
+        $event->set_competition( $competition );
         $league->event = $event;
         $league->method( 'get_id' )->willReturn( 456 );
 
@@ -311,13 +311,13 @@ class Player_Validation_Service_Test extends TestCase {
         $fixture = Fixture_Factory::from_object( $fixture_data );
 
         $league = $this->createMock( League::class );
-        $event = $this->createMock( Event::class );
+        $event = new Event();
         $competition = Competition_Test_Factory::create( id: 1, type: Competition_Type::LEAGUE, seasons: [ '2026' => [] ] );
         $competition->set_rules( [ 'ageLimitCheck' => true ] );
-        $event->competition = $competition;
+        $event->set_competition( $competition );
         $league->event = $event;
-        $event->age_limit = '45'; // Over 45s
-        $event->age_offset = '0';
+        $event->set_age_limit( '45' ); // Over 45s
+        $event->set_age_offset( '0' );
         $options = [ 'checks' => [ 'ageLimitCheck' => true ] ];
 
         $player = (object)[
@@ -353,9 +353,9 @@ class Player_Validation_Service_Test extends TestCase {
 
         $league = $this->createMock( League::class );
         $league->method('get_id')->willReturn(456);
-        $event = $this->createMock( Event::class );
+        $event = new Event();
         $competition = $this->createMock( Competition::class );
-        $event->competition = $competition;
+        $event->set_competition( $competition );
         $league->event = $event;
 
         $player = (object)[
@@ -391,10 +391,10 @@ class Player_Validation_Service_Test extends TestCase {
         $fixture = Fixture_Factory::from_object( $fixture_data );
 
         $league = $this->createMock( League::class );
-        $event = $this->createMock( Event::class );
+        $event = new Event();
         $competition = Competition_Test_Factory::create( id: 1, type: Competition_Type::LEAGUE );
         $competition->set_rules( [ 'resultTimeout' => true ] );
-        $event->competition = $competition;
+        $event->set_competition( $competition );
         $league->event = $event;
 
         $options = [

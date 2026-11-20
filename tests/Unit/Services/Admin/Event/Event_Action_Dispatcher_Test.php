@@ -426,9 +426,9 @@ final class Event_Action_Dispatcher_Test extends TestCase {
         $guard               = $this->createStub( Action_Guard_Interface::class );
         $competition         = $this->make_competition();
 
-        $event                 = $this->createMock( Event::class );
-        $event->id             = 10;
-        $event->competition_id = 1;
+        $event = $this->getMockBuilder( Event::class )->disableOriginalConstructor()->onlyMethods( array( 'set_config' ) )->getMock();
+        $event->set_id( 10 );
+        $event->set_competition_id( 1 );
         $event->expects( self::once() )->method( 'set_config' )->willReturn( true );
 
         $competition_service->expects( self::once() )
@@ -458,9 +458,9 @@ final class Event_Action_Dispatcher_Test extends TestCase {
         $guard               = $this->createStub( Action_Guard_Interface::class );
         $competition         = $this->make_competition();
 
-        $event                 = $this->createMock( Event::class );
-        $event->id             = 10;
-        $event->competition_id = 1;
+        $event = $this->getMockBuilder( Event::class )->disableOriginalConstructor()->onlyMethods( array( 'set_config' ) )->getMock();
+        $event->set_id( 10 );
+        $event->set_competition_id( 1 );
         $event->expects( self::once() )->method( 'set_config' )->willReturn( false );
 
         $competition_service->expects( self::once() )
@@ -490,14 +490,14 @@ final class Event_Action_Dispatcher_Test extends TestCase {
         $guard               = $this->createStub( Action_Guard_Interface::class );
         $competition         = $this->make_competition();
 
-        $event                 = $this->createMock( Event::class );
-        $event->id             = 10;
-        $event->competition_id = 1;
-        $event->settings       = array();
-        $event->num_rubbers    = 1;
-        $event->num_sets       = 3;
-        $event->type           = 'doubles';
-        $event->name           = 'Men Doubles';
+        $event = $this->getMockBuilder( Event::class )->disableOriginalConstructor()->onlyMethods( array( 'set_config' ) )->getMock();
+        $event->set_id( 10 );
+        $event->set_competition_id( 1 );
+        $event->set_settings( array() );
+        $event->set_num_rubbers( 1 );
+        $event->set_num_sets( 3 );
+        $event->set_type( 'doubles' );
+        $event->set_name( 'Men Doubles' );
 
         $captured_config = null;
         $event->expects( self::once() )
@@ -505,7 +505,7 @@ final class Event_Action_Dispatcher_Test extends TestCase {
             ->willReturnCallback(
                 static function ( \stdClass $config ) use ( &$captured_config, $event ): bool {
                     $captured_config                   = $config;
-                    $event->settings['primary_league'] = $config->primary_league;
+                    $event->set_settings( array_merge( $event->settings, array( 'primary_league' => $config->primary_league ) ) );
                     return true;
                 }
             );
@@ -574,9 +574,9 @@ final class Event_Action_Dispatcher_Test extends TestCase {
         $guard               = $this->createStub( Action_Guard_Interface::class );
         $competition         = $this->make_competition();
 
-        $event                 = $this->createMock( Event::class );
-        $event->id             = 10;
-        $event->competition_id = 1;
+        $event = $this->getMockBuilder( Event::class )->disableOriginalConstructor()->onlyMethods( array( 'set_config' ) )->getMock();
+        $event->set_id( 10 );
+        $event->set_competition_id( 1 );
 
         $captured_config = null;
         $event->expects( self::once() )
@@ -632,9 +632,9 @@ final class Event_Action_Dispatcher_Test extends TestCase {
         $guard               = $this->createStub( Action_Guard_Interface::class );
         $competition         = $this->make_competition();
 
-        $event                 = $this->createMock( Event::class );
-        $event->id             = 10;
-        $event->competition_id = 1;
+        $event = $this->getMockBuilder( Event::class )->disableOriginalConstructor()->onlyMethods( array( 'set_config' ) )->getMock();
+        $event->set_id( 10 );
+        $event->set_competition_id( 1 );
 
         $captured_config = null;
         $event->expects( self::once() )

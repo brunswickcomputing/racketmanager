@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
@@ -72,11 +73,9 @@ class Competition_Notification_Service_Test extends TestCase {
 
         $service = new Competition_Notification_Service( $this->option_service, $this->club_repository, $mock_mailer, null, $league_query );
 
-        $event = new class extends Event {
-            public function __construct() {
-                $this->competition = (object) [ 'type' => 'league' ];
-            }
-        };
+        $competition = \Racketmanager\Tests\Helpers\Competition_Test_Factory::create( id: 1, type: Competition_Type::LEAGUE );
+        $event       = new Event();
+        $event->set_competition( $competition );
 
         $league = new class extends League {
             public function __construct() {
@@ -123,11 +122,9 @@ class Competition_Notification_Service_Test extends TestCase {
 
         $service = new Competition_Notification_Service( $this->option_service, $this->club_repository, $mock_mailer, null, $league_query );
 
-        $event = new class extends Event {
-            public function __construct() {
-                $this->competition = (object) [ 'type' => 'league' ];
-            }
-        };
+        $competition = \Racketmanager\Tests\Helpers\Competition_Test_Factory::create( id: 1, type: Competition_Type::LEAGUE );
+        $event       = new Event();
+        $event->set_competition( $competition );
 
         $league = new class extends League {
             public function __construct() {
@@ -189,13 +186,11 @@ class Competition_Notification_Service_Test extends TestCase {
 
         $service = new Competition_Notification_Service( $this->option_service, $club_repository, $mock_mailer );
 
-        $event = new class extends Event {
-            public function __construct() {
-                $this->id = 5;
-                $this->name = 'Mixed League';
-                $this->competition = (object) [ 'type' => 'league' ];
-            }
-        };
+        $competition = \Racketmanager\Tests\Helpers\Competition_Test_Factory::create( id: 1, type: Competition_Type::LEAGUE );
+        $event       = new Event();
+        $event->set_id( 5 );
+        $event->set_name( 'Mixed League' );
+        $event->set_competition( $competition );
 
         $service->send_constitution( $event, [ 'name' => '2026' ] );
 
@@ -205,12 +200,9 @@ class Competition_Notification_Service_Test extends TestCase {
     }
 
     public function test_contact_teams_reads_events_from_injected_event_repository(): void {
-        $event = new class extends Event {
-            public function __construct() {
-                $this->id = 5;
-                $this->current_season = [ 'name' => '2026' ];
-            }
-        };
+        $event = new Event();
+        $event->set_id( 5 );
+        $event->set_current_season( [ 'name' => '2026' ] );
 
         $event_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class );
         $event_repository->expects( $this->once() )

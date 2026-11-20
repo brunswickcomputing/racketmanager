@@ -15,11 +15,13 @@ use TypeError;
 
 final class Event_Factory_Test extends TestCase {
 	private function sample_competition( int $id = 1 ): Competition {
-		return Competition_Factory::from_object( (object) array(
-			'id'   => $id,
-			'name' => 'Main Competition',
-			'type' => 'league',
-		) );
+		return Competition_Factory::from_object(
+			(object) array(
+				'id'   => $id,
+				'name' => 'Main Competition',
+				'type' => 'league',
+			)
+		);
 	}
 
 	public function test_from_array_with_missing_type_throws_invalid_argument_exception(): void {
@@ -226,7 +228,7 @@ final class Event_Factory_Test extends TestCase {
 	}
 
 	public function test_inherited_entity_wrappers_return_factory_event(): void {
-		$subclass = new class extends Event {};
+		$subclass = new class() extends Event {};
 		$data = array( 'name' => 'Open', 'type' => 'MS', 'competition_id' => 4 );
 
 		foreach ( array( $subclass::from_object( (object) $data ), $subclass::from_array( $data ) ) as $event ) {
@@ -333,5 +335,305 @@ final class Event_Factory_Test extends TestCase {
 		$missing_values = Event::from_object( (object) $base );
 		$this->assertSame( 3, $missing_values->num_sets );
 		$this->assertSame( 0, $missing_values->num_rubbers );
+	}
+
+	public function test_dto_and_factory_hydrate_extended_state(): void {
+		$league = \Racketmanager\Tests\Helpers\League_Test_Factory::create( id: 10, title: 'Parent Div' );
+		$dto    = new Event_Hydration_DTO(
+			id: 12,
+			name: 'Tournament Event',
+			type: 'singles',
+			num_sets: 3,
+			num_rubbers: 0,
+			competition_id: 1,
+			matches: array( array( 'id' => 101 ) ),
+			stages: array( 'group', 'knockout' ),
+			rounds: array( 'semi-final', 'final' ),
+			champion: 42,
+			runner_up: 84,
+			parent_league: $league,
+			draw: 'main-draw',
+			status: 'active',
+			primary_league: 10
+		);
+
+		$event = Event_Factory::create_from_dto( $dto );
+		$this->assertSame( array( array( 'id' => 101 ) ), $event->matches );
+		$this->assertSame( array( 'group', 'knockout' ), $event->stages );
+		$this->assertSame( array( 'semi-final', 'final' ), $event->rounds );
+		$this->assertSame( 42, $event->champion );
+		$this->assertSame( 84, $event->runner_up );
+		$this->assertSame( $league, $event->parent_league );
+		$this->assertSame( 'main-draw', $event->draw );
+		$this->assertSame( 'active', $event->status );
+		$this->assertSame( 10, $event->primary_league );
+
+		// Test from_object with extended properties.
+		$row = (object) array(
+			'id'             => 14,
+			'name'           => 'Object Event',
+			'type'           => 'singles',
+			'competition_id' => 1,
+			'matches'        => array( array( 'id' => 202 ) ),
+			'stages'         => array( 'knockout' ),
+			'rounds'         => array( 'final' ),
+			'champion'       => '55',
+			'runner_up'      => '66',
+			'parent_league'  => $league,
+			'draw'           => 'draw-1',
+			'status'         => 'completed',
+			'primary_league' => '10',
+		);
+		$event_from_obj = Event_Factory::from_object( $row );
+		$this->assertSame( array( array( 'id' => 202 ) ), $event_from_obj->matches );
+		$this->assertSame( array( 'knockout' ), $event_from_obj->stages );
+		$this->assertSame( array( 'final' ), $event_from_obj->rounds );
+		$this->assertSame( 55, $event_from_obj->champion );
+		$this->assertSame( 66, $event_from_obj->runner_up );
+		$this->assertSame( $league, $event_from_obj->parent_league );
+		$this->assertSame( 'draw-1', $event_from_obj->draw );
+		$this->assertSame( 'completed', $event_from_obj->status );
+		$this->assertSame( 10, $event_from_obj->primary_league );
+	}
+
+	public function test_event_test_factory_presets_and_overrides(): void {
+		// Default create
+		$default_event = \Racketmanager\Tests\Helpers\Event_Test_Factory::create( id: 100, name: 'Custom Default' );
+		$this->assertInstanceOf( Event::class, $default_event );
+		$this->assertSame( 100, $default_event->id );
+		$this->assertSame( 'Custom Default', $default_event->name );
+		$this->assertSame( 'MD', $default_event->type );
+
+		// League preset
+		$league_event = \Racketmanager\Tests\Helpers\Event_Test_Factory::league_event( id: 101, name: 'Div 1' );
+		$this->assertInstanceOf( Event::class, $league_event );
+		$this->assertSame( 101, $league_event->id );
+		$this->assertSame( 'Div 1', $league_event->name );
+		$this->assertSame( 'MD', $league_event->type );
+
+		// Tournament preset
+		$tourn_event = \Racketmanager\Tests\Helpers\Event_Test_Factory::tournament_event(
+			id: 102,
+			name: 'Open Singles',
+			champion: 1,
+			runner_up: 2,
+			overrides: array( 'draw' => 'custom-draw' )
+		);
+		$this->assertInstanceOf( Event::class, $tourn_event );
+		$this->assertSame( 102, $tourn_event->id );
+		$this->assertSame( 'Open Singles', $tourn_event->name );
+		$this->assertSame( 'MS', $tourn_event->type );
+		$this->assertSame( 'M', substr( $tourn_event->type, 0, 1 ) );
+		$this->assertSame( 'S', substr( $tourn_event->type, 1, 1 ) );
+		$this->assertSame( 1, $tourn_event->champion );
+		$this->assertSame( 2, $tourn_event->runner_up );
+		$this->assertSame( 'custom-draw', $tourn_event->draw );
+
+		// Cup preset
+		$cup_event = \Racketmanager\Tests\Helpers\Event_Test_Factory::cup_event( id: 103, name: 'Cup Knockout' );
+		$this->assertInstanceOf( Event::class, $cup_event );
+		$this->assertSame( 103, $cup_event->id );
+		$this->assertSame( 'MD', $cup_event->type );
+
+		// from_object / from_array
+		$row_data = (object) array(
+			'id'             => 104,
+			'name'           => 'From Object',
+			'type'           => 'WD',
+			'competition_id' => 1,
+		);
+		$from_obj = \Racketmanager\Tests\Helpers\Event_Test_Factory::from_object( $row_data );
+		$this->assertSame( 104, $from_obj->id );
+		$this->assertSame( 'WD', $from_obj->type );
+
+		$arr_data = array(
+			'id'             => 105,
+			'name'           => 'From Array',
+			'type'           => 'XD',
+			'competition_id' => 1,
+		);
+		$from_arr = \Racketmanager\Tests\Helpers\Event_Test_Factory::from_array( $arr_data );
+		$this->assertSame( 105, $from_arr->id );
+		$this->assertSame( 'XD', $from_arr->type );
+	}
+
+	public function test_event_test_factory_rejects_unknown_override(): void {
+		$this->expectException( \InvalidArgumentException::class );
+		$this->expectExceptionMessage( 'Unknown Event test property: nmae' );
+
+		\Racketmanager\Tests\Helpers\Event_Test_Factory::create(
+			overrides: array( 'nmae' => 'Typo' )
+		);
+	}
+
+	public function test_dto_from_object_handles_plain_db_row(): void {
+		$row = (object) array(
+			'id'             => 200,
+			'competition_id' => 1,
+			'name'           => 'DB Event',
+			'type'           => 'MD',
+			'num_sets'       => 3,
+			'num_rubbers'    => 4,
+			'settings'       => array(),
+			'seasons'        => array(),
+		);
+
+		$dto = Event_Hydration_DTO::from_object( $row );
+		$this->assertSame( array(), $dto->matches );
+		$this->assertSame( array(), $dto->stages );
+		$this->assertSame( array(), $dto->rounds );
+		$this->assertNull( $dto->champion );
+		$this->assertNull( $dto->runner_up );
+		$this->assertNull( $dto->parent_league );
+		$this->assertNull( $dto->draw );
+		$this->assertSame( '', $dto->status );
+		$this->assertNull( $dto->primary_league );
+
+		$event = Event_Factory::create_from_dto( $dto );
+		$this->assertSame( 0, $event->primary_league );
+	}
+
+	public function test_dto_from_object_handles_empty_strings_and_malformed_inputs(): void {
+		$row = (object) array(
+			'id'             => 201,
+			'competition_id' => 1,
+			'name'           => 'Edge Event',
+			'type'           => 'MD',
+			'champion'       => '',
+			'runner_up'      => '',
+			'primary_league' => '',
+			'matches'        => 'not an array',
+			'stages'         => 12345,
+			'rounds'         => new \stdClass(),
+			'parent_league'  => new \stdClass(),
+			'draw'           => array( 'invalid' ),
+			'status'         => array( 'invalid' ),
+		);
+
+		$dto = Event_Hydration_DTO::from_object( $row );
+		$this->assertNull( $dto->champion );
+		$this->assertNull( $dto->runner_up );
+		$this->assertNull( $dto->primary_league );
+		$this->assertSame( array(), $dto->matches );
+		$this->assertSame( array(), $dto->stages );
+		$this->assertSame( array(), $dto->rounds );
+		$this->assertNull( $dto->parent_league );
+		$this->assertNull( $dto->draw );
+		$this->assertSame( '', $dto->status );
+
+		$event = Event_Factory::create_from_dto( $dto );
+		$this->assertSame( 0, $event->primary_league );
+	}
+
+	public function test_settings_primary_league_overrides_dto_column(): void {
+		$dto = new Event_Hydration_DTO(
+			id: 202,
+			name: 'Override Event',
+			type: 'MD',
+			competition_id: 1,
+			settings: array( 'primary_league' => 20 ),
+			primary_league: 10
+		);
+
+		$event = Event_Factory::create_from_dto( $dto );
+		$this->assertSame( 20, $event->primary_league );
+	}
+
+	public function test_league_test_factory_default_event_behavior(): void {
+		$event = \Racketmanager\Tests\Helpers\League_Test_Factory::default_event(
+			event_id: 7,
+			seasons: array( '2026' => array( 'name' => '2026' ) )
+		);
+
+		$this->assertInstanceOf( Event::class, $event );
+		$this->assertSame( 7, $event->id );
+		$this->assertSame( 'MD', $event->type );
+		$this->assertNotNull( $event->competition );
+		$this->assertNotNull( $event->get_season_by_name( '2026' ) );
+	}
+
+	public function test_malformed_serialized_settings_and_seasons_do_not_emit_warnings_and_use_fallbacks(): void {
+		$captured_warnings = array();
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler -- Error handler capturing warnings for assertion.
+		set_error_handler(
+			static function ( int $errno, string $errstr ) use ( &$captured_warnings ): bool {
+				$captured_warnings[] = $errstr;
+				return true;
+			}
+		);
+
+		try {
+			$dto = Event_Hydration_DTO::from_object(
+				(object) array(
+					'name'           => 'Corrupted Row',
+					'type'           => 'MS',
+					'competition_id' => 1,
+					'settings'       => 'a:1:{s:3:"bad";}',
+					'seasons'        => 'a:2:{s:1:"x";}',
+				)
+			);
+
+			$event = Event::from_array(
+				array(
+					'name'           => 'Corrupted Row',
+					'type'           => 'MS',
+					'competition_id' => 1,
+					'settings'       => 'a:1:{s:3:"bad";}',
+					'seasons'        => 'a:2:{s:1:"x";}',
+				)
+			);
+		} finally {
+			restore_error_handler();
+		}
+
+		$this->assertSame( array(), $captured_warnings, 'Malformed serialized data must not emit PHP warnings.' );
+		$this->assertSame( array(), $dto->settings, 'Malformed serialized settings must fallback to empty array in DTO.' );
+		$this->assertSame( 'a:2:{s:1:"x";}', $dto->seasons, 'Malformed serialized seasons must be left unchanged in DTO.' );
+		$this->assertSame( array(), $event->settings, 'Malformed serialized settings must fallback to empty array on Event.' );
+		$this->assertSame( 'a:2:{s:1:"x";}', $event->seasons, 'Malformed serialized seasons must be left unchanged on Event.' );
+	}
+
+	public function test_event_test_factory_dto_override(): void {
+		$event = \Racketmanager\Tests\Helpers\Event_Test_Factory::create(
+			overrides: array(
+				'status'   => 'active',
+				'draw'     => 'custom-draw',
+				'champion' => 42,
+			)
+		);
+
+		$this->assertSame( 'active', $event->status );
+		$this->assertSame( 'custom-draw', $event->draw );
+		$this->assertSame( 42, $event->champion );
+	}
+
+	public function test_event_test_factory_real_setter_override(): void {
+		$event = \Racketmanager\Tests\Helpers\Event_Test_Factory::create(
+			overrides: array(
+				'is_championship' => true,
+				'num_leagues'     => 5,
+			)
+		);
+
+		$this->assertTrue( $event->is_championship );
+		$this->assertSame( 5, $event->num_leagues );
+	}
+
+	public function test_event_test_factory_rejects_setter_less_override(): void {
+		$this->expectException( \InvalidArgumentException::class );
+		$this->expectExceptionMessage( 'Event property "num_ascend" has no setter method.' );
+
+		\Racketmanager\Tests\Helpers\Event_Test_Factory::create(
+			overrides: array( 'num_ascend' => 2 )
+		);
+	}
+
+	public function test_event_test_factory_rejects_non_public_meta_override(): void {
+		$this->expectException( \InvalidArgumentException::class );
+		$this->expectExceptionMessage( 'Cannot override non-public Event property: meta' );
+
+		\Racketmanager\Tests\Helpers\Event_Test_Factory::create(
+			overrides: array( 'meta' => array( 'key' => 'value' ) )
+		);
 	}
 }

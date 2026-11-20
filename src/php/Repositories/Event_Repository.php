@@ -22,10 +22,18 @@ use Racketmanager\Util\Util;
  * Class to implement the Event repository
  */
 class Event_Repository implements Event_Repository_Interface {
-    private ?object $wpdb = null;
+    private ?object $wpdb       = null;
     private ?string $table_name = null;
     private ?Competition_Repository_Interface $competition_repository;
 
+    /**
+     * Initializes the repository with an optional database connection and competition repository.
+     *
+     * @param object|null                           $db Optional database connection object.
+     * @param Competition_Repository_Interface|null $competition_repository Optional competition repository instance.
+     *
+     * @return void
+     */
     public function __construct( ?object $db = null, ?Competition_Repository_Interface $competition_repository = null ) {
         $this->wpdb                   = $db ?? ( $GLOBALS['wpdb'] ?? null );
         $this->competition_repository = $competition_repository;
@@ -57,17 +65,29 @@ class Event_Repository implements Event_Repository_Interface {
      * @return Event
      */
     private function hydrate_event( object $row ): Event {
-        $event              = Event_Factory::from_object( $row, $this->resolve_competition( $row ) );
-        $event->num_leagues = $this->count_leagues( (int) $event->id );
+        $event = Event_Factory::from_object( $row, $this->resolve_competition( $row ) );
+        $event->set_league_count( $this->count_leagues( (int) $event->id ) );
 
         return $event;
     }
 
+    /**
+     * Builds a database table name using the configured database prefix.
+     *
+     * @param string $suffix Table name suffix to append to the database prefix.
+     *
+     * @return string Fully prefixed database table name.
+     */
     private function table( string $suffix ): string {
         $prefix = isset( $this->wpdb->prefix ) ? (string) $this->wpdb->prefix : 'wp_';
         return $prefix . $suffix;
     }
 
+    /**
+     * Retrieves the database table name used for leagues.
+     *
+     * @return string League table name.
+     */
     private function get_leagues_table(): string {
         if ( isset( $this->wpdb->racketmanager ) && is_string( $this->wpdb->racketmanager ) && '' !== $this->wpdb->racketmanager ) {
             return $this->wpdb->racketmanager;
@@ -75,6 +95,13 @@ class Event_Repository implements Event_Repository_Interface {
         return $this->table( 'racketmanager_leagues' );
     }
 
+    /**
+     * Saves an event entity to the database.
+     *
+     * @param object $entity Event entity to insert or update.
+     *
+     * @return bool|int Inserted record ID on successful insert, true on successful update, or false on failure.
+     */
     public function save( object $entity ): bool|int {
         if ( ! $this->wpdb ) {
             return false;
@@ -86,7 +113,7 @@ class Event_Repository implements Event_Repository_Interface {
                 array(
                     'name'           => $entity->get_name(),
                     'settings'       => maybe_serialize( $entity->get_settings() ),
-                    // Persist seasons as JSON
+                    // Persist seasons as JSON.
                     'seasons'        => $entity->get_seasons_json(),
                     'type'           => $entity->get_type(),
                     'num_sets'       => $entity->get_num_sets(),
@@ -114,16 +141,16 @@ class Event_Repository implements Event_Repository_Interface {
                 array(
                     'name'           => $entity->get_name(),
                     'settings'       => maybe_serialize( $entity->get_settings() ),
-                    // Persist seasons as JSON
+                    // Persist seasons as JSON.
                     'seasons'        => $entity->get_seasons_json(),
                     'type'           => $entity->get_type(),
                     'num_sets'       => $entity->get_num_sets(),
                     'num_rubbers'    => $entity->get_num_rubbers(),
                     'competition_id' => $entity->get_competition_id(),
-                ), // Data to update
+                ), // Data to update.
                 array(
-                    'id' => $entity->get_id()
-                ), // Where clause
+                    'id' => $entity->get_id(),
+                ), // Where clause.
                 array(
                     '%s',
                     '%s',
@@ -134,8 +161,8 @@ class Event_Repository implements Event_Repository_Interface {
                     '%d',
                 ),
                 array(
-                    '%d'
-                ) // Where format
+                    '%d',
+                ) // Where format.
             ) !== false;
             if ( $updated ) {
                 wp_cache_delete( $entity->get_id(), 'events' );
@@ -147,6 +174,13 @@ class Event_Repository implements Event_Repository_Interface {
         }
     }
 
+    /**
+     * Finds an event by its ID or name.
+     *
+     * @param mixed $id Event ID or name to search for.
+     *
+     * @return Event|null Event instance when found, or null when no matching event exists.
+     */
     public function find_by_id( $id ): ?Event {
         if ( empty( $id ) ) {
             return null;
@@ -155,9 +189,9 @@ class Event_Repository implements Event_Repository_Interface {
 
         if ( ! $event && $this->wpdb ) {
             if ( is_numeric( $id ) ) {
-                $search = "`id` = %d";
+                $search = '`id` = %d';
             } else {
-                $search = "`name` = %s";
+                $search = '`name` = %s';
             }
             $row = $this->wpdb->get_row(
                 $this->wpdb->prepare(
@@ -177,6 +211,13 @@ class Event_Repository implements Event_Repository_Interface {
         return $event ?: null;
     }
 
+    /**
+     * Finds an event by its name.
+     *
+     * @param string $name Event name to search for.
+     *
+     * @return Event|null Event instance when found, or null if no matching event exists.
+     */
     public function find_by_name( string $name ): ?Event {
         if ( '' === $name ) {
             return null;
@@ -202,12 +243,19 @@ class Event_Repository implements Event_Repository_Interface {
         return $event;
     }
 
+    /**
+     * Retrieves events matching the provided query arguments.
+     *
+     * @param array $args Optional query arguments, including offset, limit, competition_type, entry_type, name, season, reverse_rubbers, and orderby.
+     *
+     * @return array Array of matching event objects, or an empty array when none are found.
+     */
     public function find_all( array $args = [] ): array {
         if ( ! $this->wpdb ) {
             return [];
         }
 
-        $defaults = [
+        $defaults         = [
             'offset'           => 0,
             'limit'            => 99999999,
             'competition_type' => false,
@@ -290,11 +338,11 @@ class Event_Repository implements Event_Repository_Interface {
     }
 
     /**
-     * Find all events for a competition.
+     * Finds events associated with the specified competition ID.
      *
-     * @param int $competition_id
+     * @param int $competition_id Competition ID used to retrieve matching events.
      *
-     * @return Event[]
+     * @return array List of hydrated event objects, or an empty array if none are found.
      */
     public function find_by_competition_id( int $competition_id ): array {
         $events = wp_cache_get( md5( (string) $competition_id ), 'events' );
@@ -305,8 +353,8 @@ class Event_Repository implements Event_Repository_Interface {
                     $competition_id
                 )
             );
-            $events = array_map(
-                function( $row ) {
+            $events  = array_map(
+                function ( $row ) {
                     return $this->hydrate_event( $row );
                 },
                 $results ?: []
@@ -316,6 +364,13 @@ class Event_Repository implements Event_Repository_Interface {
         return $events ?: [];
     }
 
+    /**
+     * Deletes an event by its identifier and clears related cached entries when successful.
+     *
+     * @param int $id Event identifier to delete.
+     *
+     * @return bool True if the delete operation succeeds, false otherwise.
+     */
     public function delete( int $id ): bool {
         if ( ! $this->wpdb ) {
             return false;
@@ -342,25 +397,25 @@ class Event_Repository implements Event_Repository_Interface {
     }
 
     /**
-     * Retrieves events for a competition with counts of associated leagues, teams, and clubs.
+     * Finds events for a competition and includes related league, team, club, and active player counts.
      *
-     * @param int $competition_id
-     * @param int $season
-     * @param int|null $min_fixtures
+     * @param int      $competition_id Competition identifier.
+     * @param int      $season Season used to filter league teams, matches, and player activity.
+     * @param int|null $min_fixtures Minimum number of rubber player records required for a player to be counted as active.
      *
-     * @return Event_Details_DTO[]
+     * @return Event_Details_DTO[] List of event detail data transfer objects with aggregate counts.
      */
-    public function find_events_by_competition_with_counts( int $competition_id, int $season, ?int $min_fixtures = 1): array {
+    public function find_events_by_competition_with_counts( int $competition_id, int $season, ?int $min_fixtures = 1 ): array {
         if ( ! $this->wpdb ) {
             return [];
         }
-        $events_table = $this->table_name;
-        $leagues_table = $this->get_leagues_table();
-        $league_teams_table = $this->table( 'racketmanager_league_teams' );
-        $teams_table = $this->table( 'racketmanager_teams' );
+        $events_table         = $this->table_name;
+        $leagues_table        = $this->get_leagues_table();
+        $league_teams_table   = $this->table( 'racketmanager_league_teams' );
+        $teams_table          = $this->table( 'racketmanager_teams' );
         $rubber_players_table = $this->table( 'racketmanager_rubber_players' );
-        $rubbers_table = $this->table( 'racketmanager_rubbers' );
-        $matches_table = $this->table( 'racketmanager_matches' );
+        $rubbers_table        = $this->table( 'racketmanager_rubbers' );
+        $matches_table        = $this->table( 'racketmanager_matches' );
 
         $player_activity_subquery = $this->wpdb->prepare(
             "SELECT l.event_id, rp.player_id FROM $rubber_players_table rp INNER JOIN $rubbers_table r ON rp.rubber_id = r.id INNER JOIN $matches_table f ON r.match_id = f.id AND f.season = %d INNER JOIN $leagues_table l ON f.league_id = l.id GROUP BY l.event_id, rp.player_id HAVING COUNT(rp.id) >= %d",
@@ -374,13 +429,23 @@ class Event_Repository implements Event_Repository_Interface {
             $competition_id
         );
 
-        $results = $this->wpdb->get_results($query);
+        $results = $this->wpdb->get_results( $query );
 
-        return array_map(function($row) {
-            return new Event_Details_DTO( $row );
-        }, $results ?: []);
+        return array_map(
+            function ( $row ) {
+                return new Event_Details_DTO( $row );
+            },
+            $results ?: []
+        );
     }
 
+    /**
+     * Inserts an event record into the events table.
+     *
+     * @param object $event Event object containing the name, competition ID, number of rubbers, number of sets, and type.
+     *
+     * @return int Inserted event ID, or 0 if the database connection is unavailable.
+     */
     public function insert_event( object $event ): int {
         if ( ! $this->wpdb ) {
             return 0;
@@ -400,12 +465,20 @@ class Event_Repository implements Event_Repository_Interface {
         return (int) $this->wpdb->insert_id;
     }
 
+    /**
+     * Updates the name of an event and clears related cache entries.
+     *
+     * @param int    $id Event ID.
+     * @param string $name New event name.
+     *
+     * @return bool True if the update succeeds, false otherwise.
+     */
     public function update_name( int $id, string $name ): bool {
         if ( ! $this->wpdb ) {
             return false;
         }
         $existing = wp_cache_get( $id, 'events' );
-        $result = $this->wpdb->query(
+        $result   = $this->wpdb->query(
             $this->wpdb->prepare(
                 "UPDATE $this->table_name SET `name` = %s WHERE `id` = %d",
                 $name,
@@ -423,6 +496,17 @@ class Event_Repository implements Event_Repository_Interface {
         return false;
     }
 
+    /**
+     * Updates an event's settings, rules, and type.
+     *
+     * @param int      $id Event ID.
+     * @param array    $settings Event settings to store.
+     * @param int|null $num_rubbers Number of rubbers, or null if not set.
+     * @param int|null $num_sets Number of sets, or null if not set.
+     * @param string   $type Event type.
+     *
+     * @return bool True if the update succeeds, false otherwise.
+     */
     public function update_settings_and_rules( int $id, array $settings, ?int $num_rubbers, ?int $num_sets, string $type ): bool {
         if ( ! $this->wpdb ) {
             return false;
@@ -444,6 +528,13 @@ class Event_Repository implements Event_Repository_Interface {
         return false;
     }
 
+    /**
+     * Counts the leagues associated with a specific event.
+     *
+     * @param int $event_id Event identifier.
+     *
+     * @return int Number of leagues associated with the event.
+     */
     public function count_leagues( int $event_id ): int {
         if ( ! $this->wpdb ) {
             return 0;
@@ -461,7 +552,7 @@ class Event_Repository implements Event_Repository_Interface {
         if ( ! $this->wpdb ) {
             return $args['count'] ?? false ? 0 : [];
         }
-        $defaults = array(
+        $defaults    = array(
             'offset'      => 0,
             'limit'       => 99999999,
             'orderby'     => array( 'title' => 'ASC' ),
@@ -493,8 +584,8 @@ class Event_Repository implements Event_Repository_Interface {
             $sql = "SELECT COUNT(*) FROM $leagues_table $search ";
             return (int) $this->wpdb->get_var( $sql );
         }
-        $order = Util::order_by_string( $orderby );
-        $sql   = $this->wpdb->prepare(
+        $order   = Util::order_by_string( $orderby );
+        $sql     = $this->wpdb->prepare(
             "SELECT `title`, `id`, `settings`, `event_id` FROM $leagues_table $search $order LIMIT %d, %d",
             intval( $offset ),
             intval( $limit )
@@ -508,6 +599,14 @@ class Event_Repository implements Event_Repository_Interface {
         return $leagues ?: [];
     }
 
+    /**
+     * Retrieves player statistics for an event using optional season, club, league, system, and player filters.
+     *
+     * @param int   $event_id Event identifier used to limit statistics to leagues within the event.
+     * @param array $args Filter arguments for narrowing the player statistics query.
+     *
+     * @return array Array of player statistics objects, each including related matchday statistics, or an empty array when unavailable.
+     */
     public function get_player_stats( int $event_id, array $args ): array {
         if ( ! $this->wpdb ) {
             return [];
@@ -534,25 +633,25 @@ class Event_Repository implements Event_Repository_Interface {
         $club_players_table   = $this->table( 'racketmanager_club_players' );
         $users_table          = isset( $this->wpdb->users ) ? $this->wpdb->users : $this->table( 'users' );
 
-        $sql1 = "SELECT p.ID AS `player_id`, p.`display_name` AS `fullname`, ro.`id` AS `roster_id`, ro.`club_id` FROM $club_players_table AS ro, $users_table AS p WHERE ro.`player_id` = p.`ID`";
-        $sql2 = "FROM $teams_table AS t, $rubbers_table AS r, $rubber_players_table AS rp, $matches_table AS m, $club_players_table AS ro WHERE r.`winner_id` != 0 AND r.`id` = rp.`rubber_id` AND ((rp.`player_team` = 'home' AND rp.`club_player_id` = ro.`id` AND m.`home_team` = t.`id`) OR (rp.`player_team` = 'away' AND rp.`club_player_id` = ro.`id` AND m.`away_team` = t.`id`)) AND ro.`club_id` = t.`club_id` AND r.`match_id` = m.`id` ";
+        $sql1            = "SELECT p.ID AS `player_id`, p.`display_name` AS `fullname`, ro.`id` AS `roster_id`, ro.`club_id` FROM $club_players_table AS ro, $users_table AS p WHERE ro.`player_id` = p.`ID`";
+        $sql2            = "FROM $teams_table AS t, $rubbers_table AS r, $rubber_players_table AS rp, $matches_table AS m, $club_players_table AS ro WHERE r.`winner_id` != 0 AND r.`id` = rp.`rubber_id` AND ((rp.`player_team` = 'home' AND rp.`club_player_id` = ro.`id` AND m.`home_team` = t.`id`) OR (rp.`player_team` = 'away' AND rp.`club_player_id` = ro.`id` AND m.`away_team` = t.`id`)) AND ro.`club_id` = t.`club_id` AND r.`match_id` = m.`id` ";
         $search_terms2   = array();
         $search_terms2[] = $this->wpdb->prepare( "m.`league_id` IN (SELECT `id` FROM $leagues_table WHERE `event_id` = '%d')", $event_id );
 
         if ( $season ) {
-            $search_terms2[] = $this->wpdb->prepare( "m.`season` = %s", wp_strip_all_tags( $season ) );
+            $search_terms2[] = $this->wpdb->prepare( 'm.`season` = %s', wp_strip_all_tags( $season ) );
         }
         if ( $league_id ) {
-            $search_terms2[] = $this->wpdb->prepare( "m.`league_id` = %d", intval( $league_id ) );
+            $search_terms2[] = $this->wpdb->prepare( 'm.`league_id` = %d', intval( $league_id ) );
         }
         if ( $club ) {
-            $search_terms2[] = $this->wpdb->prepare( "ro.`club_id` = %d", intval( $club ) );
+            $search_terms2[] = $this->wpdb->prepare( 'ro.`club_id` = %d', intval( $club ) );
         }
         if ( $player ) {
-            $search_terms2[] = $this->wpdb->prepare( "ro.`id` = %d", $player );
+            $search_terms2[] = $this->wpdb->prepare( 'ro.`id` = %d', $player );
         }
         if ( ! $system ) {
-            $search_terms2[] = "ro.`system_record` IS NULL";
+            $search_terms2[] = 'ro.`system_record` IS NULL';
         }
 
         $order       = '`club_id`, `fullname` ';
@@ -572,11 +671,11 @@ class Event_Repository implements Event_Repository_Interface {
 
         foreach ( $playerstats as $i => $playerstat ) {
             $sql3  = 'SELECT t.`id` AS team_id, t.`title` AS team_title, m.`season`, m.`match_day`, m.`home_team`, m.`away_team`, m.`winner_id` AS match_winner, m.`home_points`, m.`away_points`, m.`loser_id` AS match_loser, r.`rubber_number`, r.`winner_id` AS rubber_winner, r.`loser_id` AS rubber_loser, r.`custom`, m.`final` as `final_round`';
-            $sql4  = $this->wpdb->prepare( "ro.`ID` = %d", $playerstat->roster_id );
+            $sql4  = $this->wpdb->prepare( 'ro.`ID` = %d', $playerstat->roster_id );
             $sql3 .= $sql2 . ' AND ' . $sql4;
             $sql3 .= ' ORDER BY m.`season`, m.`match_day`';
 
-            $sql = $sql3;
+            $sql   = $sql3;
             $stats = wp_cache_get( md5( $sql ), 'playerstats' );
             if ( ! $stats ) {
                 $stats = $this->wpdb->get_results( $sql );
@@ -599,6 +698,15 @@ class Event_Repository implements Event_Repository_Interface {
         return $playerstats;
     }
 
+    /**
+     * Retrieves team information for an event and season, optionally filtered and ordered by the provided arguments.
+     *
+     * @param int         $event_id Event identifier used to find related leagues.
+     * @param string|null $season Season identifier to filter league teams.
+     * @param array       $args Optional query arguments, including league_id, rank, home, club, and orderby.
+     *
+     * @return array List of team information records, or an empty array when no results are found.
+     */
     public function get_teams_info( int $event_id, ?string $season, array $args = [] ): array {
         if ( ! $this->wpdb || empty( $season ) ) {
             return [];
@@ -644,7 +752,7 @@ class Event_Repository implements Event_Repository_Interface {
 
         $search = Util::search_string( $search_terms );
         $order  = Util::order_by_string( $orderby );
-        $sql = "SELECT DISTINCT B.`id`, B.`title`, A.`captain`, B.`club_id`, B.`stadium`, B.`home`, B.`roster`, B.`profile`, A.`group`, A.`match_day`, A.`match_time` FROM $teams_table B, $league_teams_table A WHERE B.id = A.team_id AND A.league_id in (select `id` from $leagues_table WHERE `event_id` = " . intval( $event_id ) . ') AND A.season = ' . $this->wpdb->prepare( '%s', $season ) . " $search $order";
+        $sql    = "SELECT DISTINCT B.`id`, B.`title`, A.`captain`, B.`club_id`, B.`stadium`, B.`home`, B.`roster`, B.`profile`, A.`group`, A.`match_day`, A.`match_time` FROM $teams_table B, $league_teams_table A WHERE B.id = A.team_id AND A.league_id in (select `id` from $leagues_table WHERE `event_id` = " . intval( $event_id ) . ') AND A.season = ' . $this->wpdb->prepare( '%s', $season ) . " $search $order";
 
         $teams = wp_cache_get( md5( $sql ), 'teams' );
         if ( ! $teams ) {
@@ -655,6 +763,15 @@ class Event_Repository implements Event_Repository_Interface {
         return $teams ?: [];
     }
 
+    /**
+     * Retrieves team information for a specific event, team, and season.
+     *
+     * @param int         $event_id Event identifier used to limit the league lookup.
+     * @param int         $team_id Team identifier.
+     * @param string|null $season Season identifier.
+     *
+     * @return object|null Team information containing captain, match day, and match time, or null when unavailable.
+     */
     public function get_team_info( int $event_id, int $team_id, ?string $season ): ?object {
         if ( ! $this->wpdb || empty( $season ) ) {
             return null;
@@ -678,6 +795,13 @@ class Event_Repository implements Event_Repository_Interface {
         return $team ?: null;
     }
 
+    /**
+     * Retrieves the stored settings for the specified record.
+     *
+     * @param int $id Record identifier.
+     *
+     * @return array Settings array, or an empty array if no settings are found or the database is unavailable.
+     */
     public function get_settings( int $id ): array {
         if ( ! $this->wpdb ) {
             return [];
@@ -691,6 +815,14 @@ class Event_Repository implements Event_Repository_Interface {
         return $result ? (array) maybe_unserialize( $result->settings ) : [];
     }
 
+    /**
+     * Queries constitution records for an event, optionally filtered by season, previous season, club, and pagination.
+     *
+     * @param int   $event_id Event identifier used to restrict the constitution query.
+     * @param array $args Optional query arguments.
+     *
+     * @return array|int List of constitution result objects, an empty array when no results are found, or the matching record count when count is requested.
+     */
     public function query_constitution( int $event_id, array $args = [] ): array|int {
         if ( ! $this->wpdb ) {
             return $args['count'] ?? false ? 0 : [];
@@ -761,10 +893,26 @@ class Event_Repository implements Event_Repository_Interface {
         return $constitutions ?: [];
     }
 
+    /**
+     * Queries constitutions for a specified event using the provided arguments.
+     *
+     * @param int   $event_id Event identifier.
+     * @param array $args Optional query arguments.
+     *
+     * @return array|int List of matching constitutions or an integer result, depending on the query arguments.
+     */
     public function query_constitutions( int $event_id, array $args = [] ): array|int {
         return $this->query_constitution( $event_id, $args );
     }
 
+    /**
+     * Builds a constitution list for an event using optional filtering and pagination arguments.
+     *
+     * @param int   $event_id Event identifier used to retrieve constitution entries.
+     * @param array $args Optional query arguments, including offset, limit, season, and club filters.
+     *
+     * @return array Constitution records matching the requested criteria, or an empty array when unavailable.
+     */
     public function build_constitution( int $event_id, array $args = [] ): array {
         if ( ! $this->wpdb ) {
             return [];
@@ -796,8 +944,8 @@ class Event_Repository implements Event_Repository_Interface {
             $search_terms[] = $this->wpdb->prepare( 't2.`club_id` = %d', intval( $club ) );
         }
 
-        $search = Util::search_string( $search_terms );
-        $sql    = $this->wpdb->prepare(
+        $search        = Util::search_string( $search_terms );
+        $sql           = $this->wpdb->prepare(
             "SELECT `l`.`title` AS `old_league_name`, `l`.`title` AS `old_league_title`, l.`id` AS `old_league_id`, t2.`id` AS `team_id`, t1.`id` AS `table_id`, `t2`.`title`,`t1`.`rank` AS old_rank, l.`id`, t1.`points_plus`, t1.`add_points`, t1.`status`, t1.`profile`, t1.captain, t1.match_day, t1.match_time FROM $leagues_table l, $league_teams_table t1, $teams_table t2 WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` $search ORDER BY l.`title` ASC, t1.`rank` ASC LIMIT %d, %d",
             intval( $offset ),
             intval( $limit )
@@ -811,17 +959,25 @@ class Event_Repository implements Event_Repository_Interface {
         return $constitutions ?: [];
     }
 
+    /**
+     * Queries clubs associated with an event, optionally filtering and returning a count.
+     *
+     * @param int   $event_id Event identifier used to find associated clubs.
+     * @param array $args Optional query arguments.
+     *
+     * @return array|int List of matching club records with team counts, or the number of matching clubs when count is requested.
+     */
     public function query_clubs( int $event_id, array $args = [] ): array|int {
         if ( ! $this->wpdb ) {
             return $args['count'] ?? false ? 0 : [];
         }
         $defaults = array(
-            'offset'  => 0,
-            'limit'   => 99999999,
-            'season'  => false,
-            'status'  => false,
-            'count'   => false,
-            'name'    => false,
+            'offset' => 0,
+            'limit'  => 99999999,
+            'season' => false,
+            'status' => false,
+            'count'  => false,
+            'name'   => false,
         );
         $args     = array_merge( $defaults, $args );
         $offset   = $args['offset'];
@@ -876,6 +1032,14 @@ class Event_Repository implements Event_Repository_Interface {
         return $event_clubs ?: [];
     }
 
+    /**
+     * Queries teams associated with an event using optional filters, ordering, pagination, or count mode.
+     *
+     * @param int   $event_id Event ID to query teams for.
+     * @param array $args {Optional query arguments.
+     *
+     * @return array|int Array of matching team records, or the matching team count when count mode is enabled.
+     */
     public function query_teams( int $event_id, array $args = [] ): array|int {
         if ( ! $this->wpdb ) {
             return $args['count'] ?? false ? 0 : [];
@@ -966,8 +1130,8 @@ class Event_Repository implements Event_Repository_Interface {
             }
             return (int) $event_teams;
         }
-        $sql .= Util::order_by_string( $orderby );
-        $sql  = $this->wpdb->prepare(
+        $sql        .= Util::order_by_string( $orderby );
+        $sql         = $this->wpdb->prepare(
             $sql . ' LIMIT %d, %d',
             intval( $offset ),
             intval( $limit )
@@ -981,6 +1145,15 @@ class Event_Repository implements Event_Repository_Interface {
         return $event_teams ?: [];
     }
 
+    /**
+     * Queries distinct player IDs for an event from player entries or rubber participation records.
+     *
+     * @param int   $event_id Event identifier used to restrict the player query.
+     * @param bool  $is_player_entry Whether to query registered team player entries instead of rubber player records.
+     * @param array $args Optional query arguments for filtering, ordering, pagination, and count mode.
+     *
+     * @return array|int Array of player result objects, an empty array when no results are found, or the player count when count mode is enabled.
+     */
     public function query_players( int $event_id, bool $is_player_entry, array $args = [] ): array|int {
         if ( ! $this->wpdb ) {
             return $args['count'] ?? false ? 0 : [];
@@ -1053,7 +1226,7 @@ class Event_Repository implements Event_Repository_Interface {
         $order  = Util::order_by_string( $orderby );
         $sql   .= $search;
         if ( $count ) {
-            $sql = $this->wpdb->prepare(
+            $sql         = $this->wpdb->prepare(
                 $sql,
                 $search_args
             );
@@ -1070,7 +1243,7 @@ class Event_Repository implements Event_Repository_Interface {
             $search_args[] = $offset;
             $search_args[] = $limit;
         }
-        $sql = $this->wpdb->prepare(
+        $sql     = $this->wpdb->prepare(
             $sql,
             $search_args
         );
@@ -1083,6 +1256,16 @@ class Event_Repository implements Event_Repository_Interface {
         return $players ?: [];
     }
 
+    /**
+     * Marks league teams for a club as withdrawn for the specified event and season.
+     *
+     * @param int       $event_id Event identifier used to find matching leagues.
+     * @param string    $season Season identifier for the league team records.
+     * @param int       $club Club identifier used to find matching teams.
+     * @param false|int $team Optional team identifier to restrict the update to a single team.
+     *
+     * @return bool True if the update query completed successfully, false otherwise.
+     */
     public function mark_teams_withdrawn( int $event_id, string $season, int $club, false|int $team = false ): bool {
         if ( ! $this->wpdb ) {
             return false;
@@ -1107,6 +1290,15 @@ class Event_Repository implements Event_Repository_Interface {
         return $result !== false;
     }
 
+    /**
+     * Marks a team as entered for all leagues in an event for the specified season.
+     *
+     * @param int    $event_id Event identifier used to find related leagues.
+     * @param int    $team Team identifier to mark as entered.
+     * @param string $season Season identifier for the league team records.
+     *
+     * @return bool True if the update query completes successfully, false otherwise.
+     */
     public function mark_teams_entered( int $event_id, int $team, string $season ): bool {
         if ( ! $this->wpdb ) {
             return false;
@@ -1125,11 +1317,19 @@ class Event_Repository implements Event_Repository_Interface {
         return $result !== false;
     }
 
+    /**
+     * Queries matches for an event using optional filters and can return either matching records or a count.
+     *
+     * @param int   $event_id Event identifier used to limit matches to leagues within the event.
+     * @param array $match_args Optional query arguments, including leagueId, season, final, orderby, confirmed, player, match_date, time, timeOffset, history, club, league_name, team_id, team_name, home_team, away_team, match_day, home_club, count, confirmationPending, resultPending, status, and pending.
+     *
+     * @return array|int Array of matching match records, an empty array when no database connection is available for record queries, or an integer count when count mode is requested.
+     */
     public function query_matches( int $event_id, array $match_args = [] ): array|int {
         if ( ! $this->wpdb ) {
             return $match_args['count'] ?? false ? 0 : [];
         }
-        $defaults = array(
+        $defaults             = array(
             'leagueId'            => false,
             'season'              => false,
             'final'               => false,
@@ -1190,8 +1390,8 @@ class Event_Repository implements Event_Repository_Interface {
 
         $search_terms   = array();
         $sql_from       = " FROM $matches_table AS m, $leagues_table AS l, $rubbers_table AS r ";
-        $sql            = " WHERE m.`league_id` = l.`id` AND m.`id` = r.`match_id`";
-        $search_terms[] = $this->wpdb->prepare( " l.`event_id` = %d ", $event_id );
+        $sql            = ' WHERE m.`league_id` = l.`id` AND m.`id` = r.`match_id`';
+        $search_terms[] = $this->wpdb->prepare( ' l.`event_id` = %d ', $event_id );
         if ( $count ) {
             $sql_fields = 'SELECT COUNT( distinct m.id ) AS count';
         } else {
@@ -1199,19 +1399,19 @@ class Event_Repository implements Event_Repository_Interface {
         }
 
         if ( $match_date ) {
-            $search_terms[] = $this->wpdb->prepare( "DATEDIFF( %s, `date`) = 0", htmlspecialchars( wp_strip_all_tags( $match_date ) ) );
+            $search_terms[] = $this->wpdb->prepare( 'DATEDIFF( %s, `date`) = 0', htmlspecialchars( wp_strip_all_tags( $match_date ) ) );
         }
         if ( $league_id ) {
-            $search_terms[] = $this->wpdb->prepare( "`league_id`  = %d", $league_id );
+            $search_terms[] = $this->wpdb->prepare( '`league_id`  = %d', $league_id );
         }
         if ( $league_name ) {
             $search_terms[] = $this->wpdb->prepare( "`league_id` in ( select `id` from $leagues_table WHERE `title` = %s ) ", $league_name );
         }
         if ( $season ) {
-            $search_terms[] = $this->wpdb->prepare( "`season`  = %s", $season );
+            $search_terms[] = $this->wpdb->prepare( '`season`  = %s', $season );
         }
         if ( $final ) {
-            $search_terms[] = $this->wpdb->prepare( "`final`  = %s", $final );
+            $search_terms[] = $this->wpdb->prepare( '`final`  = %s', $final );
         }
         if ( $time_offset ) {
             $time_offset = intval( $time_offset ) . ':00:00';
@@ -1219,18 +1419,18 @@ class Event_Repository implements Event_Repository_Interface {
             $time_offset = '00:00:00';
         }
         if ( $status ) {
-            $search_terms[] = $this->wpdb->prepare( "`confirmed` = %s", $status );
+            $search_terms[] = $this->wpdb->prepare( '`confirmed` = %s', $status );
         }
         if ( $confirmed ) {
             $search_terms[] = "`confirmed` in ('P','A','C') ";
             if ( $time_offset ) {
-                $search_terms[] = $this->wpdb->prepare( "ADDTIME(`updated`, %s) <= NOW()", $time_offset );
+                $search_terms[] = $this->wpdb->prepare( 'ADDTIME(`updated`, %s) <= NOW()', $time_offset );
             }
         }
         if ( $player ) {
-            $sql_from .= ", $rubber_players_table AS rp";
-            $search_terms[] = "r.`id` = rp.`rubber_id`";
-            $search_terms[] = $this->wpdb->prepare( "rp.`player_id` = %d", $player );
+            $sql_from      .= ", $rubber_players_table AS rp";
+            $search_terms[] = 'r.`id` = rp.`rubber_id`';
+            $search_terms[] = $this->wpdb->prepare( 'rp.`player_id` = %d', $player );
         }
         if ( $confirmation_pending ) {
             $confirmation_pending = intval( $confirmation_pending ) . ':00:00';
@@ -1245,13 +1445,13 @@ class Event_Repository implements Event_Repository_Interface {
         if ( 'latest' === $time ) {
             $search_terms[] = "(m.`home_points` != '' OR m.`away_points` != '')";
         } elseif ( 'outstanding' === $time ) {
-            $search_terms[] = $this->wpdb->prepare( "ADDTIME(m.`date`, %s) <= NOW() AND m.`winner_id` = 0 AND `confirmed` IS NULL", $time_offset );
+            $search_terms[] = $this->wpdb->prepare( 'ADDTIME(m.`date`, %s) <= NOW() AND m.`winner_id` = 0 AND `confirmed` IS NULL', $time_offset );
         } elseif ( 'next' === $time ) {
-            $search_terms[] = "TIMESTAMPDIFF(MINUTE, NOW(), m.`date`) >= 0";
+            $search_terms[] = 'TIMESTAMPDIFF(MINUTE, NOW(), m.`date`) >= 0';
         }
         // get only updated matches in specified period for history.
         if ( $history ) {
-            $search_terms[] = $this->wpdb->prepare( "`updated` >= NOW() - INTERVAL %s DAY", $history );
+            $search_terms[] = $this->wpdb->prepare( '`updated` >= NOW() - INTERVAL %s DAY', $history );
         }
 
         if ( $club ) {
@@ -1261,43 +1461,42 @@ class Event_Repository implements Event_Repository_Interface {
             $search_terms[] = $this->wpdb->prepare( "`home_team` IN (SELECT `id` FROM $teams_table WHERE `club_id` = %d)", $home_club );
         }
         if ( ! empty( $home_team ) ) {
-            $search_terms[] = $this->wpdb->prepare( "`home_team` = %s", $home_team );
+            $search_terms[] = $this->wpdb->prepare( '`home_team` = %s', $home_team );
         }
         if ( ! empty( $away_team ) ) {
-            $search_terms[] = $this->wpdb->prepare( "`away_team` = %s", $away_team );
+            $search_terms[] = $this->wpdb->prepare( '`away_team` = %s', $away_team );
         }
         if ( ! empty( $team_id ) ) {
-            $search_terms[] = $this->wpdb->prepare( "(`home_team` = %d OR `away_team` = %d)", $team_id, $team_id );
+            $search_terms[] = $this->wpdb->prepare( '(`home_team` = %d OR `away_team` = %d)', $team_id, $team_id );
         }
         if ( ! empty( $team_name ) ) {
             $team_name_search = '%' . $this->wpdb->esc_like( $team_name ) . '%';
-            $search_terms[] = $this->wpdb->prepare( "(`home_team` IN (SELECT `id` FROM $teams_table WHERE `title` LIKE %s) OR `away_team` IN (SELECT `id` FROM $teams_table WHERE `title` LIKE %s))", $team_name_search, $team_name_search );
+            $search_terms[]   = $this->wpdb->prepare( "(`home_team` IN (SELECT `id` FROM $teams_table WHERE `title` LIKE %s) OR `away_team` IN (SELECT `id` FROM $teams_table WHERE `title` LIKE %s))", $team_name_search, $team_name_search );
         }
         if ( $match_day && intval( $match_day ) > 0 ) {
-            $search_terms[] = $this->wpdb->prepare( "`match_day` = %s", $match_day );
+            $search_terms[] = $this->wpdb->prepare( '`match_day` = %s', $match_day );
         }
         if ( $pending ) {
-            $search_terms[] = "m.`winner_id` = 0";
+            $search_terms[] = 'm.`winner_id` = 0';
         }
         $search = Util::search_string( $search_terms );
         $sql    = $sql_fields . $sql_from . $sql . $search;
         if ( $count ) {
             return (int) $this->wpdb->get_var( $sql );
-        } else {
-            $sql .= Util::order_by_string( $orderby );
-            $matches = $this->wpdb->get_results( $sql );
-            return $matches ?: [];
         }
+        $sql    .= Util::order_by_string( $orderby );
+        $matches = $this->wpdb->get_results( $sql );
+        return $matches ?: [];
     }
 
     /**
-     * Count matches for an event and season directly from matches and leagues without requiring rubbers.
+     * Counts matches for an event in a given season, optionally including only completed matches.
      *
-     * @param int $event_id
-     * @param string $season
-     * @param bool $completed_only Whether to only count finished matches with a score.
+     * @param int    $event_id Event identifier.
+     * @param string $season Season identifier.
+     * @param bool   $completed_only Optional. Whether to count only completed matches. Default false.
      *
-     * @return int
+     * @return int Number of matching matches.
      */
     public function count_by_event_season( int $event_id, string $season, bool $completed_only = false ): int {
         if ( ! $this->wpdb ) {
@@ -1316,12 +1515,20 @@ class Event_Repository implements Event_Repository_Interface {
         );
     }
 
+    /**
+     * Updates the seasons data for an event and clears its cache entry on success.
+     *
+     * @param int   $id Event ID.
+     * @param array $seasons Seasons data to store.
+     *
+     * @return bool True if the seasons data was updated successfully, false otherwise.
+     */
     public function update_seasons( int $id, array $seasons ): bool {
         if ( ! $this->wpdb ) {
             return false;
         }
         $seasons_json = wp_json_encode( $seasons );
-        $result = $this->wpdb->query(
+        $result       = $this->wpdb->query(
             $this->wpdb->prepare(
                 "UPDATE $this->table_name SET `seasons` = %s WHERE `id` = %d",
                 $seasons_json,
@@ -1335,12 +1542,20 @@ class Event_Repository implements Event_Repository_Interface {
         return false;
     }
 
+    /**
+     * Deletes all league team records for a specific league and season.
+     *
+     * @param int    $league_id League identifier.
+     * @param string $season Season value used to match league team records.
+     *
+     * @return bool True if the delete query succeeds, false if the database connection is unavailable or the query fails.
+     */
     public function delete_league_teams_for_season( int $league_id, string $season ): bool {
         if ( ! $this->wpdb ) {
             return false;
         }
         $league_teams_table = $this->table( 'racketmanager_league_teams' );
-        $result = $this->wpdb->query(
+        $result             = $this->wpdb->query(
             $this->wpdb->prepare(
                 "DELETE FROM $league_teams_table WHERE `league_id` = %d AND `season` = %s",
                 $league_id,
@@ -1349,5 +1564,4 @@ class Event_Repository implements Event_Repository_Interface {
         );
         return $result !== false;
     }
-
 }

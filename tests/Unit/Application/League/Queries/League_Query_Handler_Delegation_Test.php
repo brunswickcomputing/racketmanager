@@ -60,12 +60,14 @@ class League_Query_Handler_Delegation_Test extends TestCase {
     }
 
 	private function league(): League {
-		$event              = $this->createStub( Event::class );
-		$event->competition = (object) [
-			'type'            => 'league',
-			'is_team_entry'   => true,
-			'is_player_entry' => false,
-		];
+		$event = new Event();
+		$event->set_competition(
+			(object) array(
+				'type'            => 'league',
+				'is_team_entry'   => true,
+				'is_player_entry' => false,
+			)
+		);
 
 		$league                 = $this->createStub( League::class );
 		$league->id             = 7;

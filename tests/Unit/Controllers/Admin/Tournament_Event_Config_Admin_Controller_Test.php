@@ -120,10 +120,17 @@ final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $_GET['event_id'] = '456';
 
         $competition = $this->createStub( Competition::class );
-        $event = $this->createStub( Event::class );
-        $event->settings = [];
-        $event->num_sets = 3;
-        $event->num_rubbers = 6;
+        $event       = Event::from_array(
+            array(
+                'id'             => 456,
+                'name'           => 'Event',
+                'type'           => 'singles',
+                'competition_id' => 123,
+                'num_sets'       => 3,
+                'num_rubbers'    => 6,
+                'settings'       => array(),
+            )
+        );
 
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
         $this->competition_service->expects( self::once() )->method( 'get_event_by_id' )->with( 456 )->willReturn( $event );

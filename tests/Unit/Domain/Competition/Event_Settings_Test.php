@@ -75,9 +75,7 @@ class Event_Settings_Test extends TestCase {
                     }
                 )
             )
-            ->willReturn( [
-                (object) [ 'id' => 100 ],
-            ] );
+            ->willReturn( array( (object) array( 'id' => 100 ) ) );
 
         $fixture_raw            = new stdClass();
         $fixture_raw->id        = 100;
@@ -112,7 +110,7 @@ class Event_Settings_Test extends TestCase {
             ->with( 10, [ 'reverse_rubbers' => '1' ], 4, 3, 'doubles' )
             ->willReturn( true );
 
-        $this->event->current_season = [ 'name' => '2026' ];
+        $this->event->set_current_season( [ 'name' => '2026' ] );
         $query_service = new \Racketmanager\Services\Competition\Event_Query_Service(
             $this->event_repository,
             $this->fixture_repository,
@@ -132,5 +130,61 @@ class Event_Settings_Test extends TestCase {
     public function test_event_set_settings_updates_property_in_memory(): void {
         $this->event->set_settings( [ 'test_setting' => 'abc' ] );
         $this->assertSame( [ 'test_setting' => 'abc' ], $this->event->settings );
+    }
+
+    public function test_persisted_settings_cannot_override_identity_columns(): void {
+        $event = $this->hydrate_with_settings(
+            array(
+                'id'             => '99',
+                'competition_id' => '7',
+                'name'           => 'Hijacked',
+                'num_sets'       => '5',
+            )
+        );
+
+        $this->assertSame( 12, $event->id );
+        $this->assertSame( 1, $event->competition_id );
+        $this->assertSame( 'Summer League Event', $event->name );
+        $this->assertSame( 5, $event->num_sets );
+    }
+
+    public function test_persisted_settings_hydrate_settings_backed_fields(): void {
+        $event = $this->hydrate_with_settings(
+            array(
+                'num_seeds'        => '4',
+                'team_ranking'     => 'auto',
+                'competition_type' => 'league',
+            )
+        );
+
+        $this->assertSame( 4, $event->num_seeds );
+        $this->assertSame( 'auto', $event->team_ranking );
+        $this->assertSame( 'league', $event->competition_type );
+    }
+
+    public function test_unknown_persisted_settings_keys_are_not_applied(): void {
+        $event = $this->hydrate_with_settings( array( 'unknown_setting' => 'x' ) );
+
+        $this->assertFalse( property_exists( $event, 'unknown_setting' ) );
+        $this->assertSame( array( 'unknown_setting' => 'x' ), $event->settings );
+    }
+
+    /**
+     * Hydrate an event row whose settings contain the given keys.
+     *
+     * @param array $settings Persisted settings values.
+     *
+     * @return Event
+     */
+    private function hydrate_with_settings( array $settings ): Event {
+        $row                 = new stdClass();
+        $row->id             = 12;
+        $row->name           = 'Summer League Event';
+        $row->type           = 'singles';
+        $row->competition_id = 1;
+        $row->seasons        = '[]';
+        $row->settings       = wp_json_encode( $settings );
+
+        return Event::from_object( $row, $this->event->competition );
     }
 }

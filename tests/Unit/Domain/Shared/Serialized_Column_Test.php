@@ -141,4 +141,33 @@ final class Serialized_Column_Test extends TestCase {
             $this->assertSame( maybe_unserialize( $sample ), Serialized_Column::decode( $sample ) );
         }
     }
+
+    public function test_unserialize_safe_suppresses_warnings_and_restores_error_handler(): void {
+        $captured_errors = array();
+        $custom_handler  = static function ( int $errno, string $errstr ) use ( &$captured_errors ): bool {
+            $captured_errors[] = array(
+                'errno'  => $errno,
+                'errstr' => $errstr,
+            );
+            return true;
+        };
+
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler -- Test fixture verifying error handler restoration.
+        set_error_handler( $custom_handler );
+
+        try {
+            // Malformed serialized string that triggers E_WARNING in standard unserialize().
+            $result = Serialized_Column::unserialize_safe( 'a:2:{i:0;s:3:"abc";' );
+            $this->assertFalse( $result );
+            $this->assertSame( array(), $captured_errors, 'unserialize_safe must suppress warning and not invoke prior handler' );
+
+            // Trigger an error to prove our custom handler is still the active error handler.
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_trigger_error -- Verify active error handler.
+            trigger_error( 'Test notice after safe unserialize', E_USER_NOTICE );
+            $this->assertCount( 1, $captured_errors );
+            $this->assertSame( 'Test notice after safe unserialize', $captured_errors[0]['errstr'] );
+        } finally {
+            restore_error_handler();
+        }
+    }
 }

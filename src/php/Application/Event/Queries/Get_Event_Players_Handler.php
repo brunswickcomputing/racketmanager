@@ -77,14 +77,14 @@ readonly class Get_Event_Players_Handler {
         if ( ! empty( $query->player_id ) ) {
             $player = $this->get_player_info( $event, $query->player_id );
             if ( is_object( $player ) ) {
-                $event->player = $player;
+                $event->set_player( $player );
             } else {
                 return Event_Players_Result::error( __( 'Player not found', 'racketmanager' ) );
             }
         } else {
             $current_season = isset( $event->current_season['name'] ) ? (string) $event->current_season['name'] : null;
             $players        = $this->event_query_service->get_players( $event, [ 'season' => $current_season ] );
-            $event->players = Util::get_players_list( $players );
+            $event->set_players( Util::get_players_list( $players ) );
         }
 
         return new Event_Players_Result(

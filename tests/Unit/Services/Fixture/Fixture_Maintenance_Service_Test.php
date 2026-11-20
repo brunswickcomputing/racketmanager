@@ -93,10 +93,9 @@ class Fixture_Maintenance_Service_Test extends TestCase {
         $fixture->method( 'get_league_id' )->willReturn( 1 );
 
         $league = $this->createStub( League::class );
-        $event = $this->createStub( Event::class );
-        $event->competition = (object) [
-            'type' => 'league'
-        ];
+        $event = new Event();
+        $comp = (object) [ 'type' => 'league' ];
+        $event->set_competition( $comp );
         $league->event = $event;
 
         $this->league_repository->method( 'find_by_id' )->willReturn( $league );
@@ -117,10 +116,9 @@ class Fixture_Maintenance_Service_Test extends TestCase {
         $fixture->method( 'get_league_id' )->willReturn( 1 );
 
         $league = $this->createStub( League::class );
-        $event = $this->createStub( Event::class );
-        $event->competition = (object) [
-            'type' => 'league'
-        ];
+        $event = new Event();
+        $comp = (object) [ 'type' => 'league' ];
+        $event->set_competition( $comp );
         $league->event = $event;
 
         $this->league_repository->method( 'find_by_id' )->willReturn( $league );
@@ -143,10 +141,9 @@ class Fixture_Maintenance_Service_Test extends TestCase {
         $fixture->method( 'get_away_points' )->willReturn( '3.0' );
 
         $league = $this->createStub( League::class );
-        $event = $this->createStub( Event::class );
-        $event->competition = (object) [
-            'type' => 'league'
-        ];
+        $event = new Event();
+        $comp = (object) [ 'type' => 'league' ];
+        $event->set_competition( $comp );
         $league->event = $event;
 
         $this->league_repository->method( 'find_by_id' )->willReturn( $league );
@@ -168,11 +165,12 @@ class Fixture_Maintenance_Service_Test extends TestCase {
         $fixture->method( 'get_date_result_entered' )->willReturn( '2023-01-02 11:00:00' ); // 25 hours later
 
         $league = $this->createStub( League::class );
-        $event = $this->createStub( Event::class );
-        $event->competition = (object) [
+        $event = new Event();
+        $comp = (object) [
             'type' => 'league',
-            'rules' => [ 'resultTimeout' => 24 ]
+            'rules' => [ 'resultTimeout' => 24 ],
         ];
+        $event->set_competition( $comp );
         $league->event = $event;
 
         $this->league_repository->method( 'find_by_id' )->willReturn( $league );

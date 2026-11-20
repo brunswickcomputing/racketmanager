@@ -39,8 +39,8 @@ final class League_Team_Admin_Service_Test extends TestCase {
         $championship         = $this->createMock( Championship::class );
         $championship->method( 'is_consolation' )->willReturn( $consolation );
         $league->championship = $championship;
-        $event                = $this->createMock( Event::class );
-        $event->competition   = (object) array( 'is_player_entry' => $player_entry );
+        $event = new Event();
+        $event->set_competition( (object) array( 'is_player_entry' => $player_entry ) );
         $league->event        = $event;
         $league->method( 'get_id' )->willReturn( 7 );
         return $league;

@@ -221,10 +221,10 @@ final class Tournament_Test extends TestCase {
         array $seasons = [ '2026' => [ 'name' => '2026' ] ]
     ): Event {
         $event                 = new ReflectionClass( Event::class )->newInstanceWithoutConstructor();
-        $event->id             = $id;
-        $event->name           = $name;
-        $event->competition_id = $competition_id;
-        $event->seasons        = json_encode( $seasons );
+        $event->set_id( $id );
+        $event->set_name( $name );
+        $event->set_competition_id( $competition_id );
+        $event->set_seasons( $seasons );
         return $event;
     }
 

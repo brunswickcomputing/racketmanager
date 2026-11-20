@@ -282,13 +282,13 @@ class Parent_Page_Templates_Test extends TestCase {
         bool $is_box = false
     ): Event {
         $event                 = ( new \ReflectionClass( Event::class ) )->newInstanceWithoutConstructor();
-        $event->id             = $id;
-        $event->name           = $name;
-        $event->is_box         = $is_box;
-        $event->competition_id = $competition->id;
-        $event->competition    = $competition;
-        $event->seasons        = wp_json_encode( [ '2026' => [ 'name' => '2026' ] ] );
-        $event->current_season = [ 'name' => '2026' ];
+        $event->set_id( $id );
+        $event->set_name( $name );
+        $event->set_is_box( $is_box );
+        $event->set_competition_id( $competition->id );
+        $event->set_competition( $competition );
+        $event->set_seasons( [ '2026' => [ 'name' => '2026' ] ] );
+        $event->set_current_season( [ 'name' => '2026' ] );
         return $event;
     }
 

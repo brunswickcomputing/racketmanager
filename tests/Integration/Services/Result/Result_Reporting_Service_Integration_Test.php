@@ -79,9 +79,9 @@ class Result_Reporting_Service_Integration_Test extends TestCase {
 		$event->method( 'get_id' )->willReturn( 201 );
 		$event->method( 'get_competition_id' )->willReturn( 301 );
 		$event->method( 'get_season_by_name' )->willReturn( [ 'grade' => 3 ] );
-		$event->name = 'Int Event';
-		$event->age_limit = 'Open';
-		$event->type = 'MS';
+		$event->set_name( 'Int Event' );
+		$event->set_age_limit( 'Open' );
+		$event->set_type( 'MS' );
 
 		$competition = Competition_Test_Factory::create(
 			id: 301,

@@ -49,7 +49,7 @@ final class Knockout_Progression_Service_Test extends TestCase {
 		$fixture->set_winner_id( 50 );
 
 		$event = ( new \ReflectionClass( Event::class ) )->newInstanceWithoutConstructor();
-		$event->seasons = array( '2026' => array( 'name' => '2026' ) );
+		$event->set_seasons( array( '2026' => array( 'name' => '2026' ) ) );
 
 		$league = ( new \ReflectionClass( League::class ) )->newInstanceWithoutConstructor();
 		$league->id = 99;

@@ -203,8 +203,8 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
 
     private function setup_event_for_team_order( int $event_id = 10, string $type = 'MD' ): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $event       = $this->createStub( Event::class );
-        $event->type = $type;
+        $event = new Event();
+        $event->set_type( $type );
         $competition_service = $this->createMock( Competition_Service::class );
         $competition_service->expects( $this->once() )->method( 'get_event_by_id' )->with( $event_id )->willReturn( $event );
         $this->competition_service = $competition_service;

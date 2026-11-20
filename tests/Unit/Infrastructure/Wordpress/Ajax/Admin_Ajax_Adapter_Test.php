@@ -399,8 +399,8 @@ class Admin_Ajax_Adapter_Test extends TestCase {
         $this->competition_notification_service = $this->createMock( Competition_Notification_Service::class );
         $this->adapter                          = $this->make_adapter();
 
-        $event = $this->createStub( Event::class );
-        $event->current_season = [ 'name' => '2026' ];
+        $event = new Event();
+        $event->set_current_season( [ 'name' => '2026' ] );
         $GLOBALS['wp_stubs_events'] = [ 101 => $event ];
 
         $this->competition_notification_service->expects( $this->once() )
@@ -699,9 +699,9 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     public function test_send_fixtures_no_contact_emails_returns_500(): void {
         $this->allow_security();
 
-        $event                      = $this->createStub( Event::class );
-        $event->name                = 'Men Doubles Event';
-        $event->competition         = (object) [ 'type' => 'league' ];
+        $event = new Event();
+        $event->set_name( 'Men Doubles Event' );
+        $event->set_competition( (object) [ 'type' => 'league' ] );
         $GLOBALS['wp_stubs_events'] = [ 100 => $event ];
 
         $this->notification_service = $this->createMock( Notification_Service::class );
@@ -723,9 +723,9 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     public function test_send_fixtures_success_sends_email_and_returns_200(): void {
         $this->allow_security();
 
-        $event                      = $this->createStub( Event::class );
-        $event->name                = 'Men Doubles Event';
-        $event->competition         = (object) [ 'type' => 'league' ];
+        $event = new Event();
+        $event->set_name( 'Men Doubles Event' );
+        $event->set_competition( (object) [ 'type' => 'league' ] );
         $GLOBALS['wp_stubs_events'] = [ 200 => $event ];
 
         $this->notification_service = $this->createMock( Notification_Service::class );

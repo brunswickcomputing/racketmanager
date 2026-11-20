@@ -507,7 +507,7 @@ class Competition_Entry_Service_Test extends TestCase {
     public function test_highest_numbered_team_is_allowed_to_play_at_the_weekend(): void {
         $this->create_competition();
         $event = $this->create_event( 10 );
-        $event->match_days_allowed = [ '1' => '1', '5' => '1' ];
+        $event->apply_settings( [ 'match_days_allowed' => [ '1' => '1', '5' => '1' ] ] );
         $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
 
         $this->setup_mock_teams(
@@ -2231,9 +2231,9 @@ class Competition_Entry_Service_Test extends TestCase {
     public function test_tournament_entry_multi_event_success_with_singles_and_partner_switch(): void {
         $tournament = $this->create_tournament( 1, '2026', '2026-08-30' );
         $event10 = $this->create_tournament_event( 10, 'MS' );
-        $event10->primary_league = 100;
+        $event10->set_primary_league( 100 );
         $event20 = $this->create_tournament_event( 20, 'MD' );
-        $event20->primary_league = 200;
+        $event20->set_primary_league( 200 );
 
         $this->tournament_service->method( 'get_events_for_tournament' )->willReturn( [ $event10, $event20 ] );
         $this->competition_service->method( 'get_event_by_id' )->willReturnMap( [
@@ -2931,9 +2931,9 @@ class Competition_Entry_Service_Test extends TestCase {
         $tournament = $this->create_tournament( 1, '2026', '2026-08-30' );
         // Event with primary_league not set (0), exercising Event::get_primary_league_id() lazy query fallback
         $event = $this->create_tournament_event( 15, 'MS' );
-        $event->primary_league = 0;
-        $event->settings = [];
-        $event->league_index = [];
+        $event->set_primary_league( 0 );
+        $event->set_settings( [] );
+        $event->set_league_index( [] );
 
         $this->event_repository->method( 'query_leagues' )
             ->willReturn( [ (object) [ 'id' => 2050 ] ] );
@@ -2982,14 +2982,14 @@ class Competition_Entry_Service_Test extends TestCase {
 
         // Singles event 15 has unset primary_league (0), falls back to repository query returning league 2050
         $singles_event = $this->create_tournament_event( 15, 'MS' );
-        $singles_event->primary_league = 0;
-        $singles_event->settings = [];
-        $singles_event->league_index = [];
+        $singles_event->set_primary_league( 0 );
+        $singles_event->set_settings( [] );
+        $singles_event->set_league_index( [] );
 
         // Doubles event 16 has primary_league 3050
         $doubles_event = $this->create_tournament_event( 16, 'MD' );
-        $doubles_event->primary_league = 3050;
-        $doubles_event->league_index = [ 3050 => '1' ];
+        $doubles_event->set_primary_league( 3050 );
+        $doubles_event->set_league_index( [ 3050 => '1' ] );
 
         $this->event_repository->method( 'query_leagues' )
             ->willReturnCallback( function( $event_id ) {
@@ -3073,8 +3073,8 @@ class Competition_Entry_Service_Test extends TestCase {
         $tournament = $this->create_tournament( 1, '2026', '2026-08-30' );
         // Event with no primary league and query_leagues returning empty
         $event = $this->create_tournament_event( 16, 'MS' );
-        $event->primary_league = 0;
-        $event->settings = [];
+        $event->set_primary_league( 0 );
+        $event->set_settings( [] );
 
         $this->event_query_service = $this->createMock( Event_Query_Service::class );
         $this->event_query_service->expects( $this->once() )
@@ -3105,8 +3105,8 @@ class Competition_Entry_Service_Test extends TestCase {
     public function test_validate_tournament_partner_resolves_primary_league_and_validates_partner(): void {
         $tournament = $this->create_tournament( 1, '2026', '2026-08-30' );
         $event = $this->create_tournament_event( 20, 'MD' );
-        $event->primary_league = 0;
-        $event->settings = [];
+        $event->set_primary_league( 0 );
+        $event->set_settings( [] );
 
         $this->event_query_service = $this->createMock( Event_Query_Service::class );
         $this->event_query_service->expects( $this->once() )
@@ -3151,8 +3151,8 @@ class Competition_Entry_Service_Test extends TestCase {
     public function test_validate_tournament_partner_returns_error_when_event_has_no_primary_league(): void {
         $tournament = $this->create_tournament( 1, '2026', '2026-08-30' );
         $event = $this->create_tournament_event( 21, 'MD' );
-        $event->primary_league = 0;
-        $event->settings = [];
+        $event->set_primary_league( 0 );
+        $event->set_settings( [] );
 
         $this->event_repository->method( 'query_leagues' )
             ->willReturn( [] );
@@ -3182,8 +3182,8 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->competition_to_return = $competition;
 
         $event = $this->create_tournament_event( 30, 'MD' );
-        $event->primary_league = 0;
-        $event->settings = [];
+        $event->set_primary_league( 0 );
+        $event->set_settings( [] );
 
         $this->event_repository->method( 'query_leagues' )
             ->willReturn( [] );
@@ -3317,7 +3317,7 @@ class Competition_Entry_Service_Test extends TestCase {
             ] );
 
         $event = $this->create_event( 10, 'MD' );
-        $event->seasons = wp_json_encode( [ '2025' => [ 'name' => '2025' ], '2026' => [ 'name' => '2026' ] ] );
+        $event->set_seasons( [ '2025' => [ 'name' => '2025' ], '2026' => [ 'name' => '2026' ] ] );
         $this->event_query_service->expects( $this->once() )->method( 'get_constitution' )
             ->with( $event, [ 'season' => 2026, 'count' => true ] )
             ->willReturn( 1 );
@@ -3446,7 +3446,7 @@ class Competition_Entry_Service_Test extends TestCase {
             ] );
 
         $event = $this->create_event( 10, 'MD' );
-        $event->seasons = wp_json_encode( [ '2025' => [ 'name' => '2025' ], '2026' => [ 'name' => '2026' ] ] );
+        $event->set_seasons( [ '2025' => [ 'name' => '2025' ], '2026' => [ 'name' => '2026' ] ] );
         $this->event_query_service->expects( $this->once() )->method( 'get_constitution' )
             ->with( $event, [ 'season' => 2026, 'count' => true ] )
             ->willReturn( 1 );

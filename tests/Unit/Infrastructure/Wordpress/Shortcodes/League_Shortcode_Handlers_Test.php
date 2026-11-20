@@ -294,8 +294,8 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $event_obj = new class extends Event {
             public string $title = 'Main Event';
             public function __construct() {
-                $this->id   = 5;
-                $this->name = 'Main Event';
+                $this->set_id( 5 );
+                $this->set_name( 'Main Event' );
             }
             public function get_seasons(): array { return [ '2025', '2026' ]; }
         };

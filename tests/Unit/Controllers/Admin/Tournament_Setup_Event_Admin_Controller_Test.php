@@ -10,6 +10,7 @@ use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Tournament\Tournament;
+use Racketmanager\Tests\Helpers\Event_Test_Factory;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Response_DTO;
@@ -36,9 +37,7 @@ final class Tournament_Setup_Event_Admin_Controller_Test extends TestCase {
         $competition = $this->createStub( Competition::class );
         $competition->method( 'get_season_by_name' )->willReturn( [ 'match_dates' => [ '2026-06-01' ] ] );
 
-        $event = $this->createStub( Event::class );
-        $event->competition = $competition;
-        $event->method( 'get_season_by_name' )->willReturn( [ 'match_dates' => [ '2026-06-01' ] ] );
+        $event = Event_Test_Factory::create( competition: $competition );
 
         $league = $this->createStub( League::class );
         $league->event = $event;

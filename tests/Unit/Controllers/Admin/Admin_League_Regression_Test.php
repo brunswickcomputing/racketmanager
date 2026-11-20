@@ -275,11 +275,11 @@ final class Admin_League_Regression_Test extends TestCase {
 
 	public function test_display_event_page_renders_with_injected_event_repository(): void {
 		$competition           = Competition_Test_Factory::create( 5, 'Premier League', Competition_Type::LEAGUE );
-		$event                 = $this->createStub( \Racketmanager\Domain\Competition\Event::class );
-		$event->id             = 10;
-		$event->name           = 'Mixed Doubles';
-		$event->competition    = $competition;
-		$event->current_season = array( 'name' => '2026' );
+		$event                 = $this->getMockBuilder( \Racketmanager\Domain\Competition\Event::class )->disableOriginalConstructor()->onlyMethods( [ 'get_seasons' ] )->getMock();
+		$event->set_id( 10 );
+		$event->set_name( 'Mixed Doubles' );
+		$event->set_competition( $competition );
+		$event->set_current_season( array( 'name' => '2026' ) );
 		$event->method( 'get_seasons' )->willReturn( array( '2026' => array( 'name' => '2026' ) ) );
 
 		$event_repository = $this->createMock( Event_Repository_Interface::class );
@@ -318,11 +318,11 @@ final class Admin_League_Regression_Test extends TestCase {
 
 	public function test_display_setup_event_page_renders_using_injected_repository(): void {
 		$competition           = Competition_Test_Factory::create( 5, 'Premier League', Competition_Type::LEAGUE );
-		$event                 = $this->createStub( \Racketmanager\Domain\Competition\Event::class );
-		$event->id             = 10;
-		$event->name           = 'Mixed Doubles';
-		$event->competition    = $competition;
-		$event->current_season = array( 'name' => '2026' );
+		$event                 = $this->getMockBuilder( \Racketmanager\Domain\Competition\Event::class )->disableOriginalConstructor()->onlyMethods( [ 'get_season_by_name' ] )->getMock();
+		$event->set_id( 10 );
+		$event->set_name( 'Mixed Doubles' );
+		$event->set_competition( $competition );
+		$event->set_current_season( array( 'name' => '2026' ) );
 		$event->method( 'get_season_by_name' )->willReturn(
 			array(
 				'name'           => '2026',
@@ -354,11 +354,11 @@ final class Admin_League_Regression_Test extends TestCase {
 
 	public function test_display_matches_page_orders_matches_by_home_team_asc(): void {
 		$competition           = Competition_Test_Factory::create( 5, 'Premier League', Competition_Type::LEAGUE );
-		$event                 = $this->createMock( \Racketmanager\Domain\Competition\Event::class );
-		$event->id             = 10;
-		$event->name           = 'Mixed Doubles';
-		$event->competition    = $competition;
-		$event->current_season = array( 'name' => '2026' );
+		$event                 = $this->getMockBuilder( \Racketmanager\Domain\Competition\Event::class )->disableOriginalConstructor()->onlyMethods( [ 'get_seasons' ] )->getMock();
+		$event->set_id( 10 );
+		$event->set_name( 'Mixed Doubles' );
+		$event->set_competition( $competition );
+		$event->set_current_season( array( 'name' => '2026' ) );
 		$event->method( 'get_seasons' )->willReturn( array( '2026' => array( 'name' => '2026' ) ) );
 		$GLOBALS['wp_stubs_events'][10] = $event;
 
@@ -533,7 +533,7 @@ final class Admin_League_Regression_Test extends TestCase {
 		$competition->type           = 'league';
 		$competition->settings       = array( 'team_ranking' => 'auto' );
 		$event                       = new \stdClass();
-		$event->competition          = $competition;
+		$event->competition = $competition;
 		$league                      = new \stdClass();
 		$league->id                  = 42;
 		$league->event               = $event;

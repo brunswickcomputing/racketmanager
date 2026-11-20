@@ -149,7 +149,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
             $_GET['season'] = '2025';
         }
         $event = $this->create_test_event( 93, 10, $this->create_test_competition( 10, [ 93 ] ) );
-        $event->seasons = json_encode( [ '2025' => [ 'name' => '2025' ], '2026' => [ 'name' => '2026' ] ] );
+        $event->set_seasons( [ '2025' => [ 'name' => '2025' ], '2026' => [ 'name' => '2026' ] ] );
         $competition_service = $this->createStub( Competition_Service::class );
         $competition_service->method( 'get_event_by_id' )->willReturn( $event );
         $service = $this->event_query_service();
@@ -186,7 +186,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
     public function test_event_handler_returns_error_for_unknown_season_in_request(): void {
         $_GET = [ 'season' => '1999' ];
         $event = $this->create_test_event( 93, 10, $this->create_test_competition( 10, [ 93 ] ) );
-        $event->seasons = json_encode( [ '2025' => [ 'name' => '2025' ], '2026' => [ 'name' => '2026' ] ] );
+        $event->set_seasons( [ '2025' => [ 'name' => '2025' ], '2026' => [ 'name' => '2026' ] ] );
         $competition_service = $this->createStub( Competition_Service::class );
         $competition_service->method( 'get_event_by_id' )->willReturn( $event );
         $handler = new Get_Event_Handler( $competition_service, $this->event_query_service() );
@@ -269,10 +269,11 @@ class Event_Shortcode_Handlers_Test extends TestCase {
     }
 
     private function attach_test_competition( Event $event, ?Competition $competition = null ): Event {
-        $event->competition_id = 10;
-        $event->competition    = $competition ?? $this->create_test_competition();
+        $comp = $competition ?? $this->create_test_competition();
+        $event->set_competition_id( (int) ( $comp->id ?? 10 ) );
+        $event->set_competition( $comp );
         if ( empty( $event->seasons ) ) {
-            $event->seasons = json_encode( [ '2025' => [ 'name' => '2025' ], '2026' => [ 'name' => '2026' ] ] );
+            $event->set_seasons( [ '2025' => [ 'name' => '2025' ], '2026' => [ 'name' => '2026' ] ] );
         } elseif ( is_array( $event->seasons ) ) {
             $seasons_map = [];
             foreach ( $event->seasons as $s ) {
@@ -280,12 +281,12 @@ class Event_Shortcode_Handlers_Test extends TestCase {
                     $seasons_map[ $s['name'] ] = $s;
                 }
             }
-            $event->seasons = json_encode( $seasons_map );
+            $event->set_seasons( $seasons_map );
         }
         if ( method_exists( $event, 'method' ) ) {
             $event->method( 'get_season_by_name' )->willReturnCallback(
                 function ( string $name ) use ( $event ) {
-                    $seasons = json_decode( (string) $event->seasons, true ) ?? [];
+                    $seasons = is_array( $event->seasons ) ? $event->seasons : ( json_decode( (string) $event->seasons, true ) ?? [] );
                     return $seasons[ $name ] ?? null;
                 }
             );
@@ -310,12 +311,20 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
         // 3. Season not found
         $comp_service_success = $this->createStub( Competition_Service::class );
-        $event_stub = $this->createStub( Event::class );
-        $event_stub->id   = 10;
-        $event_stub->name = 'Mens Singles';
-        $event_stub->type = 'MS';
-        $event_stub->seasons = [ [ 'name' => '2025' ] ];
-        $event_stub->current_season = [];
+        $event_stub = new class() extends Event {
+            public function set_season( ?string $season = null, bool $force_overwrite = false, bool $strict = false ): void {
+                if ( '2026' === $season ) {
+                    $this->set_current_season( [] );
+                } else {
+                    parent::set_season( $season, $force_overwrite, $strict );
+                }
+            }
+        };
+        $event_stub->set_id( 10 );
+        $event_stub->set_name( 'Mens Singles' );
+        $event_stub->set_type( 'MS' );
+        $event_stub->set_seasons( [ [ 'name' => '2025' ] ] );
+        $event_stub->set_current_season( [] );
         $this->attach_test_competition( $event_stub );
 
         $comp_service_success->method( 'get_event_by_id' )->willReturn( $event_stub );
@@ -326,7 +335,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'Season not found for event', $vm_no_season->error_message );
 
         // 4. Success path
-        $event_stub->current_season = [ 'name' => '2025' ];
+        $event_stub->set_current_season( [ 'name' => '2025' ] );
         $result = $handler_success->handle( new Get_Event_Query( event_name: 'Mens Singles', tab: 'draw' ) );
         $vm_success = $this->create_event_adapter()->present_event( $result );
         $this->assertFalse( $vm_success->is_error() );
@@ -344,9 +353,9 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $vm_err = $handler->handle( new Get_Event_Standings_Query() );
         $this->assertTrue( $vm_err->is_error() );
 
-        $event_stub = $this->createStub( Event::class );
-        $event_stub->id = 5;
-        $event_stub->current_season = [ 'name' => '2025' ];
+        $event_stub = new Event();
+        $event_stub->set_id( 5 );
+        $event_stub->set_current_season( [ 'name' => '2025' ] );
         $this->attach_test_competition( $event_stub );
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
@@ -366,9 +375,9 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $vm_err = $handler->handle( new Get_Event_Draw_Query() );
         $this->assertTrue( $vm_err->is_error() );
 
-        $event_stub = $this->createStub( Event::class );
-        $event_stub->id = 7;
-        $event_stub->current_season = [ 'name' => '2025' ];
+        $event_stub = new Event();
+        $event_stub->set_id( 7 );
+        $event_stub->set_current_season( [ 'name' => '2025' ] );
         $this->attach_test_competition( $event_stub );
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
@@ -391,9 +400,9 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $vm_err = $handler->handle( new Get_Event_Matches_Query() );
         $this->assertTrue( $vm_err->is_error() );
 
-        $event_stub = $this->createStub( Event::class );
-        $event_stub->id = 8;
-        $event_stub->current_season = [ 'name' => '2025' ];
+        $event_stub = new Event();
+        $event_stub->set_id( 8 );
+        $event_stub->set_current_season( [ 'name' => '2025' ] );
         $this->attach_test_competition( $event_stub );
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
@@ -407,9 +416,10 @@ class Event_Shortcode_Handlers_Test extends TestCase {
     public function test_event_clubs_handler_decorates_nonempty_players(): void {
         $comp_service = $this->createStub( Competition_Service::class );
         $club_service = $this->createStub( Club_Service::class );
-        $event_stub   = $this->createStub( Event::class );
-        $event_stub->id             = 12;
-        $event_stub->current_season = [ 'name' => '2025' ];
+        $event_stub   = new Event();
+        $event_stub->set_id( 12 );
+        $event_stub->set_seasons( [ '2025' => [ 'name' => '2025' ] ] );
+        $event_stub->set_current_season( [ 'name' => '2025' ] );
         $this->attach_test_competition( $event_stub );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
@@ -472,9 +482,9 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $vm_err = $handler->handle( new Get_Event_Clubs_Query() );
         $this->assertTrue( $vm_err->is_error() );
 
-        $event_stub = $this->createStub( Event::class );
-        $event_stub->id = 12;
-        $event_stub->current_season = [ 'name' => '2025' ];
+        $event_stub = new Event();
+        $event_stub->set_id( 12 );
+        $event_stub->set_current_season( [ 'name' => '2025' ] );
         $this->attach_test_competition( $event_stub );
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
@@ -513,10 +523,10 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $vm_err = $handler->handle( new Get_Event_Teams_Query() );
         $this->assertTrue( $vm_err->is_error() );
 
-        $event_stub = $this->createStub( Event::class );
-        $event_stub->id = 15;
-        $event_stub->name = 'Summer Open';
-        $event_stub->current_season = [ 'name' => '2025' ];
+        $event_stub = new Event();
+        $event_stub->set_id( 15 );
+        $event_stub->set_name( 'Summer Open' );
+        $event_stub->set_current_season( [ 'name' => '2025' ] );
         $this->attach_test_competition( $event_stub );
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
@@ -546,9 +556,10 @@ class Event_Shortcode_Handlers_Test extends TestCase {
     public function test_event_teams_handler_decorates_nonempty_players(): void {
         $comp_service = $this->createStub( Competition_Service::class );
         $team_service = $this->createStub( Team_Service::class );
-        $event_stub   = $this->createStub( Event::class );
-        $event_stub->id             = 15;
-        $event_stub->current_season = [ 'name' => '2025' ];
+        $event_stub   = new Event();
+        $event_stub->set_id( 15 );
+        $event_stub->set_seasons( [ '2025' => [ 'name' => '2025' ] ] );
+        $event_stub->set_current_season( [ 'name' => '2025' ] );
         $this->attach_test_competition( $event_stub );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
@@ -583,9 +594,9 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $vm_err = $handler->handle( new Get_Event_Players_Query() );
         $this->assertTrue( $vm_err->is_error() );
 
-        $event_stub = $this->createStub( Event::class );
-        $event_stub->id = 16;
-        $event_stub->current_season = [ 'name' => '2025' ];
+        $event_stub = new Event();
+        $event_stub->set_id( 16 );
+        $event_stub->set_current_season( [ 'name' => '2025' ] );
         $this->attach_test_competition( $event_stub );
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
@@ -660,10 +671,10 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
         // 3. Success path with gender rule (male event -> partner male)
         $comp_service_ok = $this->createStub( Competition_Service::class );
-        $event_stub = $this->createStub( Event::class );
-        $event_stub->id = 22;
-        $event_stub->type = 'MD';
-        $event_stub->current_season = [ 'name' => '2025' ];
+        $event_stub = new Event();
+        $event_stub->set_id( 22 );
+        $event_stub->set_type( 'MD' );
+        $event_stub->set_current_season( [ 'name' => '2025' ] );
         $this->attach_test_competition( $event_stub );
 
         $comp_service_ok->method( 'get_event_by_id' )->willReturn( $event_stub );
@@ -698,7 +709,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         // 2. Event name fallback when event_id is null
         $competition = $this->create_test_competition( 10, [ 55 ] );
         $event_stub  = $this->create_test_event( 55, 10, $competition );
-        $event_stub->name = 'Mixed Doubles';
+        $event_stub->set_name( 'Mixed Doubles' );
 
         $comp_service_name = $this->createMock( Competition_Service::class );
         $comp_service_name->expects( $this->once() )
@@ -735,7 +746,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
         // 5. Season side effect: query season updates event season context via event_query_service
         $season_event = $this->create_test_event( 55, 10, $competition );
-        $season_event->current_season = [ 'name' => '2025' ];
+        $season_event->set_current_season( [ 'name' => '2025' ] );
         $comp_service_season          = $this->createStub( Competition_Service::class );
         $comp_service_season->method( 'get_event_by_id' )->willReturn( $season_event );
 
@@ -746,8 +757,8 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
         // When query has no season, existing current_season['name'] is preserved
         $season_event_default                 = $this->create_test_event( 55, 10, $competition );
-        $season_event_default->seasons        = wp_json_encode( [ '2025' => [ 'name' => '2025' ] ] );
-        $season_event_default->current_season = [ 'name' => '2025' ];
+        $season_event_default->set_seasons( [ '2025' => [ 'name' => '2025' ] ] );
+        $season_event_default->set_current_season( [ 'name' => '2025' ] );
         $comp_service_default                 = $this->createStub( Competition_Service::class );
         $comp_service_default->method( 'get_event_by_id' )->willReturn( $season_event_default );
 
@@ -759,17 +770,17 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         // When current_season has no 'name', isolates DTO fallback to query season
         $season_event_fallback = new class() extends Event {
             public function set_season( ?string $season = null, bool $force_overwrite = false, bool $strict = false ): void {
-                $this->current_season = [];
+                $this->set_current_season( [] );
             }
 
             public function get_season_by_name( string|int $name ): ?array {
                 return [ 'name' => $name ];
             }
         };
-        $season_event_fallback->id             = 55;
-        $season_event_fallback->competition_id = 10;
-        $season_event_fallback->competition    = $competition;
-        $season_event_fallback->current_season = [];
+        $season_event_fallback->set_id( 55 );
+        $season_event_fallback->set_competition_id( 10 );
+        $season_event_fallback->set_competition( $competition );
+        $season_event_fallback->set_current_season( [] );
 
         $comp_service_fallback = $this->createStub( Competition_Service::class );
         $comp_service_fallback->method( 'get_event_by_id' )->willReturn( $season_event_fallback );
@@ -867,7 +878,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
     public function test_event_partner_handler_gender_permutations( ?string $player_gender, string $event_type, string $expected_partner_gender ): void {
         $competition = $this->create_test_competition( 10, [ 22 ] );
         $event_stub  = $this->create_test_event( 22, 10, $competition );
-        $event_stub->type = $event_type;
+        $event_stub->set_type( $event_type );
 
         $comp_service   = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
@@ -903,7 +914,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
     public function test_event_partner_handler_template_and_metadata_passthrough(): void {
         $competition = $this->create_test_competition( 10, [ 22 ] );
         $event_stub  = $this->create_test_event( 22, 10, $competition );
-        $event_stub->current_season = [ 'name' => '2025' ];
+        $event_stub->set_current_season( [ 'name' => '2025' ] );
 
         $comp_service   = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
@@ -959,9 +970,9 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'No event id supplied', $vm_no_event->error_message );
 
         // 2. Missing team id
-        $event_stub = $this->createStub( Event::class );
-        $event_stub->id = 33;
-        $event_stub->current_season = [ 'name' => '2025' ];
+        $event_stub = new Event();
+        $event_stub->set_id( 33 );
+        $event_stub->set_current_season( [ 'name' => '2025' ] );
         $this->attach_test_competition( $event_stub );
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
@@ -994,12 +1005,12 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'No event id supplied', $vm_no_event->error_message );
 
         // 2. Missing club id
-        $event_stub = $this->createStub( Event::class );
-        $event_stub->id = 44;
-        $event_stub->type = 'XD';
-        $event_stub->age_limit = '45';
-        $event_stub->age_offset = '5';
-        $event_stub->current_season = [ 'name' => '2025' ];
+        $event_stub = new Event();
+        $event_stub->set_id( 44 );
+        $event_stub->set_type( 'XD' );
+        $event_stub->set_age_limit( '45' );
+        $event_stub->set_age_offset( '5' );
+        $event_stub->set_current_season( [ 'name' => '2025' ] );
         $this->attach_test_competition( $event_stub );
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
@@ -1048,12 +1059,12 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
         $competition         = $this->create_test_competition( 1, [ 88 ] );
         $event               = $this->create_test_event( 88, 1, $competition );
-        $event->name         = 'Over 45s';
-        $event->type         = 'XD';
-        $event->age_limit    = '45';
-        $event->age_offset   = '5';
-        $event->seasons      = [ '2026' => [] ];
-        $event->current_season = [ 'name' => '2026' ];
+        $event->set_name( 'Over 45s' );
+        $event->set_type( 'XD' );
+        $event->set_age_limit( '45' );
+        $event->set_age_offset( '5' );
+        $event->set_seasons( [ '2026' => [] ] );
+        $event->set_current_season( [ 'name' => '2026' ] );
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event );
 
@@ -1097,10 +1108,10 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 9, $query->tournament_id );
 
         $comp_service = $this->createStub( Competition_Service::class );
-        $event_stub   = $this->createStub( Event::class );
-        $event_stub->id = 5;
-        $event_stub->type = 'MD';
-        $event_stub->current_season = [ 'name' => '2025' ];
+        $event_stub   = new Event();
+        $event_stub->set_id( 5 );
+        $event_stub->set_type( 'MD' );
+        $event_stub->set_current_season( [ 'name' => '2025' ] );
         $this->attach_test_competition( $event_stub );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
@@ -1125,12 +1136,12 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $settings_service = $this->createStub( Settings_Service::class );
         $settings_service->method( 'get_category' )->willReturn( [ 'ageLimitCheck' => true ] );
 
-        $event_stub = $this->createStub( Event::class );
-        $event_stub->id = 61;
-        $event_stub->type = 'BD';
-        $event_stub->age_limit = $age_limit;
-        $event_stub->age_offset = '5';
-        $event_stub->current_season = [ 'name' => '2025' ];
+        $event_stub = new Event();
+        $event_stub->set_id( 61 );
+        $event_stub->set_type( 'BD' );
+        $event_stub->set_age_limit( $age_limit );
+        $event_stub->set_age_offset( '5' );
+        $event_stub->set_current_season( [ 'name' => '2025' ] );
         $this->attach_test_competition( $event_stub );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
@@ -1166,10 +1177,10 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $vm_err = $handler->handle( new Get_Event_Dropdown_Query() );
         $this->assertTrue( $vm_err->is_error() );
 
-        $event_stub = $this->createStub( Event::class );
-        $event_stub->id = 50;
-        $event_stub->current_season = [ 'name' => '2025' ];
-        $event_stub->seasons = [ [ 'name' => '2025' ], [ 'name' => '2024' ] ];
+        $event_stub = new Event();
+        $event_stub->set_id( 50 );
+        $event_stub->set_seasons( [ [ 'name' => '2024' ], [ 'name' => '2025' ] ] );
+        $event_stub->set_current_season( [ 'name' => '2025' ] );
         $this->attach_test_competition( $event_stub );
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
@@ -1215,16 +1226,21 @@ class Event_Shortcode_Handlers_Test extends TestCase {
     }
 
     private function create_test_event( int $id, int $competition_id = 10, ?Competition $competition = null ): Event {
-        $event                 = new ReflectionClass( Event::class )->newInstanceWithoutConstructor();
-        $event->id             = $id;
-        $event->name           = 'Event ' . $id;
-        $event->competition_id = $competition_id;
-        $event->seasons        = json_encode( [ '2026' => [ 'name' => '2026' ] ] );
-        $event->current_season = [ 'name' => '2026' ];
-        $event->type           = 'MD';
+        $event = Event::from_array(
+            [
+                'id'             => $id,
+                'name'           => 'Event ' . $id,
+                'competition_id' => $competition && $competition->id ? (int) $competition->id : $competition_id,
+                'seasons'        => [ '2026' => [ 'name' => '2026' ] ],
+                'type'           => 'MD',
+            ],
+            $competition
+        );
         if ( $competition ) {
-            $event->competition = $competition;
+            $event->set_competition( $competition );
         }
+        $event->set_competition_id( $competition_id );
+        $event->set_current_season( [ 'name' => '2026' ] );
         return $event;
     }
 
@@ -1359,7 +1375,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $competition = $this->create_test_competition( 10, [ 101 ] );
         $event       = $this->create_test_event( 101, 10, $competition );
         // Integer season name simulated from numeric database/JSON payloads
-        $event->current_season = [ 'name' => 2026 ];
+        $event->set_current_season( [ 'name' => 2026 ] );
 
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event );
@@ -1413,7 +1429,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
                 'date_end'   => '2026-06-07',
             ] );
             $event       = $this->create_test_event( 101, 10, $competition );
-            $event->name = 'Mens Singles';
+            $event->set_name( 'Mens Singles' );
 
             $competition_service = $this->createStub( Competition_Service::class );
             $competition_service->method( 'get_event_by_id' )->willReturn( $event );

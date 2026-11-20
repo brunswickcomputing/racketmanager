@@ -140,7 +140,7 @@ final class Cup_Setup_Event_Admin_Controller_Test extends TestCase {
         );
         $league        = League_Test_Factory::from_object( (object) array( 'id' => 10, 'title' => 'Men Cup' ) );
         $event         = Event::from_object( (object) array( 'id' => 20, 'name' => 'Men Singles', 'type' => 'singles' ), $competition );
-        $event->offset = 1;
+        $event->set_offset( 1 );
         $league->event = $event;
 
         $league_repo = $this->createMock( League_Repository_Interface::class );

@@ -61,7 +61,7 @@ class Competition_Schedule_Service_Test extends TestCase {
 
 	private function make_event( int $id ): Event {
 		$event     = ( new \ReflectionClass( Event::class ) )->newInstanceWithoutConstructor();
-		$event->id = $id;
+		$event->set_id( $id );
 		return $event;
 	}
 

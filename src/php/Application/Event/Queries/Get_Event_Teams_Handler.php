@@ -70,12 +70,14 @@ readonly class Get_Event_Teams_Handler {
             return Event_Teams_Result::error( __( 'Event not found for competition', 'racketmanager' ) );
         }
 
-        $event->teams = $this->event_query_service->get_teams(
-            $event,
-            [
-                'season'  => $current_season,
-                'orderby' => [ 'name' => 'ASC' ],
-            ]
+        $event->set_teams(
+            $this->event_query_service->get_teams(
+                $event,
+                [
+                    'season'  => $current_season,
+                    'orderby' => [ 'name' => 'ASC' ],
+                ]
+            )
         );
 
         $team_identifier = $query->team;
@@ -107,7 +109,7 @@ readonly class Get_Event_Teams_Handler {
                     ]
                 );
                 $team->players = $this->player_stats_service->populate_players_stats( $team->players, $event, $current_season, 'event' );
-                $event->team   = $team;
+                $event->set_team( $team );
             }
         }
 

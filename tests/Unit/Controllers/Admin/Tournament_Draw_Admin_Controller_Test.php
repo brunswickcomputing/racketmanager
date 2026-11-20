@@ -105,7 +105,7 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
         $league            = $this->createMock( League::class );
         $league->id        = $id;
         $league->event     = $this->createMock( Event::class );
-        $league->event->id = $event_id;
+        $league->event->set_id( $event_id );
 
         return $league;
     }

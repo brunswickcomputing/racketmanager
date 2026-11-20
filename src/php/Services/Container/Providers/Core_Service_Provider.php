@@ -511,8 +511,7 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
                 team_repository: $c->get( Team_Repository_Interface::class ),
                 league_repository: $c->get( League_Repository_Interface::class ),
                 event_repository: $c->get( Event_Repository_Interface::class ),
-                competition_repository: $c->get( Competition_Repository_Interface::class ),
-                query_vars: $c->get( Query_Vars_Interface::class )
+                competition_repository: $c->get( Competition_Repository_Interface::class )
             )
         );
         $container->alias( 'email_shortcode_adapter', Email_Shortcode_Adapter::class );

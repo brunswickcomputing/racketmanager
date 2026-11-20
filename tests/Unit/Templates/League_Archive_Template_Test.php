@@ -111,11 +111,11 @@ class League_Archive_Template_Test extends TestCase {
                 private readonly array $event_seasons,
                 array $props
             ) {
-                $this->id          = $props['id'] ?? 20;
-                $this->name        = $props['name'] ?? 'Men\'s Doubles';
-                $this->is_box      = $props['is_box'] ?? false;
-                $this->competition = $competition;
-                $this->leagues     = $props['leagues'] ?? [];
+                $this->set_id( $props['id'] ?? 20 );
+                $this->set_name( $props['name'] ?? 'Men\'s Doubles' );
+                $this->set_is_box( $props['is_box'] ?? false );
+                $this->set_competition( $competition );
+                $this->set_leagues( $props['leagues'] ?? [] );
             }
 
             public function get_seasons(): array {
@@ -415,7 +415,7 @@ class League_Archive_Template_Test extends TestCase {
             'event_id' => 20,
         ] );
 
-        $event->leagues = [ $league_a, $league_b ];
+        $event->set_leagues( [ $league_a, $league_b ] );
 
         $league_service = $this->createStub( League_Service::class );
         $league_service->method( 'get_league' )->willReturn( $league_a );

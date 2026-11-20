@@ -76,9 +76,9 @@ readonly class Get_Event_Draw_Handler {
         }
 
         if ( ! empty( $event->competition->is_championship ) ) {
-            $event->leagues = $this->get_draw( $event, $event->current_season['name'] ?? $query->season );
+            $event->set_leagues( $this->get_draw( $event, $event->current_season['name'] ?? $query->season ) );
         } else {
-            $event->leagues = $this->event_query_service->get_leagues( $event );
+            $event->set_leagues( $this->event_query_service->get_leagues( $event ) );
         }
 
         $filename = ! empty( $query->template ) ? 'draw-' . $query->template : 'draw';

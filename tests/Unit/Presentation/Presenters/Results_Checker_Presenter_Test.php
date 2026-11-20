@@ -191,7 +191,7 @@ class Results_Checker_Presenter_Test extends TestCase {
         $match->set_league_id( 1 );
 
         $event = $this->createStub(\Racketmanager\Domain\Competition\Event::class);
-        $event->is_box = true;
+        $event->set_is_box( true );
 
         $league = $this->createStub(\Racketmanager\Domain\Competition\League::class);
         $league->title = 'Box League';

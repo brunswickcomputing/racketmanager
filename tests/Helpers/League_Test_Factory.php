@@ -6,7 +6,6 @@ namespace Racketmanager\Tests\Helpers;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
-use Racketmanager\Domain\Competition\Event_Factory;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Factory;
 
@@ -18,16 +17,10 @@ final class League_Test_Factory {
      * Create a default Event aggregate for tests.
      */
     public static function default_event( int $event_id = 1, ?Competition $competition = null, array|string $seasons = array() ): Event {
-        $competition ??= Competition_Test_Factory::create( id: 1, type: Competition_Type::LEAGUE );
-        return Event_Factory::from_array(
-            array(
-                'id'             => $event_id,
-                'name'           => 'Test Event',
-                'type'           => 'league',
-                'competition_id' => $competition->get_id() ?? 1,
-                'seasons'        => $seasons,
-            ),
-            $competition
+        return Event_Test_Factory::league_event(
+            id: $event_id,
+            competition: $competition,
+            seasons: $seasons
         );
     }
 
@@ -78,16 +71,14 @@ final class League_Test_Factory {
         array $overrides = []
     ): League {
         $event ??= self::default_event( $event_id ?? 1 );
-        $row = (object) array_filter(
-            [
-                'id'       => $id,
-                'title'    => $title,
-                'event_id' => $event_id ?? $event->get_id(),
-                'settings' => $settings,
-                'seasons'  => $seasons,
-            ],
-            static fn( $value ) => null !== $value
-        );
+        $raw    = [
+            'id'       => $id,
+            'title'    => $title,
+            'event_id' => $event_id ?? $event->get_id(),
+            'settings' => $settings,
+            'seasons'  => $seasons,
+        ];
+        $row    = (object) array_filter( $raw, static fn( $value ) => null !== $value );
 
         $league = self::from_object( $row, $event );
         foreach ( $overrides as $key => $value ) {

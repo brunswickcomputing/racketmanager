@@ -147,9 +147,9 @@ class Competition_Season_Service implements Competition_Season_Service_Interface
 	 * @return void
 	 */
 	public function add_season_to_event( Event $event, array $season ): void {
-		$seasons                 = $event->get_seasons();
+		$seasons                    = $event->get_seasons();
 		$seasons[ $season['name'] ] = $season;
-		$event->seasons          = $seasons;
+		$event->set_seasons( $seasons );
 		$seasons = $event->get_seasons();
 		if ( ! empty( $event->id ) ) {
 			$this->event_repository->update_seasons( (int) $event->id, $seasons );
@@ -159,8 +159,8 @@ class Competition_Season_Service implements Competition_Season_Service_Interface
 			$curr_season = end( $seasons );
 			$prev_season = prev( $seasons );
 			if ( $prev_season && ! empty( $prev_season['name'] ) && ! empty( $event->id ) ) {
-				$teams                = $this->build_event_constitution( (int) $event->id, array( 'season' => $prev_season['name'] ) );
-				$event->constitutions = $teams;
+				$teams = $this->build_event_constitution( (int) $event->id, array( 'season' => $prev_season['name'] ) );
+				$event->set_constitutions( $teams );
 			} else {
 				$teams = array();
 			}

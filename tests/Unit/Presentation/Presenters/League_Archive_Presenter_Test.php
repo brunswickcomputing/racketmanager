@@ -40,10 +40,10 @@ class League_Archive_Presenter_Test extends TestCase {
 
         $event = new class( $competition ) extends Event {
             public function __construct( Competition $competition ) {
-                $this->id          = 20;
-                $this->name        = 'Men\'s Doubles';
-                $this->is_box      = false;
-                $this->competition = $competition;
+                $this->set_id( 20 );
+                $this->set_name( 'Men\'s Doubles' );
+                $this->set_is_box( false );
+                $this->set_competition( $competition );
             }
         };
 
@@ -143,10 +143,10 @@ class League_Archive_Presenter_Test extends TestCase {
 
         $event = new class( $competition ) extends Event {
             public function __construct( Competition $competition ) {
-                $this->id          = 21;
-                $this->name        = 'Men\'s Box';
-                $this->is_box      = true;
-                $this->competition = $competition;
+                $this->set_id( 21 );
+                $this->set_name( 'Men\'s Box' );
+                $this->set_is_box( true );
+                $this->set_competition( $competition );
             }
         };
 
@@ -190,10 +190,10 @@ class League_Archive_Presenter_Test extends TestCase {
 
         $event = new class( $competition ) extends Event {
             public function __construct( Competition $competition ) {
-                $this->id          = 22;
-                $this->name        = 'Championship Finals';
-                $this->is_box      = false;
-                $this->competition = $competition;
+                $this->set_id( 22 );
+                $this->set_name( 'Championship Finals' );
+                $this->set_is_box( false );
+                $this->set_competition( $competition );
             }
         };
 
@@ -248,10 +248,10 @@ class League_Archive_Presenter_Test extends TestCase {
 
         $event = new class( $competition ) extends Event {
             public function __construct( Competition $competition ) {
-                $this->id          = 23;
-                $this->name        = 'Mixed Doubles';
-                $this->is_box      = false;
-                $this->competition = $competition;
+                $this->set_id( 23 );
+                $this->set_name( 'Mixed Doubles' );
+                $this->set_is_box( false );
+                $this->set_competition( $competition );
             }
         };
 
@@ -288,8 +288,8 @@ class League_Archive_Presenter_Test extends TestCase {
         $competition = new Competition( name: 'League Comp', type: Competition_Type::LEAGUE, age_group: 'Open', id: 1 );
         $event       = new class( $competition ) extends Event {
             public function __construct( Competition $competition ) {
-                $this->id          = 1;
-                $this->competition = $competition;
+                $this->set_id( 1 );
+                $this->set_competition( $competition );
             }
         };
 

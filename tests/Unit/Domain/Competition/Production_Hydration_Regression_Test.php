@@ -361,7 +361,7 @@ final class Production_Hydration_Regression_Test extends TestCase {
         );
 
         $event = Event::from_object( $event_raw, $competition );
-        $event->current_season = array( 'name' => '2026' );
+        $event->set_current_season( array( 'name' => '2026' ) );
 
         $club_dto = new \Racketmanager\Domain\DTO\Club\Club_Hydration_DTO(
             id: 7,

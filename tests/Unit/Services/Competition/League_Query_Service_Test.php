@@ -889,8 +889,8 @@ class League_Query_Service_Test extends TestCase {
 
 	public function test_get_crosstable_field_shows_all_home_away_scores(): void {
 		$league = $this->league_for_query_service();
-		$event  = $this->createStub( \Racketmanager\Domain\Competition\Event::class );
-		$event->current_season = array( 'name' => '2026', 'home_away' => true );
+		$event  = new \Racketmanager\Domain\Competition\Event();
+		$event->set_current_season( array( 'name' => '2026', 'home_away' => true ) );
 		$league->event = $event;
 		$match_one = (object) array( 'id' => 11 );
 		$match_two = (object) array( 'id' => 12 );

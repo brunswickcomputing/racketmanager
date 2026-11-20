@@ -204,8 +204,8 @@ class Matches_Team_List_Template_Test extends TestCase {
 
         $league = $this->createStub( League::class );
         $league->title = 'Division 1';
-        $event = $this->createStub( Event::class );
-        $event->competition = (object) array( 'type' => Competition_Type::LEAGUE );
+        $event = new Event();
+        $event->set_competition( (object) array( 'type' => Competition_Type::LEAGUE ) );
         $league->event = $event;
         $league_repository = $this->createMock( League_Repository_Interface::class );
         $league_repository->expects( $this->once() )->method( 'find_by_id' )->with( 5 )->willReturn( $league );
@@ -565,15 +565,16 @@ class Matches_Team_List_Template_Test extends TestCase {
         $league->is_championship = false;
         $league->current_season = [ 'name' => '2026' ];
 
-        $event = $this->createStub( Event::class );
-        $event->id = 5;
-        $event->name = 'Men\'s Doubles';
-        $event->type = 'MD';
-        $event->competition = (object) [
-            'type' => Competition_Type::LEAGUE,
-            'is_team_entry' => true,
+        $event = new Event();
+        $event->set_id( 5 );
+        $event->set_name( 'Men\'s Doubles' );
+        $event->set_type( 'MD' );
+        $comp = (object) [
+            'type'            => Competition_Type::LEAGUE,
+            'is_team_entry'   => true,
             'is_player_entry' => false,
         ];
+        $event->set_competition( $comp );
         $league->event = $event;
         $league_query = $this->createStub( League_Query_Service::class );
         $league_query->method( 'get_team_dtls' )->willReturn( $team->info );
@@ -709,15 +710,16 @@ class Matches_Team_List_Template_Test extends TestCase {
         $league->is_championship = false;
         $league->current_season = [ 'name' => '2026' ];
 
-        $event = $this->createStub( Event::class );
-        $event->id = 5;
-        $event->name = 'Men\'s Doubles';
-        $event->type = 'MD';
-        $event->competition = (object) [
-            'type' => Competition_Type::LEAGUE,
-            'is_team_entry' => true,
+        $event = new Event();
+        $event->set_id( 5 );
+        $event->set_name( 'Men\'s Doubles' );
+        $event->set_type( 'MD' );
+        $comp = (object) [
+            'type'            => Competition_Type::LEAGUE,
+            'is_team_entry'   => true,
             'is_player_entry' => false,
         ];
+        $event->set_competition( $comp );
         $league->event = $event;
         $league_query = $this->createStub( League_Query_Service::class );
         $league_query->method( 'get_team_dtls' )->willReturn( $team->info );
@@ -992,9 +994,9 @@ class Matches_Team_List_Template_Test extends TestCase {
         $league->id = 1;
         $league->title = 'Division 1';
         $league->method( 'get_name' )->willReturn( 'Division 1' );
-        $event  = $this->createStub( Event::class );
-        $event->id = 2;
-        $event->name = 'Men Singles';
+        $event = new Event();
+        $event->set_id( 2 );
+        $event->set_name( 'Men Singles' );
         $comp   = $this->createStub( Competition::class );
         $comp->method( 'get_type' )->willReturn( 'league' );
 

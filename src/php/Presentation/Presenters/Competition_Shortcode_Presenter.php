@@ -5,6 +5,7 @@ namespace Racketmanager\Presentation\Presenters;
 
 use BackedEnum;
 use DateTimeInterface;
+use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Value_Objects\Date_Range;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Exceptions\Template_Not_Found_Exception;
@@ -1465,11 +1466,11 @@ readonly class Competition_Shortcode_Presenter {
         foreach ( $matches_groups as $key => $player_matches ) {
             $league = is_object( $player_matches ) ? ( $player_matches->league ?? null ) : ( $player_matches['league'] ?? null );
             if ( $league && isset( $league->event ) ) {
-                $league_comp  = $league->event->competition ?? null;
-                $comp_type    = $this->resolve_competition_type( $league_comp );
-                $event_name   = $league->event->name ?? '';
-                $league_name  = ( is_object( $league ) && method_exists( $league, 'get_name' ) ) ? $league->get_name() : ( $league->name ?? $league->title ?? '' );
-                $season       = $league->season ?? '';
+                $league_comp = $league->event->competition ?? null;
+                $comp_type   = $this->resolve_competition_type( $league_comp );
+                $event_name  = $league->event->name ?? '';
+                $league_name = ( is_object( $league ) && method_exists( $league, 'get_name' ) ) ? $league->get_name() : ( $league->name ?? $league->title ?? '' );
+                $season      = $league->season ?? '';
 
                 $links[ (string) $key ] = [
                     'event_link'  => '/' . $comp_type . 's/' . Util::seo_url( $event_name ) . '/' . $season . '/',
@@ -1600,13 +1601,17 @@ readonly class Competition_Shortcode_Presenter {
     public function present_event_draw( object $event ): object {
         $presented_event = clone $event;
         if ( ! empty( $presented_event->leagues ) && is_array( $presented_event->leagues ) ) {
-            $presented_leagues        = array_map(
+            $presented_leagues = array_map(
                 function ( $league ) use ( $presented_event ) {
                     return $this->present_event_league_draw( $league, $presented_event );
                 },
                 $presented_event->leagues
             );
-            $presented_event->leagues = $presented_leagues;
+            if ( $presented_event instanceof Event ) {
+                $presented_event->set_leagues( $presented_leagues );
+            } else {
+                $presented_event->leagues = $presented_leagues;
+            }
         }
 
         return $presented_event;

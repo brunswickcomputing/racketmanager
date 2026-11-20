@@ -579,10 +579,10 @@ final class Public_Links_Modernization_Test extends TestCase {
     private function create_event( Competition $competition, array $props = [] ): Event {
         return new class( $competition, $props ) extends Event {
             public function __construct( Competition $competition, array $props ) {
-                $this->id          = $props['id'] ?? 10;
-                $this->name        = $props['name'] ?? 'Winter League';
-                $this->is_box      = $props['is_box'] ?? false;
-                $this->competition = $competition;
+                $this->set_id( $props['id'] ?? 10 );
+                $this->set_name( $props['name'] ?? 'Winter League' );
+                $this->set_is_box( $props['is_box'] ?? false );
+                $this->set_competition( $competition );
             }
         };
     }

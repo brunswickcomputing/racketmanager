@@ -176,8 +176,8 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$league->num_sets        = 3;
 		$league->num_rubbers     = 1;
 
-		$event       = $this->createStub( Event::class );
-		$event->name = 'Mens Singles';
+		$event = new Event();
+		$event->set_name( 'Mens Singles' );
 
 		$competition = Competition_Test_Factory::create( type: Competition_Type::TOURNAMENT );
 
@@ -278,8 +278,8 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$league->num_sets        = 3;
 		$league->num_rubbers     = 1;
 
-		$event       = $this->createStub( Event::class );
-		$event->name = 'Mens Singles';
+		$event = new Event();
+		$event->set_name( 'Mens Singles' );
 
 		$competition = Competition_Test_Factory::create( type: Competition_Type::TOURNAMENT );
 
@@ -374,9 +374,9 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$league->num_sets        = 3;
 		$league->num_rubbers     = 1;
 
-		$event         = $this->createStub( Event::class );
-		$event->name   = 'Box League';
-		$event->is_box = true;
+		$event = new Event();
+		$event->set_name( 'Box League' );
+		$event->set_is_box( true );
 
 		$competition = Competition_Test_Factory::create( type: Competition_Type::TOURNAMENT );
 
@@ -490,8 +490,8 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$league->is_championship = false;
 		$league->title           = 'Mens Doubles Premier';
 
-		$event       = $this->createStub( Event::class );
-		$event->name = 'Mens Doubles';
+		$event = new Event();
+		$event->set_name( 'Mens Doubles' );
 
 		$competition = Competition_Test_Factory::create( type: Competition_Type::LEAGUE );
 
@@ -584,8 +584,8 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$league->is_championship = false;
 		$league->title           = 'Mens Doubles Premier';
 
-		$event       = $this->createStub( Event::class );
-		$event->name = 'Mens Doubles';
+		$event = new Event();
+		$event->set_name( 'Mens Doubles' );
 
 		$competition = Competition_Test_Factory::create( type: Competition_Type::LEAGUE );
 
@@ -710,8 +710,8 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$league->num_sets        = 3;
 		$league->num_rubbers     = 1;
 
-		$event       = $this->createStub( Event::class );
-		$event->name = 'Mens Singles';
+		$event = new Event();
+		$event->set_name( 'Mens Singles' );
 
 		$competition = Competition_Test_Factory::create( type: Competition_Type::TOURNAMENT );
 
@@ -894,9 +894,9 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$league->id    = 1;
 		$league->title = 'Division 1';
 		$league->method( 'get_name' )->willReturn( 'Division 1' );
-		$event         = $this->createStub( Event::class );
-		$event->id     = 2;
-		$event->name   = 'Men Singles';
+		$event = new Event();
+		$event->set_id( 2 );
+		$event->set_name( 'Men Singles' );
 		$comp          = $this->createStub( Competition::class );
 		$comp->method( 'get_type' )->willReturn( 'league' );
 

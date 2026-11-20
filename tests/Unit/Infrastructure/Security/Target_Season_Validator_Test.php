@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Infrastructure\Security;
 
+use Racketmanager\Tests\Helpers\Event_Test_Factory;
 use Racketmanager\Tests\Helpers\League_Test_Factory;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\Event;
@@ -13,12 +14,10 @@ use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 final class Target_Season_Validator_Test extends TestCase {
 
     private function event_with_seasons( array $seasons ): Event {
-        $event          = $this->createStub( Event::class );
-        $event->id      = 30;
-        $event->seasons = $seasons;
-        $event->method( 'get_seasons' )->willReturn( $seasons );
-
-        return $event;
+        return Event_Test_Factory::create(
+            id: 30,
+            seasons: $seasons
+        );
     }
 
     public function test_league_with_event_id_only_loads_event_through_repository(): void {

@@ -74,9 +74,9 @@ final class League_Schedule_Service_Test extends TestCase {
         string $season = '2026',
         array $extra_seasons = array()
     ): Event {
-        $event       = ( new ReflectionClass( Event::class ) )->newInstanceWithoutConstructor();
-        $event->id   = $id;
-        $event->name = $name;
+        $event       = new Event();
+        $event->set_id( $id );
+        $event->set_name( $name );
         $season_data = array(
             'name'           => $season,
             'num_match_days' => $num_match_days,
@@ -85,8 +85,8 @@ final class League_Schedule_Service_Test extends TestCase {
         if ( null !== $match_dates ) {
             $season_data['match_dates'] = $match_dates;
         }
-        $event->current_season = $season_data;
-        $event->seasons        = array( $season => $season_data ) + $extra_seasons;
+        $event->set_current_season( $season_data );
+        $event->set_seasons( array( $season => $season_data ) + $extra_seasons );
         $this->events[ $id ]   = $event;
         return $event;
     }
@@ -125,7 +125,7 @@ final class League_Schedule_Service_Test extends TestCase {
     public function test_delete_event_matches_success_deletes_each_fixture(): void {
         $event          = $this->create_event( 10 );
         $league         = $this->create_league( 100, 'Division 1' );
-        $event->leagues = array( $league );
+        $event->set_leagues( array( $league ) );
 
         $this->event_repository->expects( self::once() )
             ->method( 'count_by_event_season' )
@@ -179,8 +179,8 @@ final class League_Schedule_Service_Test extends TestCase {
 
     public function test_delete_event_matches_returns_warning_when_some_events_have_completed_matches(): void {
         $this->create_event( 10 );
-        $event2          = $this->create_event( 20, 'Event 2' );
-        $event2->leagues = array( $this->create_league( 100, 'Division 1' ) );
+        $event2 = $this->create_event( 20, 'Event 2' );
+        $event2->set_leagues( array( $this->create_league( 100, 'Division 1' ) ) );
 
         $this->event_repository->method( 'count_by_event_season' )
             ->willReturnCallback( static fn( int $event_id ): int => 10 === $event_id ? 2 : 0 );
@@ -196,7 +196,7 @@ final class League_Schedule_Service_Test extends TestCase {
     public function test_delete_event_matches_uses_posted_non_current_season(): void {
         $event          = $this->create_event( 10, 'Event 1', 6, array( '2026-05-01' ), true, '2026', array( '2025' => array( 'name' => '2025', 'num_match_days' => 6 ) ) );
         $league         = $this->create_league( 100, 'Division 1' );
-        $event->leagues = array( $league );
+        $event->set_leagues( array( $league ) );
 
         $this->event_repository->expects( self::once() )
             ->method( 'count_by_event_season' )
@@ -215,9 +215,9 @@ final class League_Schedule_Service_Test extends TestCase {
 
     public function test_delete_event_matches_preflights_all_events_before_deleting_anything(): void {
         $event1          = $this->create_event( 10, 'Event 1', 6, array( '2026-05-01', '2026-05-08' ), true, '2026', array( '2025' => array( 'name' => '2025', 'num_match_days' => 6, 'home_away' => true, 'match_dates' => array( '2025-05-01', '2025-05-08' ) ) ) );
-        $event1->leagues = array( $this->create_league( 100, 'Division 1' ) );
+        $event1->set_leagues( array( $this->create_league( 100, 'Division 1' ) ) );
         $event2          = $this->create_event( 20, 'Event 2' );
-        $event2->leagues = array( $this->create_league( 200, 'Division 2' ) );
+        $event2->set_leagues( array( $this->create_league( 200, 'Division 2' ) ) );
 
         $this->event_repository->expects( self::never() )->method( 'count_by_event_season' );
         $this->league_query_service->expects( self::never() )->method( 'get_matches' );
@@ -231,7 +231,7 @@ final class League_Schedule_Service_Test extends TestCase {
 
     public function test_delete_event_matches_rejects_posted_season_the_event_does_not_have(): void {
         $event          = $this->create_event( 10, 'Event 1' );
-        $event->leagues = array( $this->create_league( 100, 'Division 1' ) );
+        $event->set_leagues( array( $this->create_league( 100, 'Division 1' ) ) );
 
         $this->event_repository->expects( self::never() )->method( 'count_by_event_season' );
         $this->league_query_service->expects( self::never() )->method( 'get_matches' );

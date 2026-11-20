@@ -43,8 +43,8 @@ final class Standings_Templates_Render_Test extends TestCase {
         $competition = new Competition( name: 'League Comp', type: Competition_Type::LEAGUE, age_group: 'Open', id: 1 );
         $event       = new class( $competition ) extends Event {
             public function __construct( Competition $competition ) {
-                $this->id          = 1;
-                $this->competition = $competition;
+                $this->set_id( 1 );
+                $this->set_competition( $competition );
             }
         };
 
@@ -119,8 +119,8 @@ final class Standings_Templates_Render_Test extends TestCase {
         $competition = new Competition( name: 'League Comp', type: Competition_Type::LEAGUE, age_group: 'Open', id: 1 );
         $event       = new class( $competition ) extends Event {
             public function __construct( Competition $competition ) {
-                $this->id          = 1;
-                $this->competition = $competition;
+                $this->set_id( 1 );
+                $this->set_competition( $competition );
             }
         };
 
@@ -192,8 +192,8 @@ final class Standings_Templates_Render_Test extends TestCase {
         $competition = new Competition( name: 'League Comp', type: Competition_Type::LEAGUE, age_group: 'Open', id: 1 );
         $event       = new class( $competition ) extends Event {
             public function __construct( Competition $competition ) {
-                $this->id          = 1;
-                $this->competition = $competition;
+                $this->set_id( 1 );
+                $this->set_competition( $competition );
             }
         };
 
@@ -252,8 +252,8 @@ final class Standings_Templates_Render_Test extends TestCase {
         $competition = new Competition( name: 'League Comp', type: Competition_Type::LEAGUE, age_group: 'Open', id: 1 );
         $event       = new class( $competition ) extends Event {
             public function __construct( Competition $competition ) {
-                $this->id          = 1;
-                $this->competition = $competition;
+                $this->set_id( 1 );
+                $this->set_competition( $competition );
             }
         };
 

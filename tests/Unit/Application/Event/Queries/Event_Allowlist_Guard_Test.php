@@ -14,10 +14,10 @@ use ReflectionClass;
 final class Event_Allowlist_Guard_Test extends TestCase {
     private function make_event( int $id, int $competition_id = 10, array $seasons = [ '2026' => [ 'name' => '2026' ] ] ): Event {
         $event                 = ( new ReflectionClass( Event::class ) )->newInstanceWithoutConstructor();
-        $event->id             = $id;
-        $event->name           = 'Event ' . $id;
-        $event->competition_id = $competition_id;
-        $event->seasons        = json_encode( $seasons );
+        $event->set_id( $id );
+        $event->set_name( 'Event ' . $id );
+        $event->set_competition_id( $competition_id );
+        $event->set_seasons( $seasons );
 
         return $event;
     }
@@ -37,7 +37,7 @@ final class Event_Allowlist_Guard_Test extends TestCase {
     public function test_event_instance_in_scope_is_allowed_without_service_lookup(): void {
         $competition = $this->make_competition();
         $event       = $this->make_event( 11 );
-        $event->competition = $competition;
+        $event->set_competition( $competition );
 
         self::assertTrue( Event_Allowlist_Guard::is_event_allowed( $event, '2026' ) );
     }
@@ -45,9 +45,10 @@ final class Event_Allowlist_Guard_Test extends TestCase {
     public function test_foreign_or_out_of_season_event_instance_is_rejected(): void {
         $competition        = $this->make_competition();
         $foreign            = $this->make_event( 1, 999 );
-        $foreign->competition = $competition;
+        $foreign->set_competition( $competition );
+        $foreign->set_competition_id( 999 );
         $old                = $this->make_event( 12, 10, [ '2024' => [ 'name' => '2024' ] ] );
-        $old->competition   = $competition;
+        $old->set_competition( $competition );
 
         self::assertFalse( Event_Allowlist_Guard::is_event_allowed( $foreign, '2026' ) );
         self::assertFalse( Event_Allowlist_Guard::is_event_allowed( $old, '2026' ) );

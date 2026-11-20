@@ -282,10 +282,10 @@ class Competition_Service_Test extends TestCase {
 
     private function make_event( int $id, string $name = 'Men Doubles', int $competition_id = 10, array $seasons = [ '2026' => [ 'name' => '2026' ] ] ): \Racketmanager\Domain\Competition\Event {
         $event                 = ( new \ReflectionClass( \Racketmanager\Domain\Competition\Event::class ) )->newInstanceWithoutConstructor();
-        $event->id             = $id;
-        $event->name           = $name;
-        $event->competition_id = $competition_id;
-        $event->seasons        = json_encode( $seasons );
+        $event->set_id( $id );
+        $event->set_name( $name );
+        $event->set_competition_id( $competition_id );
+        $event->set_seasons( $seasons );
 
         return $event;
     }

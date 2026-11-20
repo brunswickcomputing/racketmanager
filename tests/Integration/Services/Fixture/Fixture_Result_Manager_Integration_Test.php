@@ -206,10 +206,13 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $league->method( 'get_point_rule' )->willReturn( [ 'match_result' => 'sets' ] );
         $league->method( 'get_competition_type' )->willReturn( $comp_type );
 
-        $event = $this->createMock( \Racketmanager\Domain\Competition\Event::class );
+        $event = $this->getMockBuilder( \Racketmanager\Domain\Competition\Event::class )
+            ->disableOriginalConstructor()
+            ->onlyMethods( [ 'get_season_by_name', 'get_type' ] )
+            ->getMock();
         $event->method( 'get_season_by_name' )->willReturn( [] );
         $event->method( 'get_type' )->willReturn( $comp_type );
-        $event->competition = (object) [ 'type' => $comp_type ];
+        $event->set_competition( (object) [ 'type' => $comp_type ] );
         $league->event = $event;
 
         return $league;
@@ -719,7 +722,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
             seasons: [ '2026' => [] ]
         );
         $competition->set_is_player_entry( false );
-        $league->event->competition = $competition;
+        $league->event->set_competition( $competition );
         $this->league_repository_repo->method( 'find_by_id' )->willReturn( $league );
 
         // Pass rubbers as array with player IDs instead of objects

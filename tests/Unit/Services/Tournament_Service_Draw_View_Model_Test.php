@@ -136,8 +136,8 @@ final class Tournament_Service_Draw_View_Model_Test extends TestCase {
             new Team_Details_DTO( $away_team ),
         );
 
-        $event = $this->createStub( Event::class );
-        $event->method( 'get_id' )->willReturn( 12 );
+        $event = new Event();
+        $event->set_id( 12 );
 
         $tournament_repo->expects( $this->once() )
             ->method( 'find_event_for_tournament' )

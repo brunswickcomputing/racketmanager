@@ -80,6 +80,7 @@ use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\Event_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use stdClass;
@@ -269,13 +270,13 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $tournament->method( 'is_event_allowed' )->willReturn( true );
 
         $event1            = new stdClass();
-        $event1->id        = 101;
-        $event1->name      = "Men's Singles";
+        $event1->id = 101;
+        $event1->name = "Men's Singles";
         $event1->num_teams = 16;
 
         $event2            = new stdClass();
-        $event2->id        = 102;
-        $event2->name      = "Ladies Doubles";
+        $event2->id = 102;
+        $event2->name = "Ladies Doubles";
         $event2->num_teams = 8;
 
         $tournament_service->method( 'get_tournament' )->willReturn( $tournament );
@@ -356,7 +357,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $tournament->method( 'is_event_allowed' )->willReturn( true );
 
         $event1       = new stdClass();
-        $event1->id   = 201;
+        $event1->id = 201;
         $event1->name = 'Men Singles Draw';
 
         $tournament_service->method( 'get_tournament' )->willReturn( $tournament );
@@ -802,16 +803,15 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
     }
 
     private function make_event_stub( Competition $competition ): Event {
-        $event = $this->createStub( Event::class );
-        $event->method( 'get_id' )->willReturn( 77 );
-        $event->method( 'get_competition_id' )->willReturn( 5 );
-        $event->method( 'get_season_by_name' )->willReturn( [ 'name' => '2026' ] );
-        $event->id             = 77;
-        $event->competition_id = 5;
-        $event->name           = "Men's Doubles";
-        $event->competition    = $competition;
-        $event->current_season = [ 'name' => '2026' ];
-        $event->is_box         = false;
+        $event = Event_Test_Factory::create(
+            id: 77,
+            name: "Men's Doubles",
+            competition: $competition,
+            competition_id: 5,
+            seasons: [ '2026' => [ 'name' => '2026' ] ],
+        );
+        $event->set_current_season( [ 'name' => '2026' ] );
+        $event->set_is_box( false );
 
         return $event;
     }
@@ -1289,8 +1289,8 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $league_event_competition       = new stdClass();
         $league_event_competition->type = Competition_Type::LEAGUE;
         $league_event                   = new stdClass();
-        $league_event->name             = "Men's Doubles";
-        $league_event->competition      = $league_event_competition;
+        $league_event->name = "Men's Doubles";
+        $league_event->competition = $league_event_competition;
         $league                         = new stdClass();
         $league->title                  = 'Division One';
         $league->season                 = '2026';
@@ -1414,7 +1414,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
 
         $competition = $this->make_competition_stub();
         $event       = $this->make_event_stub( $competition );
-        $event->is_box = true;
+        $event->set_is_box( true );
 
         $club_a = Club_Test_Factory::create( 3, 'Westcliff Tennis Club', 'Westcliff TC' );
         $team   = $this->event_team_row( 11, 3, 'Westcliff 1', 'Box One' );
@@ -1510,8 +1510,8 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $league_event_competition       = new stdClass();
         $league_event_competition->type = Competition_Type::LEAGUE;
         $league_event                   = new stdClass();
-        $league_event->name             = "Men's Doubles";
-        $league_event->competition      = $league_event_competition;
+        $league_event->name = "Men's Doubles";
+        $league_event->competition = $league_event_competition;
         $league                         = new stdClass();
         $league->event                  = $league_event;
         $league->title                  = 'Division One';
@@ -1584,16 +1584,16 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $competition->set_seasons( [ '2024' => [ 'name' => '2024', 'config' => [] ] ] );
         $competition->apply_current_season( [ 'name' => 2024 ] );
         $event                 = $this->make_event_stub( $competition );
-        $event->current_season = [ 'name' => 2024 ];
-        $event->method( 'get_season_by_name' )->willReturn( [ 'name' => 2024 ] );
+        $event->set_current_season( [ 'name' => 2024 ] );
+        $event->set_seasons( [ '2024' => [ 'name' => 2024 ] ] );
 
         $player = Player_Test_Factory::create( 51, 'Roger Federer', null, 'Roger', 'Federer' );
 
         $league_event_competition       = new stdClass();
         $league_event_competition->type = Competition_Type::LEAGUE;
         $league_event                   = new stdClass();
-        $league_event->name             = "Men's Doubles";
-        $league_event->competition      = $league_event_competition;
+        $league_event->name = "Men's Doubles";
+        $league_event->competition = $league_event_competition;
         $league                         = new stdClass();
         $league->event                  = $league_event;
         $league->title                  = 'Division One';
@@ -1655,9 +1655,8 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $competition->set_seasons( [ '2024' => [ 'name' => '2024', 'config' => [] ] ] );
         $competition->apply_current_season( [ 'name' => 2024 ] );
         $event                 = $this->make_event_stub( $competition );
-        $event->current_season = [ 'name' => 2024 ];
-        $event->method( 'get_seasons' )->willReturn( [ [ 'name' => 2024 ] ] );
-        $event->method( 'get_season_by_name' )->willReturn( [ 'name' => 2024 ] );
+        $event->set_current_season( [ 'name' => 2024 ] );
+        $event->set_seasons( [ '2024' => [ 'name' => 2024 ] ] );
 
         $service = $this->createStub( Competition_Service::class );
         $service->method( 'get_event_by_id' )->willReturn( $event );

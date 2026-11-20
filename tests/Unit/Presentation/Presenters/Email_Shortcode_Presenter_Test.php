@@ -122,15 +122,12 @@ class Email_Shortcode_Presenter_Test extends TestCase {
         $league->method( 'get_name' )->willReturn( $fixture_data['league_title'] ?? 'Division 1' );
         $league->method( 'get_event_id' )->willReturn( $event_id );
 
-        $event = $this->createStub( Event::class );
-        $event->id             = $event_id;
-        $event->name           = $fixture_data['event_name'] ?? 'Men Singles';
-        $event->type           = $fixture_data['league_type'] ?? 'MS';
-        $event->mode           = $fixture_data['league_type'] ?? 'MS';
-        $event->competition_id = $comp_id;
-        $event->method( 'get_id' )->willReturn( $event_id );
-        $event->method( 'get_name' )->willReturn( $fixture_data['event_name'] ?? 'Men Singles' );
-        $event->method( 'get_competition_id' )->willReturn( $comp_id );
+        $event = new Event();
+        $event->set_id( $event_id );
+        $event->set_name( $fixture_data['event_name'] ?? 'Men Singles' );
+        $event->set_type( $fixture_data['league_type'] ?? 'MS' );
+        $event->set_mode( $fixture_data['league_type'] ?? 'MS' );
+        $event->set_competition_id( $comp_id );
 
         $comp_name                    = $fixture_data['comp_name'] ?? 'Summer Tournament';
         $comp_type_str                = $fixture_data['comp_type'] ?? 'tournament';
@@ -144,8 +141,8 @@ class Email_Shortcode_Presenter_Test extends TestCase {
             $competition->set_is_championship( true );
         }
 
-        $event->competition = $competition;
-        $league->event      = $event;
+        $event->set_competition( $competition );
+        $league->event = $event;
 
         $this->test_leagues[ $league_id ]     = $league;
         $this->test_events[ $event_id ]       = $event;

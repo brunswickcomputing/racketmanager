@@ -255,9 +255,9 @@ final class Admin_Competition_Delivery_Test extends TestCase {
 
     public function test_config_events_tab_binds_events_to_rendered_view_model(): void {
         $competition = Competition_Test_Factory::create( 1, 'Premier League' );
-        $event = $this->createStub( Event::class );
-        $event->id = 42;
-        $event->name = 'Mixed Doubles';
+        $event = new Event();
+        $event->set_id( 42 );
+        $event->set_name( 'Mixed Doubles' );
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
         $this->competition_service->expects( self::once() )->method( 'get_events_for_competition' )->with( 1 )->willReturn( array( $event ) );
         $this->club_service->method( 'get_clubs' )->willReturn( array() );

@@ -130,10 +130,10 @@ namespace Racketmanager\Tests\Integration\Public {
             $league->title = 'Premier League';
             $league_repo->method( 'find_by_id' )->willReturn( $league );
 
-            $event = $this->createMock( Event::class );
+            $event = $this->getMockBuilder( Event::class )->disableOriginalConstructor()->onlyMethods( array( 'get_id', 'get_competition_id' ) )->getMock();
             $event->method( 'get_id' )->willReturn( 20 );
             $event->method( 'get_competition_id' )->willReturn( 30 );
-            $event->name = 'Men\'s Singles';
+            $event->set_name( 'Men\'s Singles' );
             $competition_service->method( 'get_event_by_id' )->willReturn( $event );
 
             $competition = Competition_Test_Factory::create(

@@ -19,6 +19,7 @@ use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\Event_Test_Factory;
 
 class Fixture_Presenter_Phase2_Test extends TestCase {
     private Fixture_Presenter $presenter;
@@ -55,9 +56,7 @@ class Fixture_Presenter_Phase2_Test extends TestCase {
         $league = $this->createStub(League::class);
         $league->title = 'Division 1';
         
-        $event = $this->createStub(Event::class);
-        $event->method('get_name')->willReturn('Summer League');
-        $event->name = 'Summer League';
+        $event = Event_Test_Factory::create( name: 'Summer League' );
         
         $competition = Competition_Test_Factory::create( type: Competition_Type::LEAGUE );
 
@@ -127,11 +126,7 @@ class Fixture_Presenter_Phase2_Test extends TestCase {
         $fixture->method('get_comments')->willReturn(['home' => 'Home comment', 'away' => 'Away comment', 'result' => 'General comment']);
 
         $league = $this->createStub(League::class);
-        $event = $this->createStub(Event::class);
-        $event->method('get_num_sets')->willReturn(3);
-        $event->scoring = 'TB';
-        $event->method('get_name')->willReturn('Summer League');
-        $event->name = 'Summer League';
+        $event = Event_Test_Factory::create( name: 'Summer League', num_sets: 3, overrides: array( 'scoring' => 'TB' ) );
         $competition = Competition_Test_Factory::create( type: Competition_Type::LEAGUE );
 
         $club = $this->createStub(\Racketmanager\Domain\Club\Club::class);
@@ -233,9 +228,7 @@ class Fixture_Presenter_Phase2_Test extends TestCase {
 
         $dto = new Fixture_Details_DTO(fixture: $fixture);
         $dto->fixture = $fixture;
-        $event = $this->createStub(Event::class);
-        $event->method('get_num_sets')->willReturn(3);
-        $event->name = 'Event';
+        $event = Event_Test_Factory::create( name: 'Event', num_sets: 3 );
         $dto->event = $event;
         $competition = Competition_Test_Factory::create( type: Competition_Type::LEAGUE );
         $dto->competition = $competition;
@@ -280,9 +273,7 @@ class Fixture_Presenter_Phase2_Test extends TestCase {
 
         $dto               = new Fixture_Details_DTO( fixture: $fixture );
         $dto->fixture      = $fixture;
-        $event             = $this->createStub( Event::class );
-        $event->method( 'get_num_sets' )->willReturn( 3 );
-        $event->name       = 'Event';
+        $event             = Event_Test_Factory::create( name: 'Event', num_sets: 3 );
         $dto->event        = $event;
         $competition       = Competition_Test_Factory::create( type: Competition_Type::LEAGUE );
         $dto->competition  = $competition;
@@ -331,9 +322,7 @@ class Fixture_Presenter_Phase2_Test extends TestCase {
 
         $dto               = new Fixture_Details_DTO( fixture: $fixture );
         $dto->fixture      = $fixture;
-        $event             = $this->createStub( Event::class );
-        $event->method( 'get_num_sets' )->willReturn( 3 );
-        $event->name       = 'Event';
+        $event             = Event_Test_Factory::create( name: 'Event', num_sets: 3 );
         $dto->event        = $event;
         $competition       = Competition_Test_Factory::create( type: Competition_Type::LEAGUE );
         $dto->competition  = $competition;

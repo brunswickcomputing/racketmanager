@@ -157,8 +157,8 @@ final class Tournament_Presenter_Test extends TestCase {
 
 		$league = $this->createStub( League::class );
 		$league->title = 'Men Singles';
-		$event = $this->createStub( Event::class );
-		$event->name = 'Singles Event';
+		$event = new Event();
+		$event->set_name( 'Singles Event' );
 		$league->event = $event;
 
 		$tournament = $this->createStub( Tournament::class );

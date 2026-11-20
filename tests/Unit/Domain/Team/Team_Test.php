@@ -331,8 +331,8 @@ final class Team_Test extends TestCase {
         $player_serv  = $this->createMock( Player_Service::class );
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
 
-        $event = $this->createMock( Event::class );
-        $event->competition = (object) [ 'is_team_entry' => true ];
+        $event = $this->getMockBuilder( Event::class )->disableOriginalConstructor()->onlyMethods( array( 'get_season' ) )->getMock();
+        $event->set_competition( (object) [ 'is_team_entry' => true ] );
         $event->method( 'get_season' )->willReturn( '2026' );
         $query = $this->createMock( Event_Query_Service::class );
         $query->expects( $this->once() )->method( 'get_team_info' )->with( $event, 10 )->willReturn( (object) [
@@ -370,8 +370,8 @@ final class Team_Test extends TestCase {
         $player_serv  = $this->createMock( Player_Service::class );
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
 
-        $event = $this->createMock( Event::class );
-        $event->competition = (object) [ 'is_team_entry' => true ];
+        $event = $this->getMockBuilder( Event::class )->disableOriginalConstructor()->onlyMethods( array( 'get_season' ) )->getMock();
+        $event->set_competition( (object) [ 'is_team_entry' => true ] );
         $event->method( 'get_season' )->willReturn( '2026' );
         $query = $this->createMock( Event_Query_Service::class );
         $query->expects( $this->once() )->method( 'get_team_info' )->with( $event, 10 )->willReturn( (object) [
@@ -398,8 +398,8 @@ final class Team_Test extends TestCase {
         $player_serv  = $this->createMock( Player_Service::class );
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
 
-        $event = $this->createMock( Event::class );
-        $event->competition = (object) [ 'is_team_entry' => true ];
+        $event = $this->getMockBuilder( Event::class )->disableOriginalConstructor()->onlyMethods( array( 'get_season' ) )->getMock();
+        $event->set_competition( (object) [ 'is_team_entry' => true ] );
         $event->method( 'get_season' )->willReturn( '2026' );
         $query = $this->createMock( Event_Query_Service::class );
         $query->expects( $this->once() )->method( 'get_team_info' )->with( $event, 10 )->willReturn( (object) [
@@ -426,8 +426,8 @@ final class Team_Test extends TestCase {
         $player_serv  = $this->createMock( Player_Service::class );
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
 
-        $event = $this->createMock( Event::class );
-        $event->competition = (object) [ 'is_team_entry' => true ];
+        $event = $this->getMockBuilder( Event::class )->disableOriginalConstructor()->onlyMethods( array( 'get_season' ) )->getMock();
+        $event->set_competition( (object) [ 'is_team_entry' => true ] );
         $event->method( 'get_season' )->willReturn( '2026' );
         $query = $this->createMock( Event_Query_Service::class );
         $query->expects( $this->once() )->method( 'get_team_info' )->with( $event, 10 )->willReturn( (object) [
@@ -455,8 +455,8 @@ final class Team_Test extends TestCase {
         $player_serv  = $this->createMock( Player_Service::class );
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
 
-        $event = $this->createMock( Event::class );
-        $event->competition = (object) [ 'is_team_entry' => true ];
+        $event = $this->getMockBuilder( Event::class )->disableOriginalConstructor()->onlyMethods( array( 'get_season' ) )->getMock();
+        $event->set_competition( (object) [ 'is_team_entry' => true ] );
         $event->method( 'get_season' )->willReturn( '2026' );
         $query = $this->createMock( Event_Query_Service::class );
         $query->expects( $this->once() )->method( 'get_team_info' )->with( $event, 10 )->willReturn( (object) [
@@ -487,8 +487,8 @@ final class Team_Test extends TestCase {
         $player_serv  = $this->createMock( Player_Service::class );
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
 
-        $event = $this->createMock( Event::class );
-        $event->competition = (object) [ 'is_team_entry' => true ];
+        $event = $this->getMockBuilder( Event::class )->disableOriginalConstructor()->onlyMethods( array( 'get_season' ) )->getMock();
+        $event->set_competition( (object) [ 'is_team_entry' => true ] );
         $event->method( 'get_season' )->willReturn( '2026' );
         $query = $this->createMock( Event_Query_Service::class );
         $query->expects( $this->once() )->method( 'get_team_info' )->with( $event, 10 )->willReturn( (object) [

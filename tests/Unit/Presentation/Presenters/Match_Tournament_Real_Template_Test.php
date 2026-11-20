@@ -61,8 +61,8 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         if ( $fixture ) {
             $league = $this->createStub( League::class );
             $league->title = 'First Division';
-            $event = $this->createStub( Event::class );
-            $event->name = 'Summer Event';
+            $event = new Event();
+            $event->set_name( 'Summer Event' );
             $competition = $this->createStub( Competition::class );
             $competition->method( 'get_type' )->willReturn( $type );
             $details = new Fixture_Details_DTO(
@@ -192,8 +192,8 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         $fixture = Fixture_Test_Factory::create( final: 'final' );
         $league = $this->createStub( League::class );
         $league->title = 'Open Singles';
-        $event = $this->createStub( Event::class );
-        $event->name = 'Summer Event';
+        $event = new Event();
+        $event->set_name( 'Summer Event' );
         $league->event = $event;
         $detail = new Fixture_Details_DTO( $fixture, $league, $event, $this->createStub( Competition::class ) );
 
@@ -274,8 +274,8 @@ class Match_Tournament_Real_Template_Test extends TestCase {
 
         $league = $this->createStub( League::class );
         $league->title = 'Men Singles';
-        $event = $this->createStub( Event::class );
-        $event->name = 'Singles Event';
+        $event = new Event();
+        $event->set_name( 'Singles Event' );
         $league->event = $event;
 
         $tournament = $this->createStub( Tournament::class );
@@ -346,8 +346,8 @@ class Match_Tournament_Real_Template_Test extends TestCase {
 
         $league = $this->createStub( League::class );
         $league->title = 'Men Singles';
-        $event = $this->createStub( Event::class );
-        $event->name = 'Singles Event';
+        $event = new Event();
+        $event->set_name( 'Singles Event' );
         $league->event = $event;
 
         $tournament = $this->createStub( Tournament::class );
@@ -409,8 +409,8 @@ class Match_Tournament_Real_Template_Test extends TestCase {
 
         $league = $this->createStub( League::class );
         $league->title = 'Open';
-        $event = $this->createStub( Event::class );
-        $event->name = 'Event';
+        $event = new Event();
+        $event->set_name( 'Event' );
         $league->event = $event;
 
         $detail_walkover = new Fixture_Details_DTO(
@@ -484,8 +484,8 @@ class Match_Tournament_Real_Template_Test extends TestCase {
 
         $league = $this->createStub( League::class );
         $league->title = 'Singles';
-        $event = $this->createStub( Event::class );
-        $event->name = 'Event';
+        $event = new Event();
+        $event->set_name( 'Event' );
         $league->event = $event;
 
         $detail = new Fixture_Details_DTO(
@@ -530,8 +530,8 @@ class Match_Tournament_Real_Template_Test extends TestCase {
 
         $league = $this->createStub( League::class );
         $league->title = 'Open Division';
-        $event = $this->createStub( Event::class );
-        $event->name = 'Event';
+        $event = new Event();
+        $event->set_name( 'Event' );
         $league->event = $event;
 
         $tournament = $this->createStub( Tournament::class );
@@ -603,10 +603,10 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         $league = $this->createStub( League::class );
         $league->title = 'Men Singles';
         $league->finals = [];
-        $event = $this->createStub( Event::class );
-        $event->id = 12;
-        $event->name = 'Draw Event';
-        $event->leagues = [ $league ];
+        $event = new Event();
+        $event->set_id( 12 );
+        $event->set_name( 'Draw Event' );
+        $event->set_leagues( [ $league ] );
 
         $detail = new Fixture_Details_DTO(
             fixture: $fixture,
@@ -618,13 +618,7 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         );
 
         // Backed meta store so the handler's set_meta( 'fixtures', $cards ) is observable by the template.
-        $meta = [ 'fixtures' => [ $detail ] ];
-        $event->method( 'get_meta' )->willReturnCallback( function ( $key, $default = null ) use ( &$meta ) {
-            return $meta[ $key ] ?? $default;
-        } );
-        $event->method( 'set_meta' )->willReturnCallback( function ( $key, $value ) use ( &$meta ): void {
-            $meta[ $key ] = $value;
-        } );
+        $event->set_meta( 'fixtures', [ $detail ] );
 
         $tournament = $this->createStub( Tournament::class );
         $tournament->id = 5;
@@ -676,8 +670,8 @@ class Match_Tournament_Real_Template_Test extends TestCase {
 
         $league = $this->createStub( League::class );
         $league->title = 'Men Singles';
-        $event = $this->createStub( Event::class );
-        $event->name = 'Draw Event';
+        $event = new Event();
+        $event->set_name( 'Draw Event' );
 
         $detail = new Fixture_Details_DTO(
             fixture: $fixture,
@@ -735,8 +729,8 @@ class Match_Tournament_Real_Template_Test extends TestCase {
 
         $league = $this->createStub( League::class );
         $league->title = 'Men Singles';
-        $event = $this->createStub( Event::class );
-        $event->name = 'Draw Event';
+        $event = new Event();
+        $event->set_name( 'Draw Event' );
 
         $detail = new Fixture_Details_DTO(
             fixture: $fixture,
@@ -797,8 +791,8 @@ class Match_Tournament_Real_Template_Test extends TestCase {
 
         $league = $this->createStub( League::class );
         $league->title = 'Men Doubles';
-        $event = $this->createStub( Event::class );
-        $event->name = 'Championships';
+        $event = new Event();
+        $event->set_name( 'Championships' );
         $league->event = $event;
 
         $detail = new Fixture_Details_DTO(

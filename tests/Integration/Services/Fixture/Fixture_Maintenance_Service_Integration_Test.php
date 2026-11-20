@@ -84,8 +84,8 @@ class Fixture_Maintenance_Service_Integration_Test extends TestCase {
         $fixture->method('get_league_id')->willReturn(1);
 
         $league = $this->createMock(League::class);
-        $event = $this->createMock(Event::class);
-        $event->competition = (object) ['type' => 'league'];
+        $event = new Event();
+        $event->set_competition( (object) array( 'type' => 'league' ) );
         $league->event = $event;
 
         $this->league_repository->expects($this->once())->method('find_by_id')->with(1)->willReturn($league);
@@ -108,8 +108,8 @@ class Fixture_Maintenance_Service_Integration_Test extends TestCase {
         $fixture->method('get_away_points')->willReturn('3.0');
 
         $league = $this->createMock(League::class);
-        $event = $this->createMock(Event::class);
-        $event->competition = (object) ['type' => 'league'];
+        $event = new Event();
+        $event->set_competition( (object) array( 'type' => 'league' ) );
         $league->event = $event;
 
         $this->league_repository->expects($this->once())->method('find_by_id')->with(1)->willReturn($league);

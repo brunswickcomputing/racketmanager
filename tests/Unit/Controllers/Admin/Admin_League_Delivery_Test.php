@@ -208,12 +208,12 @@ final class Admin_League_Delivery_Test extends TestCase {
             $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class )
         ) );
 
-        $event                  = $this->createStub( \Racketmanager\Domain\Competition\Event::class );
-        $event->id              = 10;
-        $event->name            = 'Mixed Doubles';
-        $event->competition     = $competition;
-        $event->is_championship = false;
-        $event->current_season  = array( 'name' => '2026' );
+        $event                  = new \Racketmanager\Domain\Competition\Event();
+        $event->set_id( 10 );
+        $event->set_name( 'Mixed Doubles' );
+        $event->set_competition( $competition );
+        $event->set_is_championship( false );
+        $event->set_current_season( array( 'name' => '2026' ) );
         $this->container->set(
             'event_query_service',
             $this->event_query_service( $this->event_repository_with_results( array( 'query_leagues' => array( $league_champ, $league_std ) ) ) )
@@ -281,13 +281,13 @@ final class Admin_League_Delivery_Test extends TestCase {
             'profile'          => '1',
         );
 
-        $event                  = $this->createMock( \Racketmanager\Domain\Competition\Event::class );
-        $event->id              = 10;
-        $event->name            = 'Mixed Doubles';
-        $event->competition     = $competition;
-        $event->is_box          = false;
-        $event->leagues         = array( $league1 );
-        $event->current_season  = array( 'name' => '2026' );
+        $event                  = $this->getMockBuilder( \Racketmanager\Domain\Competition\Event::class )->disableOriginalConstructor()->onlyMethods( [ 'get_seasons' ] )->getMock();
+        $event->set_id( 10 );
+        $event->set_name( 'Mixed Doubles' );
+        $event->set_competition( $competition );
+        $event->set_is_box( false );
+        $event->set_leagues( array( $league1 ) );
+        $event->set_current_season( array( 'name' => '2026' ) );
         $event->expects( self::once() )->method( 'get_seasons' )->willReturn( array( array( 'name' => '2026' ) ) );
 
         $event_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\Event_Repository_Interface::class );

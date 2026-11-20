@@ -275,8 +275,8 @@ class Email_Shortcode_Adapter_Test extends TestCase {
             $this->competition_repository
         );
 
-        $event = $this->createStub( Event::class );
-        $event->id = 30;
+        $event = new Event();
+        $event->set_id( 30 );
         $this->event_repository->method( 'find_by_id' )->willReturnCallback(
             static fn( $id ) => 30 === (int) $id ? $event : null
         );

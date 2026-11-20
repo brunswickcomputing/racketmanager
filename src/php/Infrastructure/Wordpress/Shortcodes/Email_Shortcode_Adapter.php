@@ -3,12 +3,12 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Infrastructure\Wordpress\Shortcodes;
 
-use Racketmanager\Application\Ports\Query_Vars_Interface;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Event_Factory;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Factory;
+use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Team\Team_Factory;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
@@ -43,7 +43,6 @@ readonly class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
      * @param League_Repository_Interface         $league_repository League repository.
      * @param Event_Repository_Interface          $event_repository Event repository.
      * @param Competition_Repository_Interface    $competition_repository Competition repository.
-     * @param Query_Vars_Interface|null           $query_vars Optional query vars provider.
      *
      * @return void
      */
@@ -56,8 +55,7 @@ readonly class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         private Team_Repository_Interface $team_repository,
         private League_Repository_Interface $league_repository,
         private Event_Repository_Interface $event_repository,
-        private Competition_Repository_Interface $competition_repository,
-        private ?Query_Vars_Interface $query_vars = null
+        private Competition_Repository_Interface $competition_repository
     ) {
     }
 
@@ -83,13 +81,7 @@ readonly class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             is_array( $atts ) ? $atts : []
         );
 
-        $match    = $args['match'] ?: $args['id'];
-        $match_id = (int) ( is_object( $match ) ? ( $match->id ?? 0 ) : $match );
-        if ( ! $match_id ) {
-            return $this->template_renderer->render_alert( __( 'Match not found', 'racketmanager' ) );
-        }
-
-        $fixture = $this->fixture_repository->find_by_id( $match_id );
+        $fixture = $this->resolve_fixture( $args['match'] ?: $args['id'] );
         if ( ! $fixture ) {
             return $this->template_renderer->render_alert( __( 'Match not found', 'racketmanager' ) );
         }
@@ -104,6 +96,23 @@ readonly class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         $filename = ! empty( $template ) ? 'match-notification-' . $template : 'match-notification';
 
         return $this->template_renderer->render( $filename, $vars, 'email' );
+    }
+
+    /**
+     * Resolve fixture entity from shortcode attribute value or identifier.
+     *
+     * @param mixed $match Fixture entity, object with id, or numeric/string ID.
+     *
+     * @return Fixture|null Resolved Fixture entity or null if not found.
+     */
+    private function resolve_fixture( mixed $match ): ?Fixture {
+        if ( $match instanceof Fixture ) {
+            return $match;
+        }
+
+        $match_id = (int) ( is_object( $match ) ? ( $match->id ?? 0 ) : $match );
+
+        return $match_id > 0 ? $this->fixture_repository->find_by_id( $match_id ) : null;
     }
 
     /**
@@ -128,13 +137,7 @@ readonly class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             is_array( $atts ) ? $atts : []
         );
 
-        $match    = $args['match'] ?: $args['id'];
-        $match_id = (int) ( is_object( $match ) ? ( $match->id ?? 0 ) : $match );
-        if ( ! $match_id ) {
-            return $this->template_renderer->render_alert( __( 'Match not found', 'racketmanager' ) );
-        }
-
-        $fixture = $this->fixture_repository->find_by_id( $match_id );
+        $fixture = $this->resolve_fixture( $args['match'] ?: $args['id'] );
         if ( ! $fixture ) {
             return $this->template_renderer->render_alert( __( 'Match not found', 'racketmanager' ) );
         }
@@ -168,13 +171,7 @@ readonly class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             is_array( $atts ) ? $atts : []
         );
 
-        $match    = $args['match'] ?: $args['id'];
-        $match_id = (int) ( is_object( $match ) ? ( $match->id ?? 0 ) : $match );
-        if ( ! $match_id ) {
-            return $this->template_renderer->render_alert( __( 'Match not found', 'racketmanager' ) );
-        }
-
-        $fixture = $this->fixture_repository->find_by_id( $match_id );
+        $fixture = $this->resolve_fixture( $args['match'] ?: $args['id'] );
         if ( ! $fixture ) {
             return $this->template_renderer->render_alert( __( 'Match not found', 'racketmanager' ) );
         }
@@ -213,13 +210,7 @@ readonly class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             is_array( $atts ) ? $atts : []
         );
 
-        $match    = $args['match'] ?: $args['id'];
-        $match_id = (int) ( is_object( $match ) ? ( $match->id ?? 0 ) : $match );
-        if ( ! $match_id ) {
-            return $this->template_renderer->render_alert( __( 'Match not found', 'racketmanager' ) );
-        }
-
-        $fixture = $this->fixture_repository->find_by_id( $match_id );
+        $fixture = $this->resolve_fixture( $args['match'] ?: $args['id'] );
         if ( ! $fixture ) {
             return $this->template_renderer->render_alert( __( 'Match not found', 'racketmanager' ) );
         }
@@ -284,13 +275,7 @@ readonly class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             is_array( $atts ) ? $atts : []
         );
 
-        $match    = $args['match'] ?: $args['id'];
-        $match_id = (int) ( is_object( $match ) ? ( $match->id ?? 0 ) : $match );
-        if ( ! $match_id ) {
-            return $this->template_renderer->render_alert( __( 'Match not found', 'racketmanager' ) );
-        }
-
-        $fixture = $this->fixture_repository->find_by_id( $match_id );
+        $fixture = $this->resolve_fixture( $args['match'] ?: $args['id'] );
         if ( ! $fixture ) {
             return $this->template_renderer->render_alert( __( 'Match not found', 'racketmanager' ) );
         }
@@ -324,36 +309,50 @@ readonly class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             is_array( $atts ) ? $atts : []
         );
 
-        $team_id = $args['team'];
-        if ( ! $team_id ) {
-            return $this->template_renderer->render_alert( __( 'Team not supplied', 'racketmanager' ) );
-        }
-        $team = $this->resolve_team( $team_id );
-        if ( ! $team ) {
-            return $this->template_renderer->render_alert( __( 'Team not found', 'racketmanager' ) );
+        $context = $this->resolve_team_withdrawn_context( $args );
+        if ( is_string( $context ) ) {
+            return $this->template_renderer->render_alert( $context );
         }
 
-        $league_id = $args['league'];
-        if ( ! $league_id ) {
-            return $this->template_renderer->render_alert( __( 'League not supplied', 'racketmanager' ) );
-        }
-        $league = $this->resolve_league( $league_id );
-        if ( ! $league ) {
-            return $this->template_renderer->render_alert( __( 'League not found', 'racketmanager' ) );
-        }
+        [ $team, $league, $season ] = $context;
 
-        $season = $args['season'];
-        if ( ! $season ) {
-            return $this->template_renderer->render_alert( __( 'Season not supplied', 'racketmanager' ) );
-        }
         if ( method_exists( $league, 'set_season' ) ) {
-            $this->league_query_service->set_season( $league, (string) $season );
+            $this->league_query_service->set_season( $league, $season );
         }
 
-        $vars     = $this->presenter->present_team_withdrawn_email( $team, $league, (string) $season, $args );
+        $vars     = $this->presenter->present_team_withdrawn_email( $team, $league, $season, $args );
         $filename = ! empty( $args['template'] ) ? 'team-withdrawn-' . $args['template'] : 'team-withdrawn';
 
         return $this->template_renderer->render( $filename, $vars, 'email' );
+    }
+    /**
+     * Resolves the team, league, and season context for a team withdrawn notification.
+     *
+     * @param array $args Context arguments containing team, league, and season values.
+     *
+     * @return array|string Array containing the resolved team, resolved league, and season string, or an error message on failure.
+     */
+    /**
+     * Resolves the team, league, and season context for a team withdrawn notification.
+     *
+     * @param array $args Context arguments containing team, league, and season values.
+     *
+     * @return array{0: Team, 1: League, 2: string}|string Array containing the resolved team, resolved league, and season string, or an error message on failure.
+     */
+    private function resolve_team_withdrawn_context( array $args ): array|string {
+        $team   = $args['team'] ? $this->resolve_team( $args['team'] ) : null;
+        $league = ( $team && $args['league'] ) ? $this->resolve_league( $args['league'] ) : null;
+
+        $error = match ( true ) {
+            ! $args['team']   => __( 'Team not supplied', 'racketmanager' ),
+            ! $team           => __( 'Team not found', 'racketmanager' ),
+            ! $args['league'] => __( 'League not supplied', 'racketmanager' ),
+            ! $league         => __( 'League not found', 'racketmanager' ),
+            ! $args['season'] => __( 'Season not supplied', 'racketmanager' ),
+            default           => null,
+        };
+
+        return $error ?? [ $team, $league, (string) $args['season'] ];
     }
 
     /**
@@ -412,7 +411,7 @@ readonly class Email_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         }
 
         if ( $event instanceof Event ) {
-            $event->leagues = $this->event_query_service->get_leagues( $event );
+            $event->set_leagues( $this->event_query_service->get_leagues( $event ) );
         }
         if ( method_exists( $event, 'set_season' ) && null !== $args['season'] ) {
             $event->set_season( (string) $args['season'] );

@@ -117,7 +117,7 @@ final class Event_Season_Persistence_Test extends TestCase {
 	public function test_native_json_encoding_keeps_wordpress_default_shape_and_sanitizes_invalid_utf8(): void {
 		$invalid_name = "Broken\xB1";
 		$event = Event::from_object( (object) array( 'name' => 'Open', 'type' => 'singles', 'competition_id' => 10, 'seasons' => array( '2026' => array( 'name' => $invalid_name ) ) ) );
-		$expected = function_exists( 'mb_convert_encoding' ) ? 'Broken?' : 'Broken�';
+		$expected = function_exists( 'mb_convert_encoding' ) ? 'Broken?' : "Broken\u{FFFD}";
 		$this->assertSame( json_encode( array( '2026' => array( 'name' => $expected ) ) ), $event->get_seasons_json() );
 		$this->assertSame( $expected, $event->get_seasons()['2026']['name'] );
 	}

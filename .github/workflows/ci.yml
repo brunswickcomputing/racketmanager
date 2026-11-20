@@ -26,7 +26,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1  # shivammathur/setup-php@2.36.0
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240  # shivammathur/setup-php@2.37.2
         with:
           php-version: '8.4'
           tools: composer
@@ -53,7 +53,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1  # shivammathur/setup-php@2.36.0
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240  # shivammathur/setup-php@2.37.2
         with:
           php-version: '8.4'
           tools: composer
@@ -79,13 +79,15 @@ jobs:
       - name: Run Test Suite with Coverage
         run: |
           mkdir -p build/logs
-          vendor/bin/phpunit --display-all-issues --fail-on-all-issues --do-not-fail-on-skipped --coverage-text --coverage-clover build/logs/clover.xml
+          vendor/bin/phpunit --display-all-issues --fail-on-all-issues --do-not-fail-on-skipped --coverage-text --coverage-clover build/logs/clover.xml --log-junit build/logs/junit.xml
 
-      - name: Upload PHP Coverage Report
+      - name: Upload PHP Test and Coverage Reports
         uses: actions/upload-artifact@v7
         with:
           name: php-coverage-report
-          path: build/logs/clover.xml
+          path: |
+            build/logs/clover.xml
+            build/logs/junit.xml
           if-no-files-found: ignore
 
   jest:
@@ -131,7 +133,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download PHP Coverage Report
+      - name: Download PHP Coverage and Test Reports
         uses: actions/download-artifact@v8
         with:
           name: php-coverage-report
@@ -151,7 +153,7 @@ jobs:
           restore-keys: ${{ runner.os }}-sonar
 
       - name: Authenticate with SonarQube Cloud
-        uses: SonarSource/sonarqube-auth-action@v1.2
+        uses: SonarSource/sonarqube-auth-action@b372e2c2930aadfcc4f4399446da1e12772709ad  # v1.2
         id: auth
 
       - name: SonarQube Scan
@@ -160,6 +162,8 @@ jobs:
           args: >
             -Dsonar.organization=${{ steps.auth.outputs.organization }}
             -Dsonar.projectKey=${{ steps.auth.outputs.project-key }}
+            -Dsonar.sourceEncoding=UTF-8
+            -Dsonar.php.tests.reportPath=build/logs/junit.xml
             -Dsonar.php.coverage.reportPaths=build/logs/clover.xml
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
 

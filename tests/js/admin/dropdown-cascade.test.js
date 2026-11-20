@@ -146,6 +146,14 @@ describe('Admin feature: dropdown-cascade requests', () => {
         request().complete();
       }).not.toThrow();
     });
+
+    it('still hides seasons but sends no request when jQuery is unavailable', () => {
+      window.jQuery = {};
+      getLeagueDropdown(5);
+
+      expect(document.querySelector('#seasons').style.display).toBe('none');
+      expect(stub.jq.ajax).not.toHaveBeenCalled();
+    });
   });
 
   describe('getSeasonDropdown', () => {
@@ -192,6 +200,13 @@ describe('Admin feature: dropdown-cascade requests', () => {
         request().complete();
       }).not.toThrow();
     });
+
+    it('sends no request when jQuery is unavailable', () => {
+      window.jQuery = {};
+      getSeasonDropdown(12);
+
+      expect(stub.jq.ajax).not.toHaveBeenCalled();
+    });
   });
 
   describe('getMatchDropdown', () => {
@@ -235,6 +250,13 @@ describe('Admin feature: dropdown-cascade requests', () => {
         request().success({ data: 'ok' });
         request().error({ statusText: 'err' });
       }).not.toThrow();
+    });
+
+    it('sends no request when jQuery is unavailable', () => {
+      window.jQuery = {};
+      getMatchDropdown(12, '2026');
+
+      expect(stub.jq.ajax).not.toHaveBeenCalled();
     });
   });
 
@@ -343,6 +365,95 @@ describe('Admin feature: dropdown-cascade requests', () => {
         plain.setAttribute('data-action', act);
         expect(() => plain.dispatchEvent(new Event('change', { bubbles: true }))).not.toThrow();
       }
+    });
+
+    it('registers on document by default when root parameter is omitted', () => {
+      try {
+        registerDropdownCascades();
+        expect(document.__rmDropdownCascadesRegistered).toBe(true);
+      } finally {
+        delete document.__rmDropdownCascadesRegistered;
+      }
+    });
+
+    it('handles change events when target lacks closest method', () => {
+      const root = document.createElement('div');
+      registerDropdownCascades(root);
+
+      const ev = new Event('change', { bubbles: true });
+      Object.defineProperty(ev, 'target', { value: {} });
+
+      expect(() => root.dispatchEvent(ev)).not.toThrow();
+    });
+
+    it('resolves action via dataset.action when getAttribute returns null', () => {
+      const root = document.createElement('div');
+      registerDropdownCascades(root);
+
+      const el = document.createElement('select');
+      el.dataset.action = 'get-event-dropdown';
+      el.innerHTML = '<option value="55" selected>55</option>';
+      const origGetAttribute = el.getAttribute.bind(el);
+      el.getAttribute = jest.fn((name) => (name === 'data-action' ? null : origGetAttribute(name)));
+      root.appendChild(el);
+
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      expect(window.Racketmanager.getEventDropdown).toHaveBeenCalledWith('55');
+    });
+
+    it('resolves leagueId via dataset.leagueId when getAttribute returns null', () => {
+      const root = document.createElement('div');
+      registerDropdownCascades(root);
+
+      const el = document.createElement('select');
+      el.setAttribute('data-action', 'get-match-dropdown');
+      el.dataset.leagueId = '88';
+      el.innerHTML = '<option value="2027" selected>2027</option>';
+      const origGetAttribute = el.getAttribute.bind(el);
+      el.getAttribute = jest.fn((name) => (name === 'data-league-id' ? null : origGetAttribute(name)));
+      root.appendChild(el);
+
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      expect(window.Racketmanager.getMatchDropdown).toHaveBeenCalledWith('88', '2027');
+    });
+
+    it('handles element with null dataset when data-action attribute is empty', () => {
+      const root = document.createElement('div');
+      registerDropdownCascades(root);
+
+      const el = document.createElement('select');
+      el.setAttribute('data-action', '');
+      Object.defineProperty(el, 'dataset', { value: null, configurable: true });
+      root.appendChild(el);
+
+      expect(() => el.dispatchEvent(new Event('change', { bubbles: true }))).not.toThrow();
+    });
+
+    it('handles element where data-action attribute is empty and dataset.action is missing', () => {
+      const root = document.createElement('div');
+      registerDropdownCascades(root);
+
+      const el = document.createElement('select');
+      el.setAttribute('data-action', '');
+      root.appendChild(el);
+
+      expect(() => el.dispatchEvent(new Event('change', { bubbles: true }))).not.toThrow();
+    });
+
+    it('handles get-match-dropdown when dataset is null and data-league-id attribute is null', () => {
+      const root = document.createElement('div');
+      registerDropdownCascades(root);
+
+      const el = document.createElement('select');
+      el.setAttribute('data-action', 'get-match-dropdown');
+      const origGetAttribute = el.getAttribute.bind(el);
+      el.getAttribute = jest.fn((name) => (name === 'data-league-id' ? null : origGetAttribute(name)));
+      Object.defineProperty(el, 'dataset', { value: null, configurable: true });
+      el.innerHTML = '<option value="2028" selected>2028</option>';
+      root.appendChild(el);
+
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      expect(window.Racketmanager.getMatchDropdown).toHaveBeenCalledWith(null, '2028');
     });
   });
 });

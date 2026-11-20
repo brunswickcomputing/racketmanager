@@ -9,10 +9,12 @@ import {
   initGoTop,
   initStandingsSortable,
   initMiscellaneousUI,
+  initAdminUI,
 } from '../../../src/js/admin/features/ui/admin-ui.js';
 import { createJQueryStub, respondWithSuccess, respondWithError } from './support/jquery-stub.js';
 
 describe('Admin feature: admin-ui', () => {
+  const originalScrollTo = window.scrollTo;
   let container;
   let stub;
   let scrollPosition = 0;
@@ -34,6 +36,8 @@ describe('Admin feature: admin-ui', () => {
   afterEach(() => {
     document.body.removeChild(container);
     scrollPosition = 0;
+    delete document.documentElement.scrollTop;
+    window.scrollTo = originalScrollTo;
     jest.clearAllMocks();
   });
 
@@ -81,6 +85,58 @@ describe('Admin feature: admin-ui', () => {
 
     it('returns an empty string when jQuery is unavailable', () => {
       window.jQuery = {};
+      expect(showPlayerClubs(makeLink())).toBe('');
+    });
+
+    it('still requests clubs with undefined player when link is null or lacks id', () => {
+      respondWithSuccess(stub.jq, { data: [{ name: 'Club A' }] });
+      expect(showPlayerClubs(null)).toBe('Club A<br />');
+      expect(stub.jq.ajax.mock.calls[0][0].data.player).toBeUndefined();
+
+      expect(showPlayerClubs({})).toBe('Club A<br />');
+      expect(stub.jq.ajax.mock.calls[1][0].data.player).toBeUndefined();
+    });
+
+    it('handles null or missing response data in success callback', () => {
+      respondWithSuccess(stub.jq, null);
+      expect(showPlayerClubs(makeLink())).toBe('Player not linked to clubs');
+
+      respondWithSuccess(stub.jq, {});
+      expect(showPlayerClubs(makeLink())).toBe('Player not linked to clubs');
+
+      respondWithSuccess(stub.jq, { data: null });
+      expect(showPlayerClubs(makeLink())).toBe('Player not linked to clubs');
+    });
+
+    it('handles club items with missing or empty name', () => {
+      respondWithSuccess(stub.jq, { data: [{ name: 'Club A' }, {}, { name: '' }] });
+      expect(showPlayerClubs(makeLink())).toBe('Club A<br /><br /><br />');
+    });
+
+    it('handles non-array responseJSON data or missing responseJSON', () => {
+      respondWithError(stub.jq, { responseJSON: 'not an object', statusText: 'Bad Request' });
+      expect(showPlayerClubs(makeLink())).toBe('Bad Request');
+
+      respondWithError(stub.jq, { responseJSON: { data: 'string error' }, statusText: 'Bad Request' });
+      expect(showPlayerClubs(makeLink())).toBe('Bad Request');
+
+      respondWithError(stub.jq, { responseJSON: null, statusText: 'Gateway Error' });
+      expect(showPlayerClubs(makeLink())).toBe('Gateway Error');
+    });
+
+    it('handles responseJSON with empty first item and non-array second item', () => {
+      respondWithError(stub.jq, { responseJSON: { data: ['', ['Detailed reason']] } });
+      expect(showPlayerClubs(makeLink())).toBe('<br />Detailed reason');
+
+      respondWithError(stub.jq, { responseJSON: { data: ['Base error', 'not an array'] } });
+      expect(showPlayerClubs(makeLink())).toBe('Base error');
+    });
+
+    it('handles error response with missing statusText or undefined response', () => {
+      respondWithError(stub.jq, {});
+      expect(showPlayerClubs(makeLink())).toBe('');
+
+      respondWithError(stub.jq, undefined);
       expect(showPlayerClubs(makeLink())).toBe('');
     });
   });
@@ -132,6 +188,55 @@ describe('Admin feature: admin-ui', () => {
 
       expect(event.defaultPrevented).toBe(false);
       expect(stub.animate).not.toHaveBeenCalled();
+    });
+
+    it('falls back to document.documentElement.scrollTop when window.scrollY is 0', () => {
+      const { button } = renderGoTop();
+      scrollPosition = 0;
+      Object.defineProperty(document.documentElement, 'scrollTop', { configurable: true, value: 850 });
+
+      window.dispatchEvent(new Event('scroll'));
+      expect(button.classList.contains('show')).toBe(true);
+
+      Object.defineProperty(document.documentElement, 'scrollTop', { configurable: true, value: 300 });
+      window.dispatchEvent(new Event('scroll'));
+      expect(button.classList.contains('show')).toBe(false);
+
+      Object.defineProperty(document.documentElement, 'scrollTop', { configurable: true, value: 0 });
+      window.dispatchEvent(new Event('scroll'));
+      expect(button.classList.contains('show')).toBe(false);
+
+      delete document.documentElement.scrollTop;
+    });
+
+    it('handles click events when target lacks closest method', () => {
+      renderGoTop();
+      const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+      Object.defineProperty(event, 'target', { value: {} });
+
+      expect(() => document.dispatchEvent(event)).not.toThrow();
+      expect(event.defaultPrevented).toBe(false);
+    });
+
+    it('falls back to window.scrollTo when jQuery animate is unavailable', () => {
+      const { icon } = renderGoTop();
+      stub.jq.fn.animate = undefined;
+      window.scrollTo = jest.fn();
+
+      icon.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
+    });
+
+    it('handles click gracefully when neither jQuery animate nor window.scrollTo is a function', () => {
+      const { icon } = renderGoTop();
+      window.jQuery = undefined;
+      window.scrollTo = undefined;
+
+      const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+      expect(() => {
+        icon.dispatchEvent(event);
+      }).not.toThrow();
+      expect(event.defaultPrevented).toBe(true);
     });
   });
 
@@ -200,6 +305,61 @@ describe('Admin feature: admin-ui', () => {
       initPopovers();
       initColorpicker();
       expect(stub.jq).not.toHaveBeenCalled();
+    });
+
+    it('passes showPlayerClubs as content callback in initPopovers', () => {
+      stub.jq.fn.popover = jest.fn();
+      stub.chain.popover = jest.fn();
+
+      initPopovers();
+
+      const options = stub.chain.popover.mock.calls[0][0];
+      expect(typeof options.content).toBe('function');
+
+      respondWithSuccess(stub.jq, { data: [{ name: 'Test Club' }] });
+      const link = document.createElement('a');
+      link.id = 'player_99';
+      expect(options.content(link)).toBe('Test Club<br />');
+    });
+  });
+
+  describe('initAdminUI', () => {
+    it('initialises all admin UI enhancements together without leaking duplicate listeners', () => {
+      stub.jq.fn.tooltip = jest.fn();
+      stub.jq.fn.popover = jest.fn();
+      stub.jq.fn.iris = jest.fn();
+      stub.jq.fn.sortable = jest.fn();
+      stub.chain.tooltip = jest.fn();
+      stub.chain.popover = jest.fn();
+      stub.chain.iris = jest.fn();
+      stub.chain.sortable = jest.fn();
+
+      const addWinSpy = jest.spyOn(window, 'addEventListener').mockImplementation(() => {});
+      const addDocSpy = jest.spyOn(document, 'addEventListener').mockImplementation(() => {});
+
+      container.innerHTML = `
+        <a class="top-link" href="#">Link</a>
+        <input class="rank-input" value="1">
+        <div id="teams-filter"><input class="js-active" value="0"></div>
+        <table class="standings-table sortable"></table>
+      `;
+
+      try {
+        initAdminUI();
+
+        expect(stub.jq).toHaveBeenCalledWith('[data-bs-toggle="tooltip"]');
+        expect(stub.jq).toHaveBeenCalledWith('[data-bs-toggle="popover"]');
+        expect(stub.jq).toHaveBeenCalledWith('.racketmanager-colorpicker');
+        expect(stub.jq).toHaveBeenCalledWith('.standings-table.sortable');
+        expect(container.querySelector('.top-link').style.display).toBe('none');
+        expect(container.querySelector('input.rank-input').disabled).toBe(true);
+        expect(container.querySelector('#teams-filter > input.js-active').value).toBe('1');
+        expect(addWinSpy).toHaveBeenCalledWith('scroll', expect.any(Function));
+        expect(addDocSpy).toHaveBeenCalledWith('click', expect.any(Function));
+      } finally {
+        addWinSpy.mockRestore();
+        addDocSpy.mockRestore();
+      }
     });
   });
 });

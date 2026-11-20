@@ -66,6 +66,46 @@ describe('Admin functions: activaTab and namespace exposure', () => {
     expect(targetElements).toContain(document.getElementById('btn-pills'));
   });
 
+  it('throws ReferenceError if jQuery is undefined', async () => {
+    const originalJQuery = global.jQuery;
+    const originalWindowJQuery = window.jQuery;
+    try {
+      delete global.jQuery;
+      delete window.jQuery;
+      jest.resetModules();
+      await expect(import('../../../src/js/admin/functions.js')).rejects.toThrow(
+        'functions.js requires jQuery',
+      );
+    } finally {
+      global.jQuery = originalJQuery;
+      window.jQuery = originalWindowJQuery;
+      jest.resetModules();
+    }
+  });
+
+  it('does nothing when jQuery tab plugin is not available', () => {
+    const originalTab = jQuery.fn.tab;
+    try {
+      delete jQuery.fn.tab;
+      expect(() => window.Racketmanager.activaTab('config')).not.toThrow();
+    } finally {
+      jQuery.fn.tab = originalTab;
+    }
+  });
+
+  it('preserves existing window.Racketmanager object', async () => {
+    const origRM = window.Racketmanager;
+    window.Racketmanager = { customProp: 42 };
+    try {
+      jest.resetModules();
+      await import('../../../src/js/admin/functions.js');
+      expect(window.Racketmanager.customProp).toBe(42);
+      expect(typeof window.Racketmanager.activaTab).toBe('function');
+    } finally {
+      window.Racketmanager = origRM;
+    }
+  });
+
   it('registers on DOMContentLoaded if document.readyState is loading', async () => {
     let handler;
     const addEventListenerSpy = jest.spyOn(document, 'addEventListener');
@@ -84,6 +124,28 @@ describe('Admin functions: activaTab and namespace exposure', () => {
       if (handler) {
         expect(() => handler()).not.toThrow();
       }
+    } finally {
+      addEventListenerSpy.mockRestore();
+      Object.defineProperty(document, 'readyState', {
+        value: originalReadyState,
+        configurable: true,
+      });
+    }
+  });
+
+  it('executes immediately without attaching DOMContentLoaded when readyState is complete', async () => {
+    const addEventListenerSpy = jest.spyOn(document, 'addEventListener');
+    const originalReadyState = document.readyState;
+    try {
+      Object.defineProperty(document, 'readyState', {
+        value: 'complete',
+        configurable: true,
+      });
+      addEventListenerSpy.mockClear();
+      jest.resetModules();
+      await import('../../../src/js/admin/functions.js');
+      const dclCalls = addEventListenerSpy.mock.calls.filter((c) => c[0] === 'DOMContentLoaded');
+      expect(dclCalls.length).toBe(0);
     } finally {
       addEventListenerSpy.mockRestore();
       Object.defineProperty(document, 'readyState', {

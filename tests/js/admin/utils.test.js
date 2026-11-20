@@ -222,6 +222,24 @@ describe('Admin utils: registerAdminActions', () => {
       expect(window.Racketmanager.checkAll).toHaveBeenCalledWith(form);
     });
 
+    it('falls back to el.form when el.closest is not a function', () => {
+      const form = document.createElement('form');
+      const fakeEl = {
+        getAttribute: (attr) => (attr === 'data-action' ? 'check-all' : null),
+        dataset: { action: 'check-all' },
+        form: form,
+        closest: undefined,
+      };
+      const fakeTarget = {
+        closest: () => fakeEl,
+      };
+      const ev = new MouseEvent('click', { bubbles: true });
+      Object.defineProperty(ev, 'target', { value: fakeTarget });
+      container.dispatchEvent(ev);
+
+      expect(window.Racketmanager.checkAll).toHaveBeenCalledWith(form);
+    });
+
     it('does nothing when element has no data-action, empty action, or unknown action', () => {
       const el = document.createElement('button');
       container.appendChild(el);
@@ -596,6 +614,222 @@ describe('Admin utils: registerAdminActions', () => {
 
       const fakeIframe = document.createElement('div');
       expect(() => setIframeHeight(fakeIframe)).not.toThrow();
+    });
+
+    it('handles click, change, focusout, and load when event target lacks closest', () => {
+      const nonElementTarget = { closest: undefined };
+      const clickEv = new MouseEvent('click', { bubbles: true });
+      Object.defineProperty(clickEv, 'target', { value: nonElementTarget });
+      document.dispatchEvent(clickEv);
+
+      const changeEv = new Event('change', { bubbles: true });
+      Object.defineProperty(changeEv, 'target', { value: nonElementTarget });
+      document.dispatchEvent(changeEv);
+
+      const focusEv = new FocusEvent('focusout', { bubbles: true });
+      Object.defineProperty(focusEv, 'target', { value: nonElementTarget });
+      document.dispatchEvent(focusEv);
+
+      const loadEv = new Event('load', { bubbles: true });
+      Object.defineProperty(loadEv, 'target', { value: nonElementTarget });
+      document.dispatchEvent(loadEv);
+    });
+
+    it('uses dataset fallback for action and target in check-all', () => {
+      const form = document.createElement('form');
+      form.id = 'form-via-dataset';
+      document.body.appendChild(form);
+
+      const btn = document.createElement('button');
+      btn.setAttribute('data-action', '');
+      btn.dataset.action = 'check-all';
+      btn.dataset.target = 'form-via-dataset';
+      container.appendChild(btn);
+
+      btn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      expect(window.Racketmanager.checkAll).toHaveBeenCalledWith(form);
+      document.body.removeChild(form);
+    });
+
+    it('handles check-all when no form can be found via closest or el.form', () => {
+      const btn = document.createElement('button');
+      btn.setAttribute('data-action', 'check-all');
+      container.appendChild(btn);
+
+      btn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      expect(window.Racketmanager.checkAll).not.toHaveBeenCalled();
+    });
+
+    it('uses dataset fallback for matchId in notify-teams', () => {
+      const btn = document.createElement('button');
+      btn.setAttribute('data-action', 'notify-teams');
+      btn.dataset.matchId = '555';
+      container.appendChild(btn);
+
+      btn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      expect(window.Racketmanager.notifyTeams).toHaveBeenCalledWith('555');
+    });
+
+    it('uses dataset fallback for action in handleChange', () => {
+      const input = document.createElement('input');
+      input.setAttribute('data-action', '');
+      input.dataset.action = 'set-end-date';
+      container.appendChild(input);
+
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      expect(window.Racketmanager.setEndDate).toHaveBeenCalled();
+    });
+
+    it('uses dataset fallback and defaults for set-match-date', () => {
+      const input = document.createElement('input');
+      input.value = '2025-05-10';
+      input.setAttribute('data-action', 'set-match-date');
+      input.dataset.index = '3';
+      input.dataset.maxFixtures = '8';
+      input.dataset.mode = 'add';
+      container.appendChild(input);
+
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      expect(window.Racketmanager.setMatchDate).toHaveBeenCalledWith('2025-05-10', 3, 8, 'add');
+
+      const input2 = document.createElement('input');
+      input2.value = '2025-06-01';
+      input2.setAttribute('data-action', 'set-match-date');
+      Object.defineProperty(input2, 'dataset', { value: undefined, configurable: true });
+      container.appendChild(input2);
+
+      input2.dispatchEvent(new Event('change', { bubbles: true }));
+      expect(window.Racketmanager.setMatchDate).toHaveBeenCalledWith('2025-06-01', 0, 0, '');
+    });
+
+    it('uses dataset fallback and defaults for set-match-day-pop-up', () => {
+      const input = document.createElement('input');
+      input.value = '2025-07-15';
+      input.setAttribute('data-action', 'set-match-day-pop-up');
+      input.dataset.index = '2';
+      input.dataset.maxFixtures = '6';
+      input.dataset.mode = 'edit';
+      container.appendChild(input);
+
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      expect(window.Racketmanager.setMatchDayPopUp).toHaveBeenCalledWith('2025-07-15', 2, 6, 'edit');
+
+      const input2 = document.createElement('input');
+      input2.value = '2025-08-01';
+      input2.setAttribute('data-action', 'set-match-day-pop-up');
+      Object.defineProperty(input2, 'dataset', { value: undefined, configurable: true });
+      container.appendChild(input2);
+
+      input2.dispatchEvent(new Event('change', { bubbles: true }));
+      expect(window.Racketmanager.setMatchDayPopUp).toHaveBeenCalledWith('2025-08-01', 0, 0, '');
+    });
+
+    it('uses dataset fallback and missing home_team input fallback for insert-home-stadium', () => {
+      const input = document.createElement('input');
+      input.value = '999';
+      input.setAttribute('data-action', 'insert-home-stadium');
+      input.dataset.index = '4';
+      container.appendChild(input);
+
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      expect(window.Racketmanager.insertHomeStadium).toHaveBeenCalledWith('999', 4);
+
+      const input2 = document.createElement('input');
+      input2.value = '888';
+      input2.setAttribute('data-action', 'insert-home-stadium');
+      Object.defineProperty(input2, 'dataset', { value: undefined, configurable: true });
+      container.appendChild(input2);
+
+      input2.dispatchEvent(new Event('change', { bubbles: true }));
+      expect(window.Racketmanager.insertHomeStadium).toHaveBeenCalledWith('888', 0);
+    });
+
+    it('uses dataset fallback for action and tableId in handleFocusOut', () => {
+      const input = document.createElement('input');
+      input.value = '12';
+      input.setAttribute('data-action', '');
+      input.dataset.action = 'save-add-points';
+      input.dataset.tableId = 'table-88';
+      container.appendChild(input);
+
+      input.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+      expect(window.Racketmanager.saveAddPoints).toHaveBeenCalledWith('12', 'table-88');
+
+      const input2 = document.createElement('input');
+      input2.value = '15';
+      input2.setAttribute('data-action', 'save-add-points');
+      Object.defineProperty(input2, 'dataset', { value: undefined, configurable: true });
+      container.appendChild(input2);
+
+      input2.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+      expect(window.Racketmanager.saveAddPoints).toHaveBeenCalledWith('15', null);
+    });
+
+    it('resizes iframe using contentWindow.document when contentDocument is null and body is null', () => {
+      const fakeDoc = {
+        body: null,
+        documentElement: { clientHeight: 150, scrollHeight: 200, offsetHeight: 180 },
+      };
+      const iframe = {
+        contentDocument: null,
+        contentWindow: { document: fakeDoc },
+        style: {},
+      };
+      setIframeHeight(iframe);
+      expect(iframe.style.visibility).toBe('visible');
+      expect(iframe.style.height).toBe('204px');
+    });
+
+    it('handles iframe without contentDocument and without contentWindow', () => {
+      const iframe = {
+        contentDocument: null,
+        contentWindow: null,
+        style: {},
+      };
+      expect(() => setIframeHeight(iframe)).not.toThrow();
+    });
+
+    it('registers on document by default when called without arguments', () => {
+      const origFlag = document.__rmAdminActionsRegistered;
+      delete document.__rmAdminActionsRegistered;
+      try {
+        expect(() => registerAdminActions()).not.toThrow();
+        expect(document.__rmAdminActionsRegistered).toBe(true);
+      } finally {
+        document.__rmAdminActionsRegistered = origFlag;
+      }
+    });
+
+    it('handles elements with undefined dataset in click, change, focusout, and actions', () => {
+      const btn = document.createElement('button');
+      btn.setAttribute('data-action', '');
+      Object.defineProperty(btn, 'dataset', { value: undefined, configurable: true });
+      container.appendChild(btn);
+
+      btn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      btn.dispatchEvent(new Event('change', { bubbles: true }));
+      btn.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+
+      // check-all with undefined dataset
+      const checkAllBtn = document.createElement('button');
+      checkAllBtn.type = 'button';
+      checkAllBtn.setAttribute('data-action', 'check-all');
+      Object.defineProperty(checkAllBtn, 'dataset', { value: undefined, configurable: true });
+      const form = document.createElement('form');
+      form.appendChild(checkAllBtn);
+      container.appendChild(form);
+
+      checkAllBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      expect(window.Racketmanager.checkAll).toHaveBeenCalledWith(form);
+
+      // notify-teams with undefined dataset
+      const notifyBtn = document.createElement('button');
+      notifyBtn.setAttribute('data-action', 'notify-teams');
+      Object.defineProperty(notifyBtn, 'dataset', { value: undefined, configurable: true });
+      container.appendChild(notifyBtn);
+
+      notifyBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      expect(window.Racketmanager.notifyTeams).toHaveBeenCalledWith(null);
     });
   });
 });

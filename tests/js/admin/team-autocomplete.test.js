@@ -69,10 +69,34 @@ describe('Admin feature: team-autocomplete', () => {
       expect(getPlayerDetails('Bad')).toBe('not json');
     });
 
+    it('returns null when jQuery is undefined', () => {
+      delete window.jQuery;
+      expect(getPlayerDetails('Smith')).toBeNull();
+    });
+
+    it('returns null when jQuery.ajax is not a function', () => {
+      window.jQuery = { ajax: 'not-a-function' };
+      expect(getPlayerDetails('Smith')).toBeNull();
+    });
+
+    it('handles success callback when data or data.data is undefined', () => {
+      ajax.mockImplementation((opts) => opts.success(undefined));
+      expect(getPlayerDetails('Smith')).toBeUndefined();
+
+      ajax.mockImplementation((opts) => opts.success({}));
+      expect(getPlayerDetails('Smith')).toBeUndefined();
+    });
+
     it('alerts and returns null on request error', () => {
       ajax.mockImplementation((opts) => opts.error());
       expect(getPlayerDetails('Smith')).toBeNull();
       expect(window.alert).toHaveBeenCalledWith('Ajax error on getting player');
+    });
+
+    it('does not throw when alert is not a function on request error', () => {
+      delete window.alert;
+      ajax.mockImplementation((opts) => opts.error());
+      expect(getPlayerDetails('Smith')).toBeNull();
     });
   });
 
@@ -359,6 +383,108 @@ describe('Admin feature: team-autocomplete', () => {
       expect(container.querySelector('#match_secretary').value).toBe('');
       expect(container.querySelector('#match_secretary_contact_no').value).toBe('');
       expect(container.querySelector('#match_secretary_email').value).toBe('');
+    });
+
+    it('handles null and undefined values and missing DOM elements in setVal gracefully', () => {
+      container.innerHTML = `
+        <input id="teamPlayer1"><input id="captain"><input id="contactno" value="123"><input id="contactemail" value="a@b.c">
+      `;
+      initTeamAutocomplete();
+
+      optionsFor('#teamPlayer1').select({}, {
+        item: { playerId: 1, club_id: null, value: 'Jo', contactno: undefined, user_email: null },
+      });
+      expect(container.querySelector('#captain').value).toBe('Jo');
+      expect(container.querySelector('#contactno').value).toBe('');
+      expect(container.querySelector('#contactemail').value).toBe('');
+
+      optionsFor('#teamPlayer1').change({ target: container.querySelector('#teamPlayer1') }, {
+        item: { playerId: 1, club_id: null, value: 'Jo', contactno: null, user_email: undefined },
+      });
+      expect(container.querySelector('#captain').value).toBe('Jo');
+      expect(container.querySelector('#contactno').value).toBe('');
+      expect(container.querySelector('#contactemail').value).toBe('');
+    });
+
+    it('builds team name when teamPlayer1 or teamPlayer2 element is absent from DOM in teamPlayer1 change', () => {
+      container.innerHTML = `<input id="teamPlayer1"><input id="team">`;
+      initTeamAutocomplete();
+
+      const input = container.querySelector('#teamPlayer1');
+      input.value = 'Alice';
+      optionsFor('#teamPlayer1').change({ target: input }, {
+        item: { playerId: 1, value: 'Alice' },
+      });
+      expect(container.querySelector('#team').value).toBe('Alice');
+
+      input.remove();
+      optionsFor('#teamPlayer1').change({}, {
+        item: { playerId: 1, value: 'Alice' },
+      });
+      expect(container.querySelector('#team').value).toBe('');
+    });
+
+    it('handles teamPlayer2 change without event.target when item is null', () => {
+      container.innerHTML = `<input id="teamPlayer2" value="Bob"><input id="teamPlayerId2" value="22"><input id="team" value="Alice / Bob">`;
+      initTeamAutocomplete();
+
+      expect(() => optionsFor('#teamPlayer2').change({}, { item: null })).not.toThrow();
+      expect(container.querySelector('#teamPlayerId2').value).toBe('');
+      expect(container.querySelector('#team').value).toBe('');
+    });
+
+    it('handles teamPlayer2 change when teamPlayer1 or teamPlayer2 element is absent', () => {
+      container.innerHTML = `<input id="teamPlayer2" value="Bob"><input id="teamPlayerId2"><input id="team">`;
+      initTeamAutocomplete();
+
+      optionsFor('#teamPlayer2').change({}, { item: { playerId: 22 } });
+      expect(container.querySelector('#team').value).toBe(' / Bob');
+
+      container.querySelector('#teamPlayer2').remove();
+      optionsFor('#teamPlayer2').change({}, { item: { playerId: 22 } });
+      expect(container.querySelector('#team').value).toBe(' / ');
+    });
+
+    it('captain source queries with null club when clubId input has empty value', () => {
+      container.innerHTML = `<input id="captain"><input id="clubId" value="">`;
+      initTeamAutocomplete();
+
+      ajax.mockImplementation((opts) => opts.success({ data: [] }));
+      const respond = jest.fn();
+      optionsFor('#captain').source({ term: 'Cap' }, respond);
+
+      expect(ajax.mock.calls[0][0].data.club).toBeNull();
+      expect(respond).toHaveBeenCalledWith([]);
+    });
+
+    it('handles captain change without event.target when item is null', () => {
+      container.innerHTML = `<input id="captain" value="Cap"><input id="captainId" value="18">`;
+      initTeamAutocomplete();
+
+      expect(() => optionsFor('#captain').change({}, { item: null })).not.toThrow();
+      expect(container.querySelector('#captain').value).toBe('');
+      expect(container.querySelector('#captainId').value).toBe('');
+    });
+
+    it('match_secretary_name source queries with null club when club_id input has empty value', () => {
+      container.innerHTML = `<input id="match_secretary_name"><input id="club_id" value="">`;
+      initTeamAutocomplete();
+
+      ajax.mockImplementation((opts) => opts.success({ data: [] }));
+      const respond = jest.fn();
+      optionsFor('#match_secretary_name').source({ term: 'Sec' }, respond);
+
+      expect(ajax.mock.calls[0][0].data.club).toBeNull();
+      expect(respond).toHaveBeenCalledWith([]);
+    });
+
+    it('handles match_secretary_name change without event.target when item is null', () => {
+      container.innerHTML = `<input id="match_secretary_name" value="Sec"><input id="match_secretary" value="31">`;
+      initTeamAutocomplete();
+
+      expect(() => optionsFor('#match_secretary_name').change({}, { item: null })).not.toThrow();
+      expect(container.querySelector('#match_secretary_name').value).toBe('');
+      expect(container.querySelector('#match_secretary').value).toBe('');
     });
   });
 });

@@ -873,5 +873,255 @@ describe('Admin feature: admin-ajax functions', () => {
         lastRequest().complete();
       }).not.toThrow();
     });
+
+    it('uses default reloadPage parameter reloading the page on success', () => {
+      renderDom(10);
+      saveAddPoints('5', 10);
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      try {
+        expect(() => lastRequest().success()).not.toThrow();
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            message: expect.stringContaining('Not implemented: navigation'),
+          }),
+        );
+      } finally {
+        consoleErrorSpy.mockRestore();
+      }
+    });
+
+    it('uses pluginUrl when RacketManagerAjaxL10n is defined', () => {
+      renderDom(11);
+      const origL10n = window.RacketManagerAjaxL10n;
+      window.RacketManagerAjaxL10n = { pluginUrl: '/custom-plugin-url/' };
+      try {
+        saveAddPoints('3', 11, jest.fn());
+        expect(lastRequest()).toBeDefined();
+      } finally {
+        window.RacketManagerAjaxL10n = origL10n;
+      }
+    });
+
+    it('hides loading via DOM fallback in success callback when jQuery fadeOut is absent', () => {
+      renderDom(12);
+      stub.jq.mockImplementation(() => ({}));
+      saveAddPoints('3', 12, jest.fn());
+      expect(container.querySelector('#loading_12').style.display).toBe('inline');
+      lastRequest().success();
+      expect(container.querySelector('#loading_12').style.display).toBe('none');
+    });
+
+    it('handles saveAddPoints success when loading element is missing and jQuery has no fadeOut', () => {
+      container.innerHTML = '';
+      stub.jq.mockImplementation(() => ({}));
+      saveAddPoints('3', 99, jest.fn());
+      expect(() => lastRequest().success()).not.toThrow();
+    });
+  });
+
+  describe('collaborator guard when jQuery.ajax is unavailable', () => {
+    it('does nothing across all AJAX methods when jQuery.ajax is unavailable', () => {
+      delete window.jQuery.ajax;
+      expect(() => setTournamentOpenDate()).not.toThrow();
+      expect(() => sendFixtures()).not.toThrow();
+      expect(() => notifyTournamentEntryOpen('t1')).not.toThrow();
+      expect(() => notify_open('c1', 's1')).not.toThrow();
+      expect(() => emailConstitution('c1', 's1')).not.toThrow();
+      expect(() => notifyTeams('m1')).not.toThrow();
+      expect(() => insertHomeStadium('s1', 0)).not.toThrow();
+      expect(() => saveAddPoints('p1', 't1')).not.toThrow();
+    });
+
+    it('falls back when jQuery is not a function in emailConstitution, notifyTeams, and saveAddPoints', () => {
+      container.innerHTML = `
+        <div id="notifyMessage-constitution"></div>
+        <div id="notifyMessage-10"></div>
+        <span id="loading_50"></span>
+      `;
+      const origJq = window.jQuery;
+      // Object without function calling
+      const fakeJqObj = { ajax: origJq.ajax };
+      window.jQuery = fakeJqObj;
+      jest.useFakeTimers();
+      try {
+        emailConstitution('c1', 's1');
+        lastRequest().success({ data: 'Sent' });
+        expect(container.querySelector('#notifyMessage-constitution').style.display).toBe('');
+        jest.advanceTimersByTime(10000);
+        expect(container.querySelector('#notifyMessage-constitution').style.display).toBe('none');
+
+        notifyTeams(10);
+        lastRequest().success({ data: { message: 'Notified' } });
+        expect(container.querySelector('#notifyMessage-10').style.display).toBe('');
+        jest.advanceTimersByTime(10000);
+        expect(container.querySelector('#notifyMessage-10').style.display).toBe('none');
+
+        saveAddPoints('2', 50, jest.fn());
+        expect(container.querySelector('#loading_50').style.display).toBe('inline');
+        lastRequest().success();
+        expect(container.querySelector('#loading_50').style.display).toBe('none');
+      } finally {
+        window.jQuery = origJq;
+        jest.useRealTimers();
+      }
+    });
+  });
+
+  describe('getImportOption branch coverage', () => {
+    it('handles players option and unknown option', () => {
+      container.innerHTML = `
+        <div id="clubs"></div>
+        <div id="competitions"></div>
+        <div id="events"></div>
+        <div id="leagues"></div>
+        <div id="seasons"></div>
+      `;
+      getImportOption('players');
+      expect(container.querySelector('#clubs').style.display).toBe('none');
+      expect(container.querySelector('#competitions').style.display).toBe('none');
+      expect(container.querySelector('#events').style.display).toBe('none');
+      expect(container.querySelector('#leagues').style.display).toBe('none');
+      expect(container.querySelector('#seasons').style.display).toBe('none');
+
+      // For unknown option, showIds and hideIds are empty, leaves display as is
+      expect(() => getImportOption('unknown-option')).not.toThrow();
+    });
+
+    it('safely handles missing elements in show/hide lists', () => {
+      container.innerHTML = '';
+      expect(() => getImportOption('fixtures')).not.toThrow();
+      expect(() => getImportOption('players')).not.toThrow();
+      expect(() => getImportOption('clubplayers')).not.toThrow();
+    });
+  });
+
+  describe('setNumMatchDays branch edge cases', () => {
+    it('returns early when max_teams or num_match_days elements are missing', () => {
+      container.innerHTML = `<input id="max_teams" value="6">`;
+      expect(() => setNumMatchDays()).not.toThrow();
+
+      container.innerHTML = `<input id="num_match_days" value="0">`;
+      expect(() => setNumMatchDays()).not.toThrow();
+    });
+
+    it('handles missing homeAwayTrue element and zero/NaN maxTeams', () => {
+      container.innerHTML = `
+        <input type="number" id="max_teams" value="0">
+        <input type="number" id="num_match_days" value="99">
+      `;
+      setNumMatchDays();
+      expect(container.querySelector('#num_match_days').value).toBe('99');
+
+      container.querySelector('#max_teams').value = 'invalid';
+      setNumMatchDays();
+      expect(container.querySelector('#num_match_days').value).toBe('99');
+    });
+  });
+
+  describe('setEndDate branch edge cases', () => {
+    it('falls back to 0 when round_length or num_match_days element is missing', () => {
+      container.innerHTML = `
+        <input type="text" id="competitionType" value="league">
+        <input type="date" id="dateStart" value="2026-06-01">
+        <input type="date" id="dateEnd" value="">
+      `;
+      setEndDate();
+      expect(container.querySelector('#dateEnd').value).toBe('');
+    });
+  });
+
+  describe('setEventName branch edge cases', () => {
+    it('handles select element with unselected or empty text option', () => {
+      container.innerHTML = `
+        <input id="event_name" value="">
+        <select id="type"></select>
+        <select id="age_limit"><option value="open">Open</option></select>
+      `;
+      setEventName();
+      expect(container.querySelector('#event_name').value).toBe('');
+
+      // Selected option with empty text
+      container.innerHTML = `
+        <input id="event_name" value="">
+        <select id="type"><option value="empty" selected></option></select>
+        <select id="age_limit"><option value="open">Open</option></select>
+      `;
+      setEventName();
+      expect(container.querySelector('#event_name').value).toBe('');
+    });
+  });
+
+  describe('setTournamentOpenDate branch edge cases', () => {
+    it('handles response without data or without msg', () => {
+      container.innerHTML = `
+        <input id="dateOpen" value="">
+        <input id="dateClose" value="">
+        <input id="dateWithdraw" value="">
+        <div id="alert-dates"></div>
+        <div id="alert-dates-response"></div>
+      `;
+      setTournamentOpenDate();
+      lastRequest().success({});
+      expect(container.querySelector('#alert-dates-response').textContent).toBe('');
+      expect(container.querySelector('#dateOpen').value).toBe('');
+
+      setTournamentOpenDate();
+      lastRequest().success({ data: {} });
+      expect(container.querySelector('#alert-dates-response').textContent).toBe('');
+    });
+  });
+
+  describe('insertHomeStadium branch edge cases', () => {
+    it('handles missing stadiumResponse feedback container in success and error paths', () => {
+      container.innerHTML = `<input id="location_1" value="">`;
+      expect(() => {
+        insertHomeStadium(101, 1);
+        lastRequest().success({ data: 'Test Stadium' });
+      }).not.toThrow();
+      expect(container.querySelector('#location_1').value).toBe('Test Stadium');
+
+      expect(() => {
+        insertHomeStadium(102, 2);
+        lastRequest().error({ statusText: 'Error' });
+      }).not.toThrow();
+    });
+  });
+
+  describe('setMatchDate and setMatchDayPopUp skip and missing element branches', () => {
+    it('skips populating rows when i is not 0 or mode is not add', () => {
+      container.innerHTML = `
+        <input id="myDatePicker[0]" value="2026-06-01">
+        <input id="myDatePicker[1]" value="">
+        <input id="match_day_0" value="Monday">
+        <input id="match_day_1" value="">
+      `;
+      // When i !== 0
+      setMatchDate('2026-06-01', 1, 3, 'add');
+      expect(document.getElementById('myDatePicker[1]').value).toBe('');
+
+      setMatchDayPopUp('Tuesday', 1, 3, 'add');
+      expect(document.getElementById('match_day_1').value).toBe('');
+
+      // When mode !== 'add'
+      setMatchDate('2026-06-01', 0, 3, 'edit');
+      expect(document.getElementById('myDatePicker[1]').value).toBe('');
+
+      setMatchDayPopUp('Tuesday', 0, 3, 'edit');
+      expect(document.getElementById('match_day_1').value).toBe('');
+    });
+
+    it('handles missing row inputs in loop for setMatchDate and setMatchDayPopUp', () => {
+      container.innerHTML = `
+        <input id="myDatePicker[0]" value="2026-06-01">
+        <input id="myDatePicker[2]" value="">
+        <input id="match_day_0" value="Day 1">
+        <input id="match_day_2" value="">
+      `;
+      expect(() => setMatchDate('2026-06-01', 0, 3, 'add')).not.toThrow();
+      expect(document.getElementById('myDatePicker[2]').value).toBe('2026-06-01');
+
+      expect(() => setMatchDayPopUp('Day 1', 0, 3, 'add')).not.toThrow();
+      expect(document.getElementById('match_day_2').value).toBe('Day 1');
+    });
   });
 });

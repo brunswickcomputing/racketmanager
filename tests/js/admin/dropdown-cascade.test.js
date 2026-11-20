@@ -6,6 +6,7 @@ import {
   getLeagueDropdown,
   getSeasonDropdown,
   getMatchDropdown,
+  registerDropdownCascades,
 } from '../../../src/js/admin/features/dropdowns/dropdown-cascade.js';
 import { createJQueryStub } from './support/jquery-stub.js';
 
@@ -83,6 +84,16 @@ describe('Admin feature: dropdown-cascade requests', () => {
       expect(document.querySelector('#leagues').style.display).toBe('none');
       expect(stub.jq.ajax).not.toHaveBeenCalled();
     });
+
+    it('handles missing DOM elements in getEventDropdown gracefully', () => {
+      container.innerHTML = '';
+      expect(() => {
+        getEventDropdown(3);
+        request().success({ data: 'ok' });
+        request().error({ statusText: 'err' });
+        request().complete();
+      }).not.toThrow();
+    });
   });
 
   describe('getLeagueDropdown', () => {
@@ -108,6 +119,33 @@ describe('Admin feature: dropdown-cascade requests', () => {
       expect(el.classList.contains('message-error')).toBe(true);
       expect(el.style.display).toBe('');
     });
+
+    it('falls back to statusText on error when responseJSON is absent', () => {
+      getLeagueDropdown(5);
+      request().error({ statusText: 'Gateway Timeout' });
+
+      const el = document.querySelector('#leagues');
+      expect(el.textContent).toBe('Gateway Timeout');
+      expect(el.classList.contains('message-error')).toBe(true);
+    });
+
+    it('renders returned markup in #leagues on success', () => {
+      getLeagueDropdown(5);
+      request().success({ data: '<option value="2">Division 2</option>' });
+
+      const el = document.querySelector('#leagues');
+      expect(el.innerHTML).toBe('<option value="2">Division 2</option>');
+    });
+
+    it('handles missing DOM elements in getLeagueDropdown gracefully', () => {
+      container.innerHTML = '';
+      expect(() => {
+        getLeagueDropdown(5);
+        request().success({ data: 'ok' });
+        request().error({ statusText: 'err' });
+        request().complete();
+      }).not.toThrow();
+    });
   });
 
   describe('getSeasonDropdown', () => {
@@ -128,10 +166,31 @@ describe('Admin feature: dropdown-cascade requests', () => {
     it('renders responseJSON message in #seasons with message-error on failure', () => {
       getSeasonDropdown(12);
       request().error({ responseJSON: { data: 'League not found' } });
+      request().complete();
 
       const el = document.querySelector('#seasons');
       expect(el.textContent).toBe('League not found');
       expect(el.classList.contains('message-error')).toBe(true);
+      expect(el.style.display).toBe('');
+    });
+
+    it('falls back to statusText on error when responseJSON is absent', () => {
+      getSeasonDropdown(12);
+      request().error({ statusText: 'Not Found' });
+
+      const el = document.querySelector('#seasons');
+      expect(el.textContent).toBe('Not Found');
+      expect(el.classList.contains('message-error')).toBe(true);
+    });
+
+    it('handles missing DOM elements in getSeasonDropdown gracefully', () => {
+      container.innerHTML = '';
+      expect(() => {
+        getSeasonDropdown(12);
+        request().success({ data: 'ok' });
+        request().error({ statusText: 'err' });
+        request().complete();
+      }).not.toThrow();
     });
   });
 
@@ -157,6 +216,133 @@ describe('Admin feature: dropdown-cascade requests', () => {
       expect(el.textContent).toBe('Server Error');
       expect(el.classList.contains('message-error')).toBe(true);
       expect(el.style.display).toBe('');
+    });
+
+    it('renders responseJSON error data in #matches on failure when present', () => {
+      getMatchDropdown(12, '2026');
+      request().error({ responseJSON: { data: 'No matches scheduled' } });
+
+      const el = document.querySelector('#matches');
+      expect(el.textContent).toBe('No matches scheduled');
+      expect(el.classList.contains('message-error')).toBe(true);
+      expect(el.style.display).toBe('');
+    });
+
+    it('handles missing DOM elements in getMatchDropdown gracefully', () => {
+      container.innerHTML = '';
+      expect(() => {
+        getMatchDropdown(12, '2026');
+        request().success({ data: 'ok' });
+        request().error({ statusText: 'err' });
+      }).not.toThrow();
+    });
+  });
+
+  describe('registerDropdownCascades', () => {
+    let actionsContainer;
+
+    beforeEach(() => {
+      actionsContainer = document.createElement('div');
+      document.body.appendChild(actionsContainer);
+
+      window.Racketmanager = window.Racketmanager || {};
+      window.Racketmanager.getEventDropdown = jest.fn();
+      window.Racketmanager.getLeagueDropdown = jest.fn();
+      window.Racketmanager.getSeasonDropdown = jest.fn();
+      window.Racketmanager.getMatchDropdown = jest.fn();
+    });
+
+    afterEach(() => {
+      document.body.removeChild(actionsContainer);
+      delete window.Racketmanager.getEventDropdown;
+      delete window.Racketmanager.getLeagueDropdown;
+      delete window.Racketmanager.getSeasonDropdown;
+      delete window.Racketmanager.getMatchDropdown;
+    });
+
+    it('returns early when root is null or lacks addEventListener', () => {
+      expect(() => registerDropdownCascades(null)).not.toThrow();
+      expect(() => registerDropdownCascades({})).not.toThrow();
+    });
+
+    it('does not re-register listeners when called twice on the same root', () => {
+      const root = document.createElement('div');
+      registerDropdownCascades(root);
+      registerDropdownCascades(root);
+
+      const select = document.createElement('select');
+      select.setAttribute('data-action', 'get-event-dropdown');
+      select.innerHTML = '<option value="42" selected>42</option>';
+      root.appendChild(select);
+
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      expect(window.Racketmanager.getEventDropdown).toHaveBeenCalledTimes(1);
+    });
+
+    it('dispatches get-event-dropdown, get-league-dropdown, and get-season-dropdown on change', () => {
+      const root = document.createElement('div');
+      registerDropdownCascades(root);
+
+      const selEvent = document.createElement('select');
+      selEvent.setAttribute('data-action', 'get-event-dropdown');
+      selEvent.innerHTML = '<option value="10" selected>10</option>';
+      root.appendChild(selEvent);
+      selEvent.dispatchEvent(new Event('change', { bubbles: true }));
+      expect(window.Racketmanager.getEventDropdown).toHaveBeenCalledWith('10');
+
+      const selLeague = document.createElement('select');
+      selLeague.setAttribute('data-action', 'get-league-dropdown');
+      selLeague.innerHTML = '<option value="20" selected>20</option>';
+      root.appendChild(selLeague);
+      selLeague.dispatchEvent(new Event('change', { bubbles: true }));
+      expect(window.Racketmanager.getLeagueDropdown).toHaveBeenCalledWith('20');
+
+      const selSeason = document.createElement('select');
+      selSeason.setAttribute('data-action', 'get-season-dropdown');
+      selSeason.innerHTML = '<option value="30" selected>30</option>';
+      root.appendChild(selSeason);
+      selSeason.dispatchEvent(new Event('change', { bubbles: true }));
+      expect(window.Racketmanager.getSeasonDropdown).toHaveBeenCalledWith('30');
+    });
+
+    it('dispatches get-match-dropdown reading data-league-id and dataset fallback', () => {
+      const root = document.createElement('div');
+      registerDropdownCascades(root);
+
+      const selMatch = document.createElement('select');
+      selMatch.setAttribute('data-action', 'get-match-dropdown');
+      selMatch.setAttribute('data-league-id', '99');
+      selMatch.innerHTML = '<option value="2026" selected>2026</option>';
+      root.appendChild(selMatch);
+
+      selMatch.dispatchEvent(new Event('change', { bubbles: true }));
+      expect(window.Racketmanager.getMatchDropdown).toHaveBeenCalledWith('99', '2026');
+    });
+
+    it('does nothing when changed element has no action, empty action, or missing Racketmanager', () => {
+      const root = document.createElement('div');
+      registerDropdownCascades(root);
+
+      const plain = document.createElement('select');
+      root.appendChild(plain);
+      plain.dispatchEvent(new Event('change', { bubbles: true }));
+
+      plain.setAttribute('data-action', '');
+      plain.dispatchEvent(new Event('change', { bubbles: true }));
+
+      plain.setAttribute('data-action', 'unknown-dropdown-action');
+      plain.dispatchEvent(new Event('change', { bubbles: true }));
+
+      // Missing Racketmanager functions
+      delete window.Racketmanager.getEventDropdown;
+      delete window.Racketmanager.getLeagueDropdown;
+      delete window.Racketmanager.getSeasonDropdown;
+      delete window.Racketmanager.getMatchDropdown;
+
+      for (const act of ['get-event-dropdown', 'get-league-dropdown', 'get-season-dropdown', 'get-match-dropdown']) {
+        plain.setAttribute('data-action', act);
+        expect(() => plain.dispatchEvent(new Event('change', { bubbles: true }))).not.toThrow();
+      }
     });
   });
 });

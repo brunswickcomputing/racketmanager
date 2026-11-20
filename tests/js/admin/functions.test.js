@@ -65,4 +65,31 @@ describe('Admin functions: activaTab and namespace exposure', () => {
     expect(targetElements).toContain(document.getElementById('btn-tabs'));
     expect(targetElements).toContain(document.getElementById('btn-pills'));
   });
+
+  it('registers on DOMContentLoaded if document.readyState is loading', async () => {
+    let handler;
+    const addEventListenerSpy = jest.spyOn(document, 'addEventListener');
+    const originalReadyState = document.readyState;
+    try {
+      Object.defineProperty(document, 'readyState', {
+        value: 'loading',
+        configurable: true,
+      });
+
+      jest.resetModules();
+      await import('../../../src/js/admin/functions.js');
+
+      expect(addEventListenerSpy).toHaveBeenCalledWith('DOMContentLoaded', expect.any(Function));
+      handler = addEventListenerSpy.mock.calls.find((call) => call[0] === 'DOMContentLoaded')?.[1];
+      if (handler) {
+        expect(() => handler()).not.toThrow();
+      }
+    } finally {
+      addEventListenerSpy.mockRestore();
+      Object.defineProperty(document, 'readyState', {
+        value: originalReadyState,
+        configurable: true,
+      });
+    }
+  });
 });

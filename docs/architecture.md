@@ -450,7 +450,7 @@ Alignment highlights
   - PHP templates are in templates/ with shared partials under templates/includes/ (e.g., templates/includes/team.php). ✓
   - Template helpers remain in template-tags.php and functions.php; they are included from RacketManager::load_libraries(). ✓
 - JavaScript
-  - Modular source exists under src/js/ with index.js, utils/, features/, and core helpers (initialisation, ajax-complete). ✓
+  - Modular source exists under src/js/ with index.js, utils/, and features/. There is no core/ module: the unused empty placeholders (core/initialisation.js, core/ajax-complete.js) were removed. ✓
   - A documented migration plan exists for moving legacy JS into modules (docs/migration-plan.md). ✓
   - A legacy script exists at js/racketmanager.legacy.js, acting as compatibility glue. ✓
 
@@ -733,7 +733,7 @@ Alignment highlights
   - PHP templates are in templates/ with shared partials under templates/includes/ (e.g., templates/includes/team.php). ✓
   - Template helpers remain in template-tags.php and functions.php; they are included from RacketManager::load_libraries(). ✓
 - JavaScript
-  - Modular source exists under src/js/ with index.js, utils/, features/, and core helpers (initialisation, ajax-complete). ✓
+  - Modular source exists under src/js/ with index.js, utils/, and features/. There is no core/ module: the unused empty placeholders (core/initialisation.js, core/ajax-complete.js) were removed. ✓
   - A documented migration plan exists for moving legacy JS into modules (docs/migration-plan.md). ✓
   - A legacy script exists at js/racketmanager.legacy.js, acting as compatibility glue. ✓
 

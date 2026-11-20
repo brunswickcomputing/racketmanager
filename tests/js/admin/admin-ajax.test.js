@@ -89,6 +89,51 @@ describe('Admin feature: admin-ajax functions', () => {
       // 2026-06-01 + 34 days = 2026-07-05
       expect(container.querySelector('#dateEnd').value).toBe('2026-07-05');
     });
+
+    it('does nothing when competitionType is not league or missing', () => {
+      container.innerHTML = `
+        <input type="text" id="competitionType" value="cup">
+        <input type="date" id="dateStart" value="2026-06-01">
+        <input type="date" id="dateEnd" value="">
+        <input type="number" id="round_length" value="7">
+        <input type="number" id="num_match_days" value="4">
+      `;
+      setEndDate();
+      expect(container.querySelector('#dateEnd').value).toBe('');
+
+      // When competitionType element is absent
+      container.innerHTML = `<input type="date" id="dateEnd" value="">`;
+      setEndDate();
+      expect(container.querySelector('#dateEnd').value).toBe('');
+    });
+
+    it('defaults filler_weeks and home_away_diff to 0 when empty or NaN', () => {
+      container.innerHTML = `
+        <input type="text" id="competitionType" value="league">
+        <input type="date" id="dateStart" value="2026-06-01">
+        <input type="date" id="dateEnd" value="">
+        <input type="number" id="round_length" value="7">
+        <input type="text" id="filler_weeks" value="invalid">
+        <input type="text" id="home_away_diff" value="">
+        <input type="number" id="num_match_days" value="2">
+      `;
+      setEndDate();
+      // roundLengthWeeks = 1; endDateGapWeeks = (1 * 2) + 0 + 0 = 2 weeks = 14 days; endDateGap = 13 days
+      // 2026-06-01 + 13 days = 2026-06-14
+      expect(container.querySelector('#dateEnd').value).toBe('2026-06-14');
+    });
+
+    it('does nothing when dateStart, roundLengthWeeks, numMatchDays, or dateEnd is missing/zero', () => {
+      container.innerHTML = `
+        <input type="text" id="competitionType" value="league">
+        <input type="date" id="dateStart" value="">
+        <input type="date" id="dateEnd" value="">
+        <input type="number" id="round_length" value="0">
+        <input type="number" id="num_match_days" value="0">
+      `;
+      setEndDate();
+      expect(container.querySelector('#dateEnd').value).toBe('');
+    });
   });
 
   describe('getImportOption', () => {
@@ -108,6 +153,13 @@ describe('Admin feature: admin-ajax functions', () => {
       getImportOption('clubplayers');
       expect(container.querySelector('#clubs').style.display).toBe('');
       expect(container.querySelector('#competitions').style.display).toBe('none');
+
+      getImportOption('players');
+      expect(container.querySelector('#clubs').style.display).toBe('none');
+      expect(container.querySelector('#competitions').style.display).toBe('none');
+      expect(container.querySelector('#events').style.display).toBe('none');
+      expect(container.querySelector('#leagues').style.display).toBe('none');
+      expect(container.querySelector('#seasons').style.display).toBe('none');
     });
   });
 
@@ -349,6 +401,16 @@ describe('Admin feature: admin-ajax functions', () => {
       expect(container.querySelector('#alert-dates').style.display).toBe('none');
     });
 
+    it('handles fadeOutNotification when element is null or notify DOM elements missing', () => {
+      container.innerHTML = '';
+      expect(() => {
+        setTournamentOpenDate();
+        lastRequest().success({ data: { msg: 'ok' } });
+        lastRequest().error({ statusText: 'err' });
+        lastRequest().complete();
+      }).not.toThrow();
+    });
+
     it('clears date fields when returned dates are empty string or null', () => {
       renderDom({ dateOpen: '2026-01-01', dateClose: '2026-02-01', dateWithdraw: '2026-03-01' });
 
@@ -432,6 +494,26 @@ describe('Admin feature: admin-ajax functions', () => {
       expect(container.querySelector('#alert-season-response').innerHTML).toBe('No teams in event');
       expect(container.querySelector('#alert-season').classList.contains('alert--danger')).toBe(true);
     });
+
+    it('renders statusText when responseJSON is absent and handles missing notify elements', () => {
+      renderDom();
+
+      sendFixtures({ preventDefault: jest.fn() }, 42);
+      lastRequest().error({ statusText: 'Internal Error' });
+      lastRequest().complete();
+
+      expect(container.querySelector('#alert-season-response').textContent).toBe('Internal Error');
+      expect(container.querySelector('#alert-season').classList.contains('alert--danger')).toBe(true);
+
+      // Missing notify DOM elements
+      container.innerHTML = '';
+      expect(() => {
+        sendFixtures(null, 42);
+        lastRequest().success({});
+        lastRequest().error({ statusText: 'Error' });
+        lastRequest().complete();
+      }).not.toThrow();
+    });
   });
 
   describe('notifyTournamentEntryOpen and notify_open', () => {
@@ -451,11 +533,13 @@ describe('Admin feature: admin-ajax functions', () => {
       });
 
       lastRequest().success({ data: 'Entries open email queued' });
+      lastRequest().complete();
       expect(container.querySelector('#alert-tournaments-response').textContent).toBe('Entries open email queued');
       expect(container.querySelector('#alert-tournaments').classList.contains('alert--success')).toBe(true);
+      expect(container.querySelector('#alert-tournaments').style.display).toBe('');
     });
 
-    it('renders error on tournament entries failure', () => {
+    it('renders error on tournament entries failure with responseJSON and statusText fallback, and handles missing elements', () => {
       container.innerHTML = `
         <div id="alert-tournaments" style="display:none;"></div>
         <div id="alert-tournaments-response"></div>
@@ -463,9 +547,24 @@ describe('Admin feature: admin-ajax functions', () => {
 
       notifyTournamentEntryOpen({ preventDefault: jest.fn() }, 88);
       lastRequest().error({ statusText: 'Forbidden' });
+      lastRequest().complete();
 
       expect(container.querySelector('#alert-tournaments-response').textContent).toBe('Forbidden');
       expect(container.querySelector('#alert-tournaments').classList.contains('alert--danger')).toBe(true);
+
+      notifyTournamentEntryOpen(null, 88);
+      lastRequest().error({ responseJSON: { data: 'Tournament full' } });
+      lastRequest().complete();
+      expect(container.querySelector('#alert-tournaments-response').innerHTML).toBe('Tournament full');
+
+      // Missing elements
+      container.innerHTML = '';
+      expect(() => {
+        notifyTournamentEntryOpen(null, 88);
+        lastRequest().success({ data: 'ok' });
+        lastRequest().error({ statusText: 'Err' });
+        lastRequest().complete();
+      }).not.toThrow();
     });
 
     it('posts racketmanager_notify_competition_entries_open with competition ID and season', () => {
@@ -485,11 +584,13 @@ describe('Admin feature: admin-ajax functions', () => {
       });
 
       lastRequest().success({ data: 'Competition entries open' });
+      lastRequest().complete();
       expect(container.querySelector('#alert-season-response').textContent).toBe('Competition entries open');
       expect(container.querySelector('#alert-season').classList.contains('alert--success')).toBe(true);
+      expect(container.querySelector('#alert-season').style.display).toBe('');
     });
 
-    it('renders error on competition entries failure', () => {
+    it('renders error on competition entries failure with statusText and responseJSON', () => {
       container.innerHTML = `
         <div id="alert-season" style="display:none;"></div>
         <div id="alert-season-response"></div>
@@ -497,9 +598,24 @@ describe('Admin feature: admin-ajax functions', () => {
 
       notify_open({ preventDefault: jest.fn() }, 14, '2026');
       lastRequest().error({ responseJSON: { data: 'Season closed' } });
+      lastRequest().complete();
 
       expect(container.querySelector('#alert-season-response').innerHTML).toBe('Season closed');
       expect(container.querySelector('#alert-season').classList.contains('alert--danger')).toBe(true);
+
+      notify_open(null, 14, '2026');
+      lastRequest().error({ statusText: 'Bad Gateway' });
+      lastRequest().complete();
+      expect(container.querySelector('#alert-season-response').textContent).toBe('Bad Gateway');
+
+      // Missing elements
+      container.innerHTML = '';
+      expect(() => {
+        notify_open(null, 14, '2026');
+        lastRequest().success({ data: 'ok' });
+        lastRequest().error({ statusText: 'Err' });
+        lastRequest().complete();
+      }).not.toThrow();
     });
   });
 
@@ -525,7 +641,21 @@ describe('Admin feature: admin-ajax functions', () => {
       expect(stub.fadeOut).toHaveBeenCalledWith('slow');
     });
 
-    it('emailConstitution renders responseJSON message as message-error', () => {
+    it('emailConstitution falls back to setTimeout when jQuery FX is absent', () => {
+      jest.useFakeTimers();
+      container.innerHTML = `<div id="notifyMessage-constitution" style="display:none;"></div>`;
+      stub.jq.mockReturnValueOnce({});
+
+      emailConstitution(null, 19);
+      lastRequest().success({ data: 'Constitution emailed' });
+
+      const el = container.querySelector('#notifyMessage-constitution');
+      expect(el.style.display).toBe('');
+      jest.advanceTimersByTime(10000);
+      expect(el.style.display).toBe('none');
+    });
+
+    it('emailConstitution renders responseJSON message or statusText as message-error and handles missing element', () => {
       container.innerHTML = `<div id="notifyMessage-constitution" style="display:none;"></div>`;
       emailConstitution({ preventDefault: jest.fn() }, 19);
 
@@ -535,6 +665,17 @@ describe('Admin feature: admin-ajax functions', () => {
       expect(el.className).toBe('message-error');
       expect(el.style.display).toBe('');
       expect(stub.fadeOut).not.toHaveBeenCalled();
+
+      emailConstitution(null, 19);
+      lastRequest().error({ statusText: 'Server Error' });
+      expect(el.textContent).toBe('Server Error');
+
+      container.innerHTML = '';
+      expect(() => {
+        emailConstitution(null, 19);
+        lastRequest().success({ data: 'ok' });
+        lastRequest().error({ statusText: 'err' });
+      }).not.toThrow();
     });
 
     it('notifyTeams posts racketmanager_notify_teams and updates match notify message with timed fade', () => {
@@ -555,7 +696,22 @@ describe('Admin feature: admin-ajax functions', () => {
       expect(stub.fadeOut).toHaveBeenCalledWith('slow');
     });
 
-    it('notifyTeams renders statusText as message-error when no responseJSON is present', () => {
+    it('notifyTeams falls back to setTimeout when jQuery FX is absent and handles empty message fallback', () => {
+      jest.useFakeTimers();
+      container.innerHTML = `<div id="notifyMessage-55" style="display:none;"></div>`;
+      stub.jq.mockReturnValueOnce({});
+
+      notifyTeams(55);
+      lastRequest().success({}); // response?.data?.message is empty
+
+      const el = container.querySelector('#notifyMessage-55');
+      expect(el.textContent).toBe('');
+      expect(el.style.display).toBe('');
+      jest.advanceTimersByTime(10000);
+      expect(el.style.display).toBe('none');
+    });
+
+    it('notifyTeams renders statusText and responseJSON as message-error and handles missing element', () => {
       container.innerHTML = `<div id="notifyMessage-56" style="display:none;"></div>`;
       notifyTeams(56);
 
@@ -564,6 +720,17 @@ describe('Admin feature: admin-ajax functions', () => {
       expect(el.textContent).toBe('Gateway Timeout');
       expect(el.className).toBe('message-error');
       expect(stub.fadeOut).not.toHaveBeenCalled();
+
+      notifyTeams(56);
+      lastRequest().error({ responseJSON: { data: 'Team not ready' } });
+      expect(el.textContent).toBe('Team not ready');
+
+      container.innerHTML = '';
+      expect(() => {
+        notifyTeams(56);
+        lastRequest().success({ data: { message: 'ok' } });
+        lastRequest().error({ statusText: 'err' });
+      }).not.toThrow();
     });
   });
 
@@ -604,6 +771,20 @@ describe('Admin feature: admin-ajax functions', () => {
       expect(feedback.innerHTML).toBe('No home stadium set');
       expect(feedback.classList.contains('message-error')).toBe(true);
       expect(container.querySelector('#location_1').value).toBe('');
+    });
+
+    it('renders statusText in feedback as message-error when responseJSON is absent', () => {
+      container.innerHTML = `
+        <input id="location_1" value="">
+        <div id="feedback"></div>
+      `;
+
+      insertHomeStadium(101, 1);
+      lastRequest().error({ statusText: 'Bad Request' });
+
+      const feedback = container.querySelector('#feedback');
+      expect(feedback.textContent).toBe('Bad Request');
+      expect(feedback.classList.contains('message-error')).toBe(true);
     });
   });
 
@@ -663,6 +844,34 @@ describe('Admin feature: admin-ajax functions', () => {
       expect(notify.textContent).toBe('Points cannot be negative');
       expect(notify.classList.contains('message-error')).toBe(true);
       expect(notify.style.display).toBe('inline-block');
+    });
+
+    it('renders statusText when responseJSON is absent, handles non-jQuery loading hide fallback, and handles missing elements', () => {
+      renderDom(9);
+
+      saveAddPoints('5', 9, jest.fn());
+      lastRequest().error({ statusText: 'Bad Request' });
+      const notify = container.querySelector('#feedback_9');
+      expect(notify.textContent).toBe('Bad Request');
+      expect(notify.classList.contains('message-error')).toBe(true);
+
+      // Loading hide fallback when $loading.fadeOut is absent
+      stub.jq.mockReturnValueOnce({});
+      const reloadPage = jest.fn();
+      saveAddPoints('5', 9, reloadPage);
+      expect(container.querySelector('#loading_9').style.display).toBe('inline');
+      lastRequest().success();
+      expect(container.querySelector('#loading_9').style.display).toBe('none');
+      expect(reloadPage).toHaveBeenCalled();
+
+      // When DOM elements are completely missing
+      container.innerHTML = '';
+      expect(() => {
+        saveAddPoints('1', 99, jest.fn());
+        lastRequest().success();
+        lastRequest().error({ statusText: 'err' });
+        lastRequest().complete();
+      }).not.toThrow();
     });
   });
 });

@@ -3,17 +3,21 @@
  */
 
 /**
- * Toggle visibility of an element
+ * Show an element
  *
  * @param {string} selector - jQuery selector
- * @param {boolean} show - Whether to show or hide
  */
-export function toggleElement(selector, show) {
-    if (show) {
-        jQuery(selector).show();
-    } else {
-        jQuery(selector).hide();
-    }
+export function showElement(selector) {
+    jQuery(selector).show();
+}
+
+/**
+ * Hide an element
+ *
+ * @param {string} selector - jQuery selector
+ */
+export function hideElement(selector) {
+    jQuery(selector).hide();
 }
 
 /**

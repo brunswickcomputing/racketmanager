@@ -1,19 +1,24 @@
-import { toggleElement, handleCheckboxConditional, getDataAttr } from '../../../src/js/utils/dom-utils.js';
+import { showElement, hideElement, handleCheckboxConditional, getDataAttr } from '../../../src/js/utils/dom-utils.js';
 
 describe('dom-utils', () => {
-    describe('toggleElement', () => {
+    describe('showElement', () => {
         beforeEach(() => {
             document.body.innerHTML = '<div id="target" style="display: none;">Content</div>';
         });
 
-        test('shows element when show is true', () => {
-            toggleElement('#target', true);
+        test('shows element', () => {
+            showElement('#target');
             expect(jQuery('#target').css('display')).not.toBe('none');
         });
+    });
 
-        test('hides element when show is false', () => {
-            jQuery('#target').show();
-            toggleElement('#target', false);
+    describe('hideElement', () => {
+        beforeEach(() => {
+            document.body.innerHTML = '<div id="target">Content</div>';
+        });
+
+        test('hides element', () => {
+            hideElement('#target');
             expect(jQuery('#target').css('display')).toBe('none');
         });
     });

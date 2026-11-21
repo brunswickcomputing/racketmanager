@@ -85,7 +85,12 @@ function isInvalidAdvantageScore(team1Score, team2Score, minWin, minLoss) {
 	return team2Score < minLoss || (team2Score > minLoss && team2Score !== (team1Score - 2));
 }
 
-function SetValidator(team1, team2, team1Score, team2Score, tieBreak, tieBreakScore, maxLoss, maxWin, minLoss, minWin) {
+function SetValidator(teams, scores, tieBreakData, limits) {
+	const { team1, team2 } = teams;
+	const { team1Score, team2Score } = scores;
+	const { tieBreak, tieBreakScore } = tieBreakData;
+	const { maxLoss, maxWin, minLoss, minWin } = limits;
+
 	if (isInvalidHighScore(team1Score, maxWin)) {
 		markInputError(team1);
 		return;
@@ -112,11 +117,24 @@ function SetValidator(team1, team2, team1Score, team2Score, tieBreak, tieBreakSc
 	markInputWon(team1);
 }
 
-function applySetValidation(team, teamAlt, teamScore, teamScoreAlt, tieBreak, tieBreakScore, maxLoss, maxWin, minLoss, minWin) {
+function applySetValidation(teams, scores, tieBreakData, limits) {
+	const { team, teamAlt } = teams;
+	const { teamScore, teamScoreAlt } = scores;
+
 	if (teamScore > teamScoreAlt) {
-		SetValidator(team, teamAlt, teamScore, teamScoreAlt, tieBreak, tieBreakScore, maxLoss, maxWin, minLoss, minWin);
+		SetValidator(
+			{ team1: team, team2: teamAlt },
+			{ team1Score: teamScore, team2Score: teamScoreAlt },
+			tieBreakData,
+			limits
+		);
 	} else if (teamScore < teamScoreAlt) {
-		SetValidator(teamAlt, team, teamScoreAlt, teamScore, tieBreak, tieBreakScore, maxLoss, maxWin, minLoss, minWin);
+		SetValidator(
+			{ team1: teamAlt, team2: team },
+			{ team1Score: teamScoreAlt, team2Score: teamScore },
+			tieBreakData,
+			limits
+		);
 	} else if (teamScore === teamScoreAlt && !Number.isNaN(teamScore)) {
 		jQuery(team).addClass(SET_CLASSES.inputError);
 		jQuery(teamAlt).addClass(SET_CLASSES.inputError);
@@ -180,7 +198,12 @@ function SetCalculator(inputdata) {
 	jQuery(teamAlt).removeClass('input-validation-error match-points__cell-input--won is-invalid');
 	jQuery(tieBreak).removeClass(SET_CLASSES.inputError);
 
-	applySetValidation(team, teamAlt, teamScore, teamScoreAlt, tieBreak, tieBreakScore, maxLoss, maxWin, minLoss, minWin);
+	applySetValidation(
+		{ team, teamAlt },
+		{ teamScore, teamScoreAlt },
+		{ tieBreak, tieBreakScore },
+		{ maxLoss, maxWin, minLoss, minWin }
+	);
 
 	updateScoreValues(team, teamAlt, tieBreak, teamScore, teamScoreAlt, tieBreakScore);
 }

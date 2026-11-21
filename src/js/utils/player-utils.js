@@ -41,12 +41,10 @@ export function getPlayerDetails(type, name, club = null, notifyField = null, pa
                     console.error('Error parsing player data:', e);
                     results = [];
                 }
-            } else {
-                if (notifyField) {
-                    jQuery(notifyField).text(response.data || 'Error fetching player details');
-                    jQuery(notifyField).addClass('error');
-                    jQuery(notifyField).show();
-                }
+            } else if (notifyField) {
+                jQuery(notifyField).text(response.data || 'Error fetching player details');
+                jQuery(notifyField).addClass('error');
+                jQuery(notifyField).show();
             }
         },
         error: function(xhr, status, error) {

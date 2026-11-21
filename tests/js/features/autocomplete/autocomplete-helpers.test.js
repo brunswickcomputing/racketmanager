@@ -107,8 +107,7 @@ describe('autocomplete-helpers', () => {
         });
 
         test('does nothing if callback is not a function', () => {
-            whenAutocompleteReady(null);
-            // No error thrown
+            expect(() => whenAutocompleteReady(null)).not.toThrow();
         });
     });
 

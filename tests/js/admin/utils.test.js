@@ -618,21 +618,23 @@ describe('Admin utils: registerAdminActions', () => {
 
     it('handles click, change, focusout, and load when event target lacks closest', () => {
       const nonElementTarget = { closest: undefined };
-      const clickEv = new MouseEvent('click', { bubbles: true });
-      Object.defineProperty(clickEv, 'target', { value: nonElementTarget });
-      document.dispatchEvent(clickEv);
+      expect(() => {
+        const clickEv = new MouseEvent('click', { bubbles: true });
+        Object.defineProperty(clickEv, 'target', { value: nonElementTarget });
+        document.dispatchEvent(clickEv);
 
-      const changeEv = new Event('change', { bubbles: true });
-      Object.defineProperty(changeEv, 'target', { value: nonElementTarget });
-      document.dispatchEvent(changeEv);
+        const changeEv = new Event('change', { bubbles: true });
+        Object.defineProperty(changeEv, 'target', { value: nonElementTarget });
+        document.dispatchEvent(changeEv);
 
-      const focusEv = new FocusEvent('focusout', { bubbles: true });
-      Object.defineProperty(focusEv, 'target', { value: nonElementTarget });
-      document.dispatchEvent(focusEv);
+        const focusEv = new FocusEvent('focusout', { bubbles: true });
+        Object.defineProperty(focusEv, 'target', { value: nonElementTarget });
+        document.dispatchEvent(focusEv);
 
-      const loadEv = new Event('load', { bubbles: true });
-      Object.defineProperty(loadEv, 'target', { value: nonElementTarget });
-      document.dispatchEvent(loadEv);
+        const loadEv = new Event('load', { bubbles: true });
+        Object.defineProperty(loadEv, 'target', { value: nonElementTarget });
+        document.dispatchEvent(loadEv);
+      }).not.toThrow();
     });
 
     it('uses dataset fallback for action and target in check-all', () => {

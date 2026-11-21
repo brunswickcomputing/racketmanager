@@ -13,9 +13,16 @@ describe('features/match/reset-match-scores', () => {
     });
 
     test('returns early if container does not exist or formId is empty', () => {
+        const spyCalc = jest.spyOn(setCalculatorModule, 'SetCalculator');
+        document.body.innerHTML = '<input type="text" id="home_player_1" value="keep" />';
+
         resetScoresInContainer('#non-existent');
         resetMatchScoresByFormId('');
         resetMatchScoresByFormId(null);
+
+        expect(document.getElementById('home_player_1').value).toBe('keep');
+        expect(spyCalc).not.toHaveBeenCalled();
+        spyCalc.mockRestore();
     });
 
     test('resets various input types and triggers SetCalculator for player inputs', () => {

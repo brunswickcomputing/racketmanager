@@ -23,6 +23,7 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Details_DTO;
 use Racketmanager\Domain\Player\Player;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
@@ -180,8 +181,7 @@ class Request_State_Presentation_Test extends TestCase {
         $team->method( 'get_name' )->willReturn( 'Westcliff 1' );
         $secretary = null;
         if ( null !== $secretary_id ) {
-            $secretary = $this->createStub( Player::class );
-            $secretary->id = $secretary_id;
+            $secretary = Player_Test_Factory::create( id: $secretary_id );
         }
         $details = new Team_Details_DTO( $team, match_secretary: $secretary );
         $league = $this->league();

@@ -76,6 +76,7 @@ use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use Racketmanager\Tests\Helpers\Creates_Competition_Season_Service;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 
 /**
  * End-to-end coverage of the league/team entry points that render tournament match cards:
@@ -176,12 +177,11 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
     }
 
     private function create_player( int $id, string $fullname ): Player {
-        $player = $this->createStub( Player::class );
-        $player->method( 'get_id' )->willReturn( $id );
-        $player->method( 'get_fullname' )->willReturn( $fullname );
-        $player->id           = $id;
-        $player->display_name = $fullname;
-        return $player;
+        return Player_Test_Factory::create(
+            id: $id,
+            display_name: $fullname,
+            overrides: [ 'fullname' => $fullname ]
+        );
     }
 
     private function create_team_details( int $id, string $name, array $players ): Team_Details_DTO {

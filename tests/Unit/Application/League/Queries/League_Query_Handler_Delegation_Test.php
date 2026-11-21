@@ -27,6 +27,7 @@ use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Team\Team;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
 use Racketmanager\Application\Competition\Ports\Event_Query_Service_Interface;
 use Racketmanager\Application\League\DTOs\League_View_State;
@@ -481,8 +482,7 @@ class League_Query_Handler_Delegation_Test extends TestCase {
         $league       = $this->league();
         $team         = $this->createStub( Team::class );
         $team->id     = 12;
-        $secretary    = $this->createStub( Player::class );
-        $secretary->id = 42;
+        $secretary    = Player_Test_Factory::create( id: 42 );
         $team_details = new Team_Details_DTO( $team, match_secretary: $secretary );
 
         $team_service = $this->createStub( Team_Service::class );

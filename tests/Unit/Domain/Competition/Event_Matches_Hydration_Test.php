@@ -30,6 +30,7 @@ use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use stdClass;
 
 #[AllowMockObjectsWithoutExpectations]
@@ -394,12 +395,7 @@ class Event_Matches_Hydration_Test extends TestCase {
 		);
 		$fixture->set_league( null );
 
-		$player               = $this->getMockBuilder( Player::class )
-			->disableOriginalConstructor()
-			->getMock();
-		$player->id           = 5;
-		$player->display_name = 'Test Player';
-		$player->matches      = array();
+		$player = Player_Test_Factory::create( id: 5, display_name: 'Test Player' );
 
 		$player_query_service = new Player_Query_Service( null, null, $this->fixture_repository, $this->event_repository, $this->rubber_repository );
 
@@ -459,12 +455,7 @@ class Event_Matches_Hydration_Test extends TestCase {
 			->with( 80, 5 )
 			->willReturn( array( $rubber ) );
 
-		$player               = $this->getMockBuilder( Player::class )
-			->disableOriginalConstructor()
-			->getMock();
-		$player->id           = 5;
-		$player->display_name = 'Test Player';
-		$player->matches      = array();
+		$player = Player_Test_Factory::create( id: 5, display_name: 'Test Player' );
 
 		$player_query_service = new Player_Query_Service( null, null, $this->fixture_repository, $this->event_repository, $this->rubber_repository );
 

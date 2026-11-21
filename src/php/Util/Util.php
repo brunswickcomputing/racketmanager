@@ -11,6 +11,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Util;
 
 use NumberFormatter;
+use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Domain\Team\Team_Placeholder_Ref;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
@@ -108,7 +109,13 @@ class Util {
             if ( false === array_key_exists( $key, $player_list ) ) {
                 $player_list[ $key ] = array();
             }
-            $player->index         = $player->surname . ', ' . $player->firstname;
+            $index = $player->surname . ', ' . $player->firstname;
+            if ( $player instanceof Player ) {
+                $player->set_index( $index );
+            } else {
+                // Supports raw database query result objects (stdClass) from Tournament_Entry_Repository::find_by_tournament().
+                $player->index = $index;
+            }
             $player_list[ $key ][] = $player;
         }
         return $player_list;

@@ -267,4 +267,151 @@ final class Player_Service_Validation_Test extends TestCase {
             ]
         );
     }
+
+    public function test_add_player_rebuilds_when_given_player_instance(): void {
+        $player_repo = $this->createMock( Player_Repository::class );
+        $player_repo->method( 'find_by_email' )->willReturn( false );
+        $player_repo->method( 'find_by_btm' )->willReturn( false );
+
+        $player_repo->expects( $this->once() )
+            ->method( 'add' )
+            ->with(
+                $this->callback(
+                    function ( Player $p ): bool {
+                        return 'Jannik Sinner' === $p->display_name
+                            && 'jannik.sinner' === $p->user_login
+                            && 'jannik.sinner1' === $p->user_pass
+                            && ! empty( $p->user_registered );
+                    }
+                )
+            );
+
+        $service = new Player_Service(
+            $this->createStub( RacketManager::class ),
+            $player_repo,
+            $this->createStub( Player_Error_Repository_Interface::class ),
+            $this->createStub( Club_Role_Repository_Interface::class ),
+            $this->createStub( Rating_Gateway_Interface::class ),
+            $this->createStub( League_Team_Repository::class ),
+            $this->createStub( Club_Repository::class ),
+            $this->createStub( Registration_Repository_Interface::class ),
+            $this->createStub( Mailer_Interface::class )
+        );
+
+        $input = Player_Test_Factory::create_sparse(
+            [
+                'firstname' => 'Jannik',
+                'surname'   => 'Sinner',
+                'email'     => 'jannik@example.com',
+                'btm'       => '998877',
+            ]
+        );
+
+        $result = $service->add_player( $input );
+
+        $this->assertInstanceOf( Player::class, $result );
+        $this->assertSame( 'Jannik Sinner', $result->display_name );
+        $this->assertSame( 'jannik@example.com', $result->email );
+        $this->assertSame( '998877', $result->btm );
+        $this->assertSame( 'jannik.sinner', $result->user_login );
+        $this->assertSame( 'jannik.sinner1', $result->user_pass );
+        $this->assertNotEmpty( $result->user_registered );
+    }
+
+    public function test_add_player_handles_stdclass_input(): void {
+        $player_repo = $this->createMock( Player_Repository::class );
+        $player_repo->method( 'find_by_email' )->willReturn( false );
+        $player_repo->method( 'find_by_btm' )->willReturn( false );
+        $player_repo->expects( $this->once() )
+            ->method( 'add' )
+            ->with( $this->isInstanceOf( Player::class ) );
+
+        $service = new Player_Service(
+            $this->createStub( RacketManager::class ),
+            $player_repo,
+            $this->createStub( Player_Error_Repository_Interface::class ),
+            $this->createStub( Club_Role_Repository_Interface::class ),
+            $this->createStub( Rating_Gateway_Interface::class ),
+            $this->createStub( League_Team_Repository::class ),
+            $this->createStub( Club_Repository::class ),
+            $this->createStub( Registration_Repository_Interface::class ),
+            $this->createStub( Mailer_Interface::class )
+        );
+
+        $input            = new stdClass();
+        $input->firstname = 'Iga';
+        $input->surname   = 'Swiatek';
+        $input->email     = 'iga@example.com';
+        $input->btm       = '112233';
+
+        $result = $service->add_player( $input );
+
+        $this->assertInstanceOf( Player::class, $result );
+        $this->assertSame( 'Iga Swiatek', $result->display_name );
+        $this->assertSame( 'iga.swiatek', $result->user_login );
+        $this->assertSame( 'iga.swiatek1', $result->user_pass );
+    }
+
+    public function test_update_player_supports_stdclass_input(): void {
+        $existing = Player_Test_Factory::create_sparse(
+            [
+                'id'            => 10,
+                'firstname'     => 'Aryna',
+                'surname'       => 'Sabalenka',
+                'display_name'  => 'Aryna Sabalenka',
+                'email'         => 'aryna@example.com',
+                'gender'        => 'F',
+                'btm'           => '445566',
+                'contactno'     => '111',
+                'year_of_birth' => 1998,
+                'locked'        => false,
+            ]
+        );
+
+        $player_repo = $this->createMock( Player_Repository::class );
+        $player_repo->expects( $this->once() )
+            ->method( 'find' )
+            ->with( 10 )
+            ->willReturn( $existing );
+        $player_repo->expects( $this->once() )
+            ->method( 'update' )
+            ->with(
+                $this->isInstanceOf( Player::class ),
+                $this->callback(
+                    function ( array $updates ): bool {
+                        return isset( $updates['core'] ) && isset( $updates['contactno'] );
+                    }
+                )
+            );
+
+        $service = new Player_Service(
+            $this->createStub( RacketManager::class ),
+            $player_repo,
+            $this->createStub( Player_Error_Repository_Interface::class ),
+            $this->createStub( Club_Role_Repository_Interface::class ),
+            $this->createStub( Rating_Gateway_Interface::class ),
+            $this->createStub( League_Team_Repository::class ),
+            $this->createStub( Club_Repository::class ),
+            $this->createStub( Registration_Repository_Interface::class ),
+            $this->createStub( Mailer_Interface::class )
+        );
+
+        $update_data            = new stdClass();
+        $update_data->firstname = 'Aryna';
+        $update_data->surname   = 'Tiger';
+        $update_data->display_name = 'Aryna Tiger';
+        $update_data->email     = 'aryna@example.com';
+        $update_data->gender    = 'F';
+        $update_data->btm       = '445566';
+        $update_data->contactno = '222';
+        $update_data->year_of_birth = 1998;
+        $update_data->locked    = false;
+
+        $updated = $service->update_player( 10, $update_data );
+
+        $this->assertInstanceOf( Player::class, $updated );
+        $this->assertSame( 'Aryna Tiger', $updated->display_name );
+        $this->assertSame( 'Tiger', $updated->surname );
+        $this->assertSame( '222', $updated->contactno );
+    }
 }

@@ -21,6 +21,7 @@ use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Player\Player;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Presentation\View_Models\Order_Of_Play_Match_View_Model;
@@ -903,11 +904,12 @@ class Admin_Plan_Templates_Test extends TestCase {
     }
 
     private function stub_player( int $id, string $first_name, string $last_name ): void {
-        $player               = new Player();
-        $player->id           = $id;
-        $player->display_name = $first_name . ' ' . $last_name;
-
-        $this->players[ $id ] = $player;
+        $this->players[ $id ] = Player_Test_Factory::create(
+            id: $id,
+            display_name: $first_name . ' ' . $last_name,
+            firstname: $first_name,
+            surname: $last_name,
+        );
     }
 
     /**

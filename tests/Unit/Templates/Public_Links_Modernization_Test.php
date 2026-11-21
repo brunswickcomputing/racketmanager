@@ -17,6 +17,7 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Season_Collection;
 use Racketmanager\Domain\Player\Player;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Email_Shortcode_Presenter;
@@ -591,43 +592,39 @@ final class Public_Links_Modernization_Test extends TestCase {
         $competition = Competition_Test_Factory::create( 5, 'Winter League Competition', Competition_Type::LEAGUE );
         $event       = $this->create_event( $competition, [ 'id' => 10, 'name' => 'Winter League' ] );
 
-        $player1 = new class extends Player {
-            public function __construct() {
-                $this->id          = 101;
-                $this->firstname   = 'Alice';
-                $this->surname     = 'Smith';
-                $this->played      = 5;
-                $this->matches_won = 4;
-                $this->matches_lost= 1;
-                $this->win_pct     = 80.0;
-                $this->team        = (object) [
+        $player1 = Player_Test_Factory::create(
+            id: 101,
+            display_name: 'Alice Smith',
+            firstname: 'Alice',
+            surname: 'Smith',
+            overrides: [
+                'played'       => 5,
+                'matches_won'  => 4,
+                'matches_lost' => 1,
+                'win_pct'      => 80.0,
+                'team'         => (object) [
                     'id'    => 201,
                     'title' => 'St Saviours 1',
-                ];
-            }
-            public function get_fullname(): string {
-                return 'Alice Smith';
-            }
-        };
+                ],
+            ]
+        );
 
-        $player2 = new class extends Player {
-            public function __construct() {
-                $this->id          = 102;
-                $this->firstname   = 'Bob';
-                $this->surname     = 'Jones';
-                $this->played      = 0;
-                $this->matches_won = 0;
-                $this->matches_lost= 0;
-                $this->win_pct     = 0.0;
-                $this->team        = (object) [
+        $player2 = Player_Test_Factory::create(
+            id: 102,
+            display_name: 'Bob Jones',
+            firstname: 'Bob',
+            surname: 'Jones',
+            overrides: [
+                'played'       => 0,
+                'matches_won'  => 0,
+                'matches_lost' => 0,
+                'win_pct'      => 0.0,
+                'team'         => (object) [
                     'id'    => 202,
                     'title' => 'Westcliff 2',
-                ];
-            }
-            public function get_fullname(): string {
-                return 'Bob Jones';
-            }
-        };
+                ],
+            ]
+        );
 
         $league = new class extends League {
             public function __construct() {}
@@ -673,19 +670,16 @@ final class Public_Links_Modernization_Test extends TestCase {
         $competition = Competition_Test_Factory::create( 5, 'Winter League Competition', Competition_Type::LEAGUE );
         $event       = $this->create_event( $competition, [ 'id' => 10, 'name' => 'Winter League' ] );
 
-        $player = new class extends Player {
-            public function __construct() {
-                $this->id          = 101;
-                $this->firstname   = 'Alice';
-                $this->surname     = 'Smith';
-                $this->display_name= 'Alice Smith';
-                $this->matches     = [];
-                $this->statistics  = [];
-            }
-            public function get_fullname(): string {
-                return 'Alice Smith';
-            }
-        };
+        $player = Player_Test_Factory::create(
+            id: 101,
+            display_name: 'Alice Smith',
+            firstname: 'Alice',
+            surname: 'Smith',
+            overrides: [
+                'matches'    => [],
+                'statistics' => [],
+            ]
+        );
 
         $league = new class extends League {
             public function __construct() {}
@@ -798,41 +792,35 @@ final class Public_Links_Modernization_Test extends TestCase {
         $competition = Competition_Test_Factory::create( 1, 'Winter League Competition', Competition_Type::LEAGUE );
         $event       = $this->create_event( $competition, [ 'id' => 10, 'name' => 'Winter League' ] );
 
-        $team1 = (object) [ 'id' => 201, 'name' => 'St Saviours 1', 'title' => 'St Saviours 1' ];
-        $player1 = new class extends Player {
-            public function __construct() {
-                $this->id          = 101;
-                $this->firstname   = 'Alice';
-                $this->surname     = 'Smith';
-                $this->display_name= 'Alice Smith';
-                $this->played      = 5;
-                $this->matches_won = 4;
-                $this->matches_lost= 1;
-                $this->win_pct     = 80;
-            }
-            public function get_fullname(): string {
-                return 'Alice Smith';
-            }
-        };
-        $player1->team = $team1;
+        $team1   = (object) [ 'id' => 201, 'name' => 'St Saviours 1', 'title' => 'St Saviours 1' ];
+        $player1 = Player_Test_Factory::create(
+            id: 101,
+            display_name: 'Alice Smith',
+            firstname: 'Alice',
+            surname: 'Smith',
+            overrides: [
+                'played'       => 5,
+                'matches_won'  => 4,
+                'matches_lost' => 1,
+                'win_pct'      => 80,
+                'team'         => $team1,
+            ]
+        );
 
-        $team2 = (object) [ 'id' => 202, 'name' => 'Westcliff 2', 'title' => 'Westcliff 2' ];
-        $player2 = new class extends Player {
-            public function __construct() {
-                $this->id          = 102;
-                $this->firstname   = 'Bob';
-                $this->surname     = 'Jones';
-                $this->display_name= 'Bob Jones';
-                $this->played      = 3;
-                $this->matches_won = 1;
-                $this->matches_lost= 2;
-                $this->win_pct     = 33;
-            }
-            public function get_fullname(): string {
-                return 'Bob Jones';
-            }
-        };
-        $player2->team = $team2;
+        $team2   = (object) [ 'id' => 202, 'name' => 'Westcliff 2', 'title' => 'Westcliff 2' ];
+        $player2 = Player_Test_Factory::create(
+            id: 102,
+            display_name: 'Bob Jones',
+            firstname: 'Bob',
+            surname: 'Jones',
+            overrides: [
+                'played'       => 3,
+                'matches_won'  => 1,
+                'matches_lost' => 2,
+                'win_pct'      => 33,
+                'team'         => $team2,
+            ]
+        );
 
         $league = new class extends League {
             public function __construct() {}
@@ -900,19 +888,16 @@ final class Public_Links_Modernization_Test extends TestCase {
         $competition = Competition_Test_Factory::create( 1, 'Winter League Competition', Competition_Type::LEAGUE );
         $event       = $this->create_event( $competition, [ 'id' => 10, 'name' => 'Winter League' ] );
 
-        $player = new class extends Player {
-            public function __construct() {
-                $this->id          = 101;
-                $this->firstname   = 'Alice';
-                $this->surname     = 'Smith';
-                $this->display_name= 'Alice Smith';
-                $this->matches     = [];
-                $this->statistics  = [];
-            }
-            public function get_fullname(): string {
-                return 'Alice Smith';
-            }
-        };
+        $player = Player_Test_Factory::create(
+            id: 101,
+            display_name: 'Alice Smith',
+            firstname: 'Alice',
+            surname: 'Smith',
+            overrides: [
+                'matches'    => [],
+                'statistics' => [],
+            ]
+        );
 
         $league = new class extends League {
             public function __construct() {}

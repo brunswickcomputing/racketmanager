@@ -21,14 +21,14 @@ class Player {
      *
      * @var ?int
      */
-    public ?int $id = null;
+    public private(set) ?int $id = null;
 
     /**
      * Id alias for WordPress user compatibility.
      *
      * @var ?int
      */
-    public ?int $ID {
+    public private(set) ?int $ID {
         get => $this->id;
         set => $this->id = $value;
     }
@@ -38,14 +38,14 @@ class Player {
      *
      * @var ?string
      */
-    public ?string $email = null;
+    public private(set) ?string $email = null;
 
     /**
      * User Email address alias for WordPress user compatibility.
      *
      * @var ?string
      */
-    public ?string $user_email {
+    public private(set) ?string $user_email {
         get => $this->email;
         set => $this->email = $value;
     }
@@ -55,14 +55,14 @@ class Player {
      *
      * @var ?string
      */
-    public ?string $display_name = null;
+    public private(set) ?string $display_name = null;
 
     /**
      * Fullname - join of first name and surname alias.
      *
      * @var ?string
      */
-    public ?string $fullname {
+    public private(set) ?string $fullname {
         get => $this->display_name;
         set => $this->display_name = $value;
     }
@@ -71,271 +71,271 @@ class Player {
      *
      * @var string
      */
-    public string $name = '';
+    public private(set) string $name = '';
     /**
      * Email address.
      *
      * @var ?string
      */
-    public ?string $user_registered = null;
+    public private(set) ?string $user_registered = null;
     /**
      * First name.
      *
      * @var string|null
      */
-    public mixed $firstname = null;
+    public private(set) ?string $firstname = null;
     /**
      * Surname.
      *
      * @var string|null
      */
-    public mixed $surname = null;
+    public private(set) ?string $surname = null;
     /**
      * Gender.
      *
      * @var string|null
      */
-    public mixed $gender = null;
+    public private(set) ?string $gender = null;
     /**
      * Type.
      *
      * @var string|null
      */
-    public mixed $type = null;
+    public private(set) ?string $type = null;
     /**
      * LTA Membership Number.
      *
      * @var int|string|null
      */
-    public mixed $btm = null;
+    public private(set) string|int|null $btm = null;
     /**
      * Year of birth.
      *
      * @var int|null
      */
-    public int|null $year_of_birth = null;
+    public private(set) ?int $year_of_birth = null;
     /**
      * Age.
      *
      * @var int|null
      */
-    public ?int $age = null;
+    public private(set) ?int $age = null;
     /**
      * Contact Number.
      *
      * @var string|null
      */
-    public mixed $contactno = null;
+    public private(set) ?string $contactno = null;
     /**
      * Removed date.
      *
      * @var string|null
      */
-    public ?string $removed_date = null;
+    public private(set) ?string $removed_date = null;
     /**
      * Removed user.
      *
      * @var int|null
      */
-    public int|null $removed_user = null;
+    public private(set) ?int $removed_user = null;
     /**
      * Locked indicator.
      *
      * @var boolean|null
      */
-    public mixed $locked = null;
+    public private(set) bool|int|string|null $locked = null;
     /**
      * Locked date.
      *
      * @var string|null
      */
-    public ?string $locked_date = null;
+    public private(set) ?string $locked_date = null;
     /**
      * Locked user.
      *
      * @var string|null
      */
-    public ?string $locked_user = null;
+    public private(set) ?string $locked_user = null;
     /**
      * Locked username.
      *
      * @var string|null
      */
-    public ?string $locked_user_name = null;
+    public private(set) ?string $locked_user_name = null;
     /**
      * System record.
      *
      * @var string|null
      */
-    public mixed $system_record = null;
+    public private(set) ?string $system_record = null;
     /**
      * Matches.
      *
      * @var array
      */
-    public array $matches = array();
+    public private(set) array $matches = array();
     /**
      * Statistics.
      *
      * @var array
      */
-    public array $statistics = array();
+    public private(set) array $statistics = array();
     /**
      * Url link.
      *
      * @var string
      */
-    public string $link = '';
+    public private(set) string $link = '';
     /**
      * Opt in detail.
      *
      * @var array
      */
-    public array $opt_ins = array();
+    public private(set) array $opt_ins = array();
     /**
      * WTN.
      *
      * @var array
      */
-    public array $wtn = array();
+    public private(set) array $wtn = array();
     /**
      * User password.
      *
      * @var string
      */
-    public string $user_pass = '';
+    public private(set) string $user_pass = '';
     /**
      * User nicename.
      *
      * @var string
      */
-    public string $user_nicename = '';
+    public private(set) string $user_nicename = '';
     /**
      * User url.
      *
      * @var string
      */
-    public string $user_url = '';
+    public private(set) string $user_url = '';
     /**
      * User activation_key.
      *
      * @var string
      */
-    public string $user_activation_key = '';
+    public private(set) string $user_activation_key = '';
     /**
      * User login.
      *
      * @var string
      */
-    public string $user_login = '';
+    public private(set) string $user_login = '';
     /**
      * Index.
      *
      * @var string
      */
-    public string $index = '';
+    public private(set) string $index = '';
     /**
      * Stats
      *
      * @var array
      */
-    public array $stats = array();
+    public private(set) array $stats = array();
     /**
      * Matches won variable
      *
      * @var int
      */
-    public int $matches_won = 0;
+    public private(set) int $matches_won = 0;
     /**
      * Matches lost variable
      *
      * @var int
      */
-    public int $matches_lost = 0;
+    public private(set) int $matches_lost = 0;
     /**
      * Win pct variable
      *
      * @var float|null
      */
-    public ?float $win_pct = null;
+    public private(set) ?float $win_pct = null;
     /**
      * Played variable
      *
      * @var int
      */
-    public int $played = 0;
+    public private(set) int $played = 0;
     /**
      * Competitions variable
      *
      * @var array
      */
-    public array $competitions = array();
+    public private(set) array $competitions = array();
     /**
      * Cup variable
      *
      * @var array
      */
-    public array $cup = array();
+    public private(set) array $cup = array();
     /**
      * League variable
      *
      * @var array
      */
-    public array $league = array();
+    public private(set) array $league = array();
     /**
      * Tournament variable
      *
      * @var array
      */
-    public array $tournament = array();
+    public private(set) array $tournament = array();
     /**
      * Teams variable
      *
      * @var array
      */
-    public array $teams = array();
+    public private(set) array $teams = array();
     /**
      * Club variable
      *
      * @var object|null
      */
-    public ?object $club = null;
+    public private(set) ?object $club = null;
     /**
      * Team
      *
      * @var object|null
      */
-    public ?object $team = null;
+    public private(set) ?object $team = null;
     /**
      * Status
      *
      * @var string|null
      */
-    public ?string $status = null;
+    public private(set) ?string $status = null;
     /**
      * User status
      *
      * @var string|null
      */
-    public ?string $user_status = null;
+    public private(set) ?string $user_status = null;
     /**
      * Entry id
      *
      * @var int|null
      */
-    public ?int $entry_id = null;
+    public private(set) ?int $entry_id = null;
     /**
      * Entry
      *
      * @var array
      */
-    public array $entry = array();
+    public private(set) array $entry = array();
     /**
      * Tournament Entry
      *
      * @var object|null
      */
-    public ?object $tournament_entry = null;
+    public private(set) ?object $tournament_entry = null;
 
     /**
      * Constructor
@@ -514,12 +514,13 @@ class Player {
     /**
      * Set year of birth
      *
-     * @param string|null $year_of_birth
+     * @param int|string|null $year_of_birth
      *
      * @return void
      */
-    public function set_year_of_birth( ?string $year_of_birth ): void {
-        $this->year_of_birth = $year_of_birth;
+    public function set_year_of_birth( int|string|null $year_of_birth ): void {
+        $this->year_of_birth = null !== $year_of_birth && '' !== $year_of_birth ? (int) $year_of_birth : null;
+        $this->calculate_age();
     }
 
     /**
@@ -558,12 +559,12 @@ class Player {
     /**
      * Set locked user
      *
-     * @param int $locked_user
+     * @param int|string|null $locked_user
      *
      * @return void
      */
-    public function set_locked_user( int $locked_user ): void {
-        $this->locked_user = $locked_user;
+    public function set_locked_user( int|string|null $locked_user ): void {
+        $this->locked_user = null !== $locked_user ? (string) $locked_user : null;
     }
     /**
      * Set the removed date
@@ -578,12 +579,118 @@ class Player {
     /**
      * Set removed user
      *
-     * @param int $removed_user
+     * @param int|string|null $removed_user
      *
      * @return void
      */
-    public function set_removed_user( int $removed_user ): void {
-        $this->removed_user = $removed_user;
+    public function set_removed_user( int|string|null $removed_user ): void {
+        $this->removed_user = null !== $removed_user ? (int) $removed_user : null;
+    }
+
+    /**
+     * Set matches.
+     *
+     * @param array $matches Matches array.
+     * @return void
+     */
+    public function set_matches( array $matches ): void {
+        $this->matches = $matches;
+    }
+
+    /**
+     * Set stats.
+     *
+     * @param array $stats Stats array.
+     * @return void
+     */
+    public function set_stats( array $stats ): void {
+        $this->stats = $stats;
+    }
+
+    /**
+     * Set statistics.
+     *
+     * @param array $statistics Statistics array.
+     * @return void
+     */
+    public function set_statistics( array $statistics ): void {
+        $this->statistics = $statistics;
+    }
+
+    /**
+     * Set stats summary.
+     *
+     * @param int        $matches_won Matches won.
+     * @param int        $matches_lost Matches lost.
+     * @param float|null $win_pct Win percentage.
+     * @param int        $played Matches played.
+     * @return void
+     */
+    public function set_stats_summary( int $matches_won, int $matches_lost, ?float $win_pct, int $played ): void {
+        $this->matches_won  = $matches_won;
+        $this->matches_lost = $matches_lost;
+        $this->win_pct      = $win_pct;
+        $this->played       = $played;
+    }
+
+    /**
+     * Set club.
+     *
+     * @param object|null $club Club object.
+     * @return void
+     */
+    public function set_club( ?object $club ): void {
+        $this->club = $club;
+    }
+
+    /**
+     * Set teams.
+     *
+     * @param array $teams Teams array.
+     * @return void
+     */
+    public function set_teams( array $teams ): void {
+        $this->teams = $teams;
+    }
+
+    /**
+     * Set team.
+     *
+     * @param object|null $team Team object.
+     * @return void
+     */
+    public function set_team( ?object $team ): void {
+        $this->team = $team;
+    }
+
+    /**
+     * Set link.
+     *
+     * @param string $link Link URL.
+     * @return void
+     */
+    public function set_link( string $link ): void {
+        $this->link = $link;
+    }
+
+    /**
+     * Set index.
+     *
+     * @param string $index Index string.
+     * @return void
+     */
+    public function set_index( string $index ): void {
+        $this->index = $index;
+    }
+
+    /**
+     * Set locked user name.
+     *
+     * @param string $name Locked user name.
+     * @return void
+     */
+    public function set_locked_user_name( string $name ): void {
+        $this->locked_user_name = $name;
     }
     /**
      * Get player ID
@@ -690,7 +797,7 @@ class Player {
      * @return string|null
      */
     public function get_year_of_birth(): ?string {
-        return $this->year_of_birth;
+        return null !== $this->year_of_birth ? (string) $this->year_of_birth : null;
     }
 
     /**

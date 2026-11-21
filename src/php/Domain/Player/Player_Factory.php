@@ -34,10 +34,10 @@ final class Player_Factory {
 	 */
 	private static function apply_derived_fields( Player $player ): void {
 		if ( empty( $player->locked_user_name ) ) {
-			$player->locked_user_name = '';
+			$player->set_locked_user_name( '' );
 		}
 		if ( empty( $player->link ) && ! empty( $player->display_name ) ) {
-			$player->link = Player_Link_Util::generate_link( $player->display_name, $player->btm ?? null );
+			$player->set_link( Player_Link_Util::generate_link( $player->display_name, $player->btm ?? null ) );
 		}
 	}
 

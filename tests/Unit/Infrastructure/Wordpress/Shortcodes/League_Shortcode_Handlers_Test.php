@@ -63,6 +63,7 @@ use Racketmanager\Tests\Helpers\Creates_League_Query_Service;
 use Racketmanager\Tests\Helpers\Creates_Test_Container;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use stdClass;
 
 class League_Shortcode_Handlers_Test extends TestCase {
@@ -547,12 +548,14 @@ class League_Shortcode_Handlers_Test extends TestCase {
      * @return array{0: Player, 1: Player, 2: Player_Stats_Service, 3: \PHPUnit\Framework\MockObject\MockObject}
      */
     private function build_stat_players( object $grouping, string $season, string $source ): array {
-        $low             = new Player();
-        $low->id         = 31;
-        $low->statistics = [ 's' => [ 'played' => [ 'winner' => 1, 'loser' => 2 ] ] ];
-        $high             = new Player();
-        $high->id         = 32;
-        $high->statistics = [ 's' => [ 'played' => [ 'winner' => 4, 'loser' => 0 ] ] ];
+        $low = Player_Test_Factory::create(
+            id: 31,
+            overrides: [ 'statistics' => [ 's' => [ 'played' => [ 'winner' => 1, 'loser' => 2 ] ] ] ]
+        );
+        $high = Player_Test_Factory::create(
+            id: 32,
+            overrides: [ 'statistics' => [ 's' => [ 'played' => [ 'winner' => 4, 'loser' => 0 ] ] ] ]
+        );
 
         $query_service = $this->createMock( Player_Query_Service::class );
         $query_service->expects( $this->exactly( 2 ) )
@@ -599,9 +602,10 @@ class League_Shortcode_Handlers_Test extends TestCase {
         };
         $league_service->method( 'get_league' )->willReturn( $league_obj );
 
-        $player_obj = new Player();
-        $player_obj->id = 12;
-        $player_obj->display_name = 'John Doe';
+        $player_obj = Player_Test_Factory::create(
+            id: 12,
+            display_name: 'John Doe',
+        );
 
         $player_service->method( 'get_player' )->willReturnCallback(
             function( int $id ) use ( $player_obj ) {

@@ -13,6 +13,7 @@ use Racketmanager\Services\Container\Container_Bootstrap;
 use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use wpdb;
 
 final class Player_Collaborator_Wiring_Test extends TestCase {
@@ -91,15 +92,15 @@ final class Player_Collaborator_Wiring_Test extends TestCase {
 		$this->assertSame( 'Test Player', $unserialized->fullname );
 
 		// Public aliases remain synchronized in both directions.
-		$unserialized->ID = 456;
+		$unserialized->set_id( 456 );
 		$this->assertSame( 456, $unserialized->id );
-		$unserialized->id = 789;
-		$this->assertSame( 789, $unserialized->ID );
+		$this->assertSame( 456, $unserialized->ID );
 
-		$unserialized->user_email = 'updated@example.com';
+		$unserialized->set_email( 'updated@example.com' );
 		$this->assertSame( 'updated@example.com', $unserialized->email );
+		$this->assertSame( 'updated@example.com', $unserialized->user_email );
 
-		$unserialized->display_name = 'Updated Player';
+		$unserialized->set_display_name( 'Updated Player' );
 		$this->assertSame( 'Updated Player', $unserialized->fullname );
 		$unserialized->__unserialize( [ 'player_query_service' => new \stdClass() ] );
 		$this->assertFalse( property_exists( $unserialized, 'player_query_service' ) );
@@ -111,12 +112,14 @@ final class Player_Collaborator_Wiring_Test extends TestCase {
 		$this->assertSame( 1, ( new \ReflectionMethod( Player_Repository::class, '__construct' ) )->getNumberOfParameters() );
 		$repo = new Player_Repository();
 
-		$cached_player = new Player();
-		$cached_player->ID = 50;
-		$cached_player->id = 50;
-		$cached_player->user_login = 'player50';
-		$cached_player->display_name = 'Player Fifty';
-		$cached_player->btm = '505050';
+		$cached_player = Player_Test_Factory::create(
+			id: 50,
+			display_name: 'Player Fifty',
+			overrides: [
+				'user_login' => 'player50',
+				'btm'        => '505050',
+			]
+		);
 
 		wp_cache_set( 50, $cached_player, 'players' );
 

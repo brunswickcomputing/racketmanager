@@ -20,25 +20,25 @@ class Player_Error {
      *
      * @var ?int
      */
-    public ?int $id = null;
+    public private(set) ?int $id = null;
     /**
      * Player id
      *
      * @var int
      */
-    public int $player_id;
+    public private(set) int $player_id;
     /**
      * Message
      *
      * @var string
      */
-    public string $message;
+    public private(set) string $message;
     /**
      * Created date
      *
      * @var string
      */
-    public string $created_date;
+    public private(set) string $created_date;
 
     /**
      * Constructor
@@ -64,7 +64,7 @@ class Player_Error {
     /**
      * Create from a generic object (e.g. database row) via Player_Error_Factory.
      *
-     * @param object $row
+     * @param object $row Generic object row.
      * @return self
      */
     public static function from_object( object $row ): self {
@@ -74,7 +74,7 @@ class Player_Error {
     /**
      * Create from an array via Player_Error_Factory.
      *
-     * @param array $data
+     * @param array $data Source data array.
      * @return self
      */
     public static function from_array( array $data ): self {
@@ -93,7 +93,7 @@ class Player_Error {
     /**
      * Set id
      *
-     * @param int $insert_id
+     * @param int $insert_id Inserted ID.
      *
      * @return void
      */

@@ -152,19 +152,16 @@ class User_Repository implements User_Repository_Interface {
                     $updated = wp_update_user( $core_update );
                     if ( ! is_wp_error( $updated ) ) {
                         $changed = true;
-                        $entity->display_name = $core_update['display_name'] ?? $entity->display_name ?? '';
-                        $entity->fullname     = $entity->display_name;
+                        $entity->set_display_name( $core_update['display_name'] ?? $entity->display_name ?? '' );
                     }
                 }
             } else {
                 $changed = true;
                 if ( isset( $core_update['user_email'] ) ) {
-                    $entity->user_email = $new_email;
-                    $entity->email      = $new_email;
+                    $entity->set_email( $new_email );
                 }
                 if ( isset( $core_update['display_name'] ) ) {
-                    $entity->display_name = $core_update['display_name'];
-                    $entity->fullname     = $core_update['display_name'];
+                    $entity->set_display_name( $core_update['display_name'] );
                 }
             }
         }
@@ -216,8 +213,8 @@ class User_Repository implements User_Repository_Interface {
         $current_contact_email = (string) $user->user_email;
         if ( $current_contact_no !== $contact_no ) {
             update_user_meta( $user_id, 'contactno', $contact_no );
-            $user->contactno = $contact_no;
-            $updates         = true;
+            $user->set_contactno( $contact_no );
+            $updates = true;
         }
         if ( $current_contact_email !== $contact_email ) {
             $result = wp_update_user(
@@ -230,9 +227,8 @@ class User_Repository implements User_Repository_Interface {
                 error_log( 'Unable to update user email ' . $user_id . ' - ' . $contact_email . ' - ' . $result->get_error_message() );
                 return false;
             }
-            $user->user_email = $contact_email;
-            $user->email      = $contact_email;
-            $updates          = true;
+            $user->set_email( $contact_email );
+            $updates = true;
         }
         return $updates;
     }
@@ -328,7 +324,7 @@ class User_Repository implements User_Repository_Interface {
                 $updates   = true;
             }
         }
-        $entity->opt_ins = $opt_ins;
+        $entity->set_opt_ins( $opt_ins );
         return $updates;
     }
 
@@ -354,37 +350,39 @@ class User_Repository implements User_Repository_Interface {
     }
 
     private function hydrate_user( object $wp_user ): User {
-        // User_Hydration_DTO reads the WP_User `data` columns and resolves the ID/email/display_name aliases.
-        $user = User_Factory::from_object( $wp_user );
-        $id   = $user->ID;
-
-        $user->firstname     = (string) get_user_meta( $id, 'first_name', true );
-        $user->surname       = (string) get_user_meta( $id, 'last_name', true );
-        $user->gender        = (string) get_user_meta( $id, 'gender', true );
-        $user->type          = (string) get_user_meta( $id, 'racketmanager_type', true );
-        $user->btm           = (string) get_user_meta( $id, 'btm', true );
-        $user->year_of_birth = (string) get_user_meta( $id, 'year_of_birth', true );
-        if ( ! empty( $user->year_of_birth ) ) {
-            $user->age = (int) gmdate( 'Y' ) - (int) $user->year_of_birth;
-        } else {
-            $user->age = 0;
+        $data = get_object_vars( $wp_user );
+        if ( isset( $data['data'] ) && is_object( $data['data'] ) ) {
+            $data = array_merge( get_object_vars( $data['data'] ), $data );
         }
-        $user->contactno     = (string) get_user_meta( $id, 'contactno', true );
-        $user->removed_date  = (string) get_user_meta( $id, 'remove_date', true );
-        $user->removed_user  = (string) get_user_meta( $id, 'remove_user', true );
-        $user->locked        = (string) get_user_meta( $id, 'locked', true );
-        $user->locked_date   = (string) get_user_meta( $id, 'locked_date', true );
-        $user->locked_user   = (string) get_user_meta( $id, 'locked_user', true );
-        if ( ! empty( $user->locked_user ) ) {
-            $locked_ud = get_userdata( (int) $user->locked_user );
-            $user->locked_user_name = $locked_ud ? $locked_ud->display_name : '';
-        } else {
-            $user->locked_user_name = '';
-        }
-        $user->system_record = (string) get_user_meta( $id, 'racketmanager_type', true );
-        $opt_ins             = get_user_meta( $id, 'racketmanager_opt_in' );
-        $user->opt_ins       = is_array( $opt_ins ) ? array_values( array_map( 'strval', $opt_ins ) ) : array();
+        $id = (int) ( $data['ID'] ?? ( $data['id'] ?? ( $wp_user->ID ?? ( $wp_user->id ?? 0 ) ) ) );
 
-        return $user;
+        $year_of_birth = (string) get_user_meta( $id, 'year_of_birth', true );
+        $age           = ! empty( $year_of_birth ) ? (int) gmdate( 'Y' ) - (int) $year_of_birth : 0;
+        $locked_user   = (string) get_user_meta( $id, 'locked_user', true );
+        $locked_name   = '';
+        if ( ! empty( $locked_user ) ) {
+            $locked_ud   = get_userdata( (int) $locked_user );
+            $locked_name = ( $locked_ud && isset( $locked_ud->display_name ) ) ? $locked_ud->display_name : '';
+        }
+        $opt_ins = get_user_meta( $id, 'racketmanager_opt_in' );
+
+        $data['firstname']        = (string) get_user_meta( $id, 'first_name', true );
+        $data['surname']          = (string) get_user_meta( $id, 'last_name', true );
+        $data['gender']           = (string) get_user_meta( $id, 'gender', true );
+        $data['type']             = (string) get_user_meta( $id, 'racketmanager_type', true );
+        $data['btm']              = (string) get_user_meta( $id, 'btm', true );
+        $data['year_of_birth']    = $year_of_birth;
+        $data['age']              = $age;
+        $data['contactno']        = (string) get_user_meta( $id, 'contactno', true );
+        $data['removed_date']     = (string) get_user_meta( $id, 'remove_date', true );
+        $data['removed_user']     = (string) get_user_meta( $id, 'remove_user', true );
+        $data['locked']           = (string) get_user_meta( $id, 'locked', true );
+        $data['locked_date']      = (string) get_user_meta( $id, 'locked_date', true );
+        $data['locked_user']      = $locked_user;
+        $data['locked_user_name'] = $locked_name;
+        $data['system_record']    = (string) get_user_meta( $id, 'racketmanager_type', true );
+        $data['opt_ins']          = is_array( $opt_ins ) ? array_values( array_map( 'strval', $opt_ins ) ) : array();
+
+        return User_Factory::from_array( $data );
     }
 }

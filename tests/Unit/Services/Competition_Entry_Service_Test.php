@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Player\Player;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
@@ -289,9 +290,7 @@ class Competition_Entry_Service_Test extends TestCase {
 
     private function setup_match_secretary_and_notifications(): void {
         $this->player_service->method( 'update_contact_details' );
-        $secretary = $this->createStub( Player::class );
-        $secretary->display_name = 'Match Secretary';
-        $secretary->email = 'secretary@test.local';
+        $secretary = Player_Test_Factory::create( display_name: 'Match Secretary', email: 'secretary@test.local' );
         $this->player_service->method( 'get_match_secretary_details' )->willReturn( $secretary );
         $this->notify_service->method( 'email_entry_form' );
     }
@@ -3336,10 +3335,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->plugin->site_name = 'Test Tennis League';
         $this->plugin->site_url  = 'https://example.com';
 
-        $secretary               = new Player();
-        $secretary->set_id( 99 );
-        $secretary->display_name = 'Alice Secretary';
-        $secretary->email        = 'alice@test.local';
+        $secretary = Player_Test_Factory::create( id: 99, display_name: 'Alice Secretary', email: 'alice@test.local' );
 
         $this->player_service->method( 'get_match_secretary_details' )
             ->willReturn( $secretary );
@@ -3465,10 +3461,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->plugin->site_name = 'Test Tennis League';
         $this->plugin->site_url  = 'https://example.com';
 
-        $secretary               = new Player();
-        $secretary->set_id( 99 );
-        $secretary->display_name = 'Alice Secretary';
-        $secretary->email        = 'alice@test.local';
+        $secretary = Player_Test_Factory::create( id: 99, display_name: 'Alice Secretary', email: 'alice@test.local' );
 
         $this->player_service->method( 'get_match_secretary_details' )
             ->willReturn( $secretary );
@@ -3569,10 +3562,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->plugin->site_name = 'Test Tennis League';
         $this->plugin->site_url  = 'https://example.com';
 
-        $secretary               = new Player();
-        $secretary->set_id( 99 );
-        $secretary->display_name = 'Alice Secretary';
-        $secretary->email        = 'alice@test.local';
+        $secretary = Player_Test_Factory::create( id: 99, display_name: 'Alice Secretary', email: 'alice@test.local' );
 
         $this->player_service->method( 'get_match_secretary_details' )
             ->willReturn( $secretary );

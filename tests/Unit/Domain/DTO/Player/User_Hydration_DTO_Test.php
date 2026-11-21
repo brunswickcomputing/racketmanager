@@ -88,12 +88,10 @@ final class User_Hydration_DTO_Test extends TestCase {
     }
 
     public function test_from_user_entity_reads_only_initialised_properties(): void {
-        $user             = new User();
-        $user->id         = 15;
-        $user->ID         = 15;
-        $user->email      = 'e@x.y';
-        $user->user_email = 'e@x.y';
-        $user->firstname  = 'F';
+        $user = new User();
+        $user->set_id( 15 );
+        $user->set_email( 'e@x.y' );
+        $user->set_firstname( 'F' );
 
         $dto = User_Hydration_DTO::from_object( $user );
 

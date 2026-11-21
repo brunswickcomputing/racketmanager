@@ -91,7 +91,7 @@ final class Player_Stats_Service_Test extends TestCase {
 
 	public function test_populate_player_stats_maps_totals_and_handles_no_matches(): void {
 		$player         = Player_Factory::from_array( [ 'id' => 4, 'display_name' => 'No Matches' ] );
-		$player->statistics = [];
+		$player->set_statistics( [] );
 		$query_service  = $this->createMock( Player_Query_Service::class );
 		$query_service->expects( $this->once() )
 			->method( 'get_matches' )
@@ -116,9 +116,9 @@ final class Player_Stats_Service_Test extends TestCase {
 		$three_wins_five_played = Player_Factory::from_array( [ 'id' => 1, 'display_name' => 'A' ] );
 		$three_wins_four_played = Player_Factory::from_array( [ 'id' => 2, 'display_name' => 'B' ] );
 		$two_wins_three_played  = Player_Factory::from_array( [ 'id' => 3, 'display_name' => 'C' ] );
-		$three_wins_five_played->statistics = [ 'season' => [ 'played' => [ 'winner' => 3, 'loser' => 2 ] ] ];
-		$three_wins_four_played->statistics = [ 'season' => [ 'played' => [ 'winner' => 3, 'loser' => 1 ] ] ];
-		$two_wins_three_played->statistics  = [ 'season' => [ 'played' => [ 'winner' => 2, 'loser' => 1 ] ] ];
+		$three_wins_five_played->set_statistics( [ 'season' => [ 'played' => [ 'winner' => 3, 'loser' => 2 ] ] ] );
+		$three_wins_four_played->set_statistics( [ 'season' => [ 'played' => [ 'winner' => 3, 'loser' => 1 ] ] ] );
+		$two_wins_three_played->set_statistics( [ 'season' => [ 'played' => [ 'winner' => 2, 'loser' => 1 ] ] ] );
 
 		$players = $service->populate_players_stats(
 			[ $three_wins_five_played, $two_wins_three_played, $three_wins_four_played ],

@@ -368,12 +368,8 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
      * @return array{0: Player, 1: Player, 2: Player_Stats_Service, 3: \PHPUnit\Framework\MockObject\MockObject}
      */
     private function build_stat_players( object $grouping, string $season, string $source ): array {
-        $low             = new Player();
-        $low->id         = 31;
-        $low->statistics = [ 's' => [ 'played' => [ 'winner' => 1, 'loser' => 2 ] ] ];
-        $high             = new Player();
-        $high->id         = 32;
-        $high->statistics = [ 's' => [ 'played' => [ 'winner' => 4, 'loser' => 0 ] ] ];
+        $low  = Player_Test_Factory::create( id: 31, overrides: [ 'statistics' => [ 's' => [ 'played' => [ 'winner' => 1, 'loser' => 2 ] ] ] ] );
+        $high = Player_Test_Factory::create( id: 32, overrides: [ 'statistics' => [ 's' => [ 'played' => [ 'winner' => 4, 'loser' => 0 ] ] ] ] );
 
         $query_service = $this->createMock( Player_Query_Service::class );
         $query_service->expects( $this->exactly( 2 ) )
@@ -566,8 +562,7 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
         $competition_service->method( 'get_by_criteria' )->willReturn( [] );
         $tournament_service = $this->createStub( Tournament_Service::class );
         $player_service = $this->createStub( Player_Service::class );
-        $player = new Player();
-        $player->id = 42;
+        $player = Player_Test_Factory::create( id: 42 );
         $player_service->method( 'get_player' )->willReturn( $player );
         $query_service = $this->createMock( Player_Query_Service::class );
         $player_competition = (object) [ 'name' => 'Player League', 'season' => '2026', 'current_season' => [ 'name' => '2026' ] ];

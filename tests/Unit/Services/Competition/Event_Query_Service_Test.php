@@ -25,6 +25,7 @@ use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Competition\Event_Query_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 
 #[AllowMockObjectsWithoutExpectations]
 class Event_Query_Service_Test extends TestCase {
@@ -207,9 +208,7 @@ class Event_Query_Service_Test extends TestCase {
             ->with( 93, false, $this->anything() )
             ->willReturn( [ (object) [ 'player_id' => 123 ] ] );
 
-        $player = $this->createMock( Player::class );
-        $player->id = 123;
-        $player->system_record = false;
+        $player = Player_Test_Factory::create( id: 123 );
 
         $player_repository->expects( $this->once() )
             ->method( 'find' )
@@ -410,8 +409,7 @@ class Event_Query_Service_Test extends TestCase {
             ->with( 93, false, $this->callback( static fn( array $args ): bool => 133 === $args['club'] ) )
             ->willReturn( [ (object) [ 'player_id' => 123 ] ] );
 
-        $player_entity = $this->createMock( Player::class );
-        $player_entity->system_record = false;
+        $player_entity = Player_Test_Factory::create( id: 123 );
         $player_repository->expects( $this->once() )
             ->method( 'find' )
             ->with( 123 )

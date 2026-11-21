@@ -7,6 +7,7 @@ use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Communication\Message;
 use Racketmanager\Domain\Player\User;
+use Racketmanager\Domain\Player\User_Factory;
 use Racketmanager\Application\Ports\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Account_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Account_Ajax_Controller;
@@ -298,9 +299,7 @@ class Account_Ajax_Adapter_Test extends TestCase {
             ->willReturn( true );
         $GLOBALS['wp_stubs_current_user_id'] = 5;
 
-        $user = new User();
-        $user->id = 5;
-        $user->ID = 5;
+        $user = User_Factory::from_array( [ 'id' => 5 ] );
 
         $user_repo = $this->createStub( User_Repository_Interface::class );
         $user_repo->method( 'find' )->willReturnCallback(
@@ -355,9 +354,7 @@ class Account_Ajax_Adapter_Test extends TestCase {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
         $GLOBALS['wp_stubs_current_user_id'] = 5;
 
-        $user = new User();
-        $user->id = 5;
-        $user->ID = 5;
+        $user = User_Factory::from_array( [ 'id' => 5 ] );
 
         $user_repo = $this->createStub( User_Repository_Interface::class );
         $user_repo->method( 'find' )->willReturn( $user );
@@ -433,9 +430,7 @@ class Account_Ajax_Adapter_Test extends TestCase {
 
     public function test_update_account_flows_and_payload_mapping(): void {
         $GLOBALS['wp_stubs_current_user_id'] = 5;
-        $user = new User();
-        $user->id = 5;
-        $user->ID = 5;
+        $user = User_Factory::from_array( [ 'id' => 5 ] );
 
         // Nonce failure
         $this->security_service = $this->createMock( Security_Service_Interface::class );

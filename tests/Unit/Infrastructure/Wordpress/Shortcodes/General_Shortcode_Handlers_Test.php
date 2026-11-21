@@ -58,6 +58,7 @@ use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Creates_Test_Container;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use stdClass;
 
 class General_Shortcode_Handlers_Test extends TestCase {
@@ -251,9 +252,10 @@ class General_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_get_player_handler_success(): void {
-        $player               = new Player();
-        $player->id           = 42;
-        $player->display_name = 'John Smith';
+        $player = Player_Test_Factory::create(
+            id: 42,
+            display_name: 'John Smith',
+        );
 
         $registration_service = $this->createStub( Registration_Service::class );
         $registration_service->method( 'get_clubs_for_player' )->willReturn( [ 'Club A' ] );
@@ -291,9 +293,10 @@ class General_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_get_player_result_is_presented_as_profile_view_model(): void {
-        $player               = new Player();
-        $player->id           = 42;
-        $player->display_name = 'John Smith';
+        $player = Player_Test_Factory::create(
+            id: 42,
+            display_name: 'John Smith',
+        );
 
         $registration_service = $this->createStub( Registration_Service::class );
         $registration_service->method( 'get_clubs_for_player' )->willReturn( [ 'Club A' ] );
@@ -343,20 +346,23 @@ class General_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_get_player_handler_renders_presented_header_with_club_wtn_and_stats(): void {
-        $player               = new Player();
-        $player->id           = 42;
-        $player->firstname    = 'Roger';
-        $player->surname      = 'Federer';
-        $player->display_name = 'Roger Federer';
-        $player->wtn          = [ 'singles' => '25.4' ];
-        $player->statistics   = [
-            'total' => [
-                'played'       => 10,
-                'matches_won'  => 8,
-                'matches_lost' => 2,
-                'win_pct'      => 80.0,
-            ],
-        ];
+        $player = Player_Test_Factory::create(
+            id: 42,
+            firstname: 'Roger',
+            surname: 'Federer',
+            display_name: 'Roger Federer',
+            overrides: [
+                'wtn'        => [ 'singles' => '25.4' ],
+                'statistics' => [
+                    'total' => [
+                        'played'       => 10,
+                        'matches_won'  => 8,
+                        'matches_lost' => 2,
+                        'win_pct'      => 80.0,
+                    ],
+                ],
+            ]
+        );
 
         $player_service = $this->createStub( Player_Service::class );
         $player_service->method( 'get_player_by_name' )->willReturn( $player );
@@ -401,8 +407,7 @@ class General_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_get_player_handler_success_by_name(): void {
-        $player     = new Player();
-        $player->id = 55;
+        $player = Player_Test_Factory::create( id: 55 );
 
         $player_service = $this->createStub( Player_Service::class );
         $player_service->method( 'get_player_by_name' )->willReturn( $player );
@@ -677,9 +682,10 @@ class General_Shortcode_Handlers_Test extends TestCase {
         $player_service = $this->createStub( Player_Service::class );
         $player_service->method( 'get_player' )->willReturn( $player );
 
-        $player_entity               = new Player();
-        $player_entity->id           = 42;
-        $player_entity->display_name = 'John Doe';
+        $player_entity = Player_Test_Factory::create(
+            id: 42,
+            display_name: 'John Doe',
+        );
 
         $club_active               = new Club();
         $club_active->id           = 1;
@@ -764,9 +770,10 @@ class General_Shortcode_Handlers_Test extends TestCase {
         );
         $presenter = new Player_Presenter( option_gateway: $option_gateway );
 
-        $player_entity               = new Player();
-        $player_entity->id           = 42;
-        $player_entity->display_name = 'John Doe';
+        $player_entity = Player_Test_Factory::create(
+            id: 42,
+            display_name: 'John Doe',
+        );
 
         $club_active            = new Club();
         $club_active->id        = 1;

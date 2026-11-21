@@ -9,6 +9,7 @@ use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Club\Club_Role;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Player\User;
+use Racketmanager\Domain\Player\User_Factory;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Application\Ports\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Ajax_Registry;
@@ -244,11 +245,12 @@ class Club_Ajax_Adapter_Test extends TestCase {
     }
 
     private function stub_role_user( bool $contact_updated, ?object &$user = null ): void {
-        $user = new User();
-        $user->id         = 5;
-        $user->ID         = 5;
-        $user->user_email = 'old@example.test';
-        $user->email      = 'old@example.test';
+        $user = User_Factory::from_array(
+            array(
+                'id'    => 5,
+                'email' => 'old@example.test',
+            )
+        );
         $this->user_repository = $this->createStub( User_Repository_Interface::class );
         $this->user_repository->method( 'find' )->willReturn( $user );
         $this->user_repository->method( 'find_by_id' )->willReturn( $user );

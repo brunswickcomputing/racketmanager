@@ -56,6 +56,7 @@ use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
 use Racketmanager\Tests\Helpers\Creates_League_Query_Service;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use ReflectionClass;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter;
 use Racketmanager\RacketManager;
@@ -448,12 +449,14 @@ class Event_Shortcode_Handlers_Test extends TestCase {
      * @return array{0: Player, 1: Player, 2: Player_Stats_Service, 3: MockObject}
      */
     private function build_stat_players( object $grouping, string $season, string $source ): array {
-        $low             = new Player();
-        $low->id         = 31;
-        $low->statistics = [ 's' => [ 'played' => [ 'winner' => 1, 'loser' => 2 ] ] ];
-        $high             = new Player();
-        $high->id         = 32;
-        $high->statistics = [ 's' => [ 'played' => [ 'winner' => 4, 'loser' => 0 ] ] ];
+        $low = Player_Test_Factory::create(
+            id: 31,
+            overrides: [ 'statistics' => [ 's' => [ 'played' => [ 'winner' => 1, 'loser' => 2 ] ] ] ]
+        );
+        $high = Player_Test_Factory::create(
+            id: 32,
+            overrides: [ 'statistics' => [ 's' => [ 'played' => [ 'winner' => 4, 'loser' => 0 ] ] ] ]
+        );
 
         $query_service = $this->createMock( Player_Query_Service::class );
         $query_service->expects( $this->exactly( 2 ) )
@@ -607,9 +610,11 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'players', $vm_all->template );
 
         // 2. Numeric player lookup - found
-        $player_stub = $this->createStub( Player::class );
-        $player_stub->id = 55;
-        $player_stub->fullname = 'Roger Federer';
+        $player_stub = Player_Test_Factory::create(
+            id: 55,
+            display_name: 'Roger Federer',
+            overrides: [ 'fullname' => 'Roger Federer' ]
+        );
 
         $player_service->method( 'get_player' )->willReturnCallback(
             function ( ?int $id ) use ( $player_stub ) {
@@ -679,9 +684,11 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
         $comp_service_ok->method( 'get_event_by_id' )->willReturn( $event_stub );
 
-        $partner_player = new Player();
-        $partner_player->id = 300;
-        $partner_player->fullname = 'Partner Name';
+        $partner_player = Player_Test_Factory::create(
+            id: 300,
+            display_name: 'Partner Name',
+            overrides: [ 'fullname' => 'Partner Name' ]
+        );
         $player_service->method( 'get_player' )->willReturn( $partner_player );
 
         $handler_ok = new Get_Event_Partner_Handler( $comp_service_ok, $player_service, $this->event_query_service() );
@@ -829,10 +836,11 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertNull( $res_404->partner_btm );
 
         // 3. Partner with display_name and btm
-        $partner_with_display               = new Player();
-        $partner_with_display->id           = 101;
-        $partner_with_display->display_name = 'Display Name';
-        $partner_with_display->btm          = 'BTM12345';
+        $partner_with_display = Player_Test_Factory::create(
+            id: 101,
+            display_name: 'Display Name',
+            btm: 'BTM12345'
+        );
 
         $player_service_display = $this->createStub( Player_Service::class );
         $player_service_display->method( 'get_player' )->willReturn( $partner_with_display );
@@ -844,10 +852,11 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'BTM12345', $res_display->partner_btm );
 
         // 4. Partner with display_name only and null btm
-        $partner_without_btm               = new Player();
-        $partner_without_btm->id           = 102;
-        $partner_without_btm->display_name = 'Display Only';
-        $partner_without_btm->btm          = null;
+        $partner_without_btm = Player_Test_Factory::create(
+            id: 102,
+            display_name: 'Display Only',
+            btm: null
+        );
 
         $player_service_without_btm = $this->createStub( Player_Service::class );
         $player_service_without_btm->method( 'get_player' )->willReturn( $partner_without_btm );
@@ -859,10 +868,11 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertNull( $res_without_btm->partner_btm );
 
         // 5. Partner with null display_name and null btm
-        $partner_null_fields               = new Player();
-        $partner_null_fields->id           = 103;
-        $partner_null_fields->display_name = null;
-        $partner_null_fields->btm          = null;
+        $partner_null_fields = Player_Test_Factory::create(
+            id: 103,
+            display_name: null,
+            btm: null
+        );
 
         $player_service_null = $this->createStub( Player_Service::class );
         $player_service_null->method( 'get_player' )->willReturn( $partner_null_fields );
@@ -1115,9 +1125,11 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->attach_test_competition( $event_stub );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
-        $partner = $this->createStub( Player::class );
-        $partner->id = 123;
-        $partner->fullname = 'Partner Name';
+        $partner = Player_Test_Factory::create(
+            id: 123,
+            display_name: 'Partner Name',
+            overrides: [ 'fullname' => 'Partner Name' ]
+        );
         $player_service = $this->createMock( Player_Service::class );
         $player_service->expects( $this->once() )->method( 'get_player' )->with( 123 )->willReturn( $partner );
 

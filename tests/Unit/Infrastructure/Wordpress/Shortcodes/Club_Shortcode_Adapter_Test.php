@@ -63,6 +63,7 @@ use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
 use Racketmanager\Tests\Helpers\Creates_Test_Container;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 
 class Club_Shortcode_Adapter_Test extends TestCase {
     use Creates_Event_Query_Service;
@@ -232,8 +233,7 @@ class Club_Shortcode_Adapter_Test extends TestCase {
     public function test_show_club_players_single_player_from_query_var(): void {
         $GLOBALS['query_vars']['player_id'] = 'jane-doe';
         $club_service                       = $this->club_service_for( $this->club() );
-        $player                             = $this->createStub( Player::class );
-        $player->id                         = 7;
+        $player = Player_Test_Factory::create( id: 7 );
         $players                            = $this->createMock( Player_Service::class );
         $players->expects( $this->once() )->method( 'get_player_by_name' )->with( 'jane doe' )->willReturn( $player );
         $registration = $this->createMock( Registration_Service::class );
@@ -251,8 +251,7 @@ class Club_Shortcode_Adapter_Test extends TestCase {
     public function test_show_club_players_single_player_unregistered_returns_not_found(): void {
         $GLOBALS['query_vars']['player_id'] = 'jane-doe';
         $club_service                       = $this->club_service_for( $this->club() );
-        $player                             = $this->createStub( Player::class );
-        $player->id                         = 7;
+        $player = Player_Test_Factory::create( id: 7 );
         $players                            = $this->createMock( Player_Service::class );
         $players->expects( $this->once() )->method( 'get_player_by_name' )->with( 'jane doe' )->willReturn( $player );
         $registration = $this->createMock( Registration_Service::class );
@@ -1049,14 +1048,17 @@ class Club_Shortcode_Adapter_Test extends TestCase {
      * @param array<string, string> $wtn
      */
     private function club_player_dto( int $registration_id, int $player_id, string $display_name, string $gender, string $btm, array $wtn = [] ): Club_Player_DTO {
-        $player               = new Player();
-        $player->id           = $player_id;
-        $player->display_name = $display_name;
-        $player->gender       = $gender;
-        $player->btm          = $btm;
-        $player->wtn          = $wtn;
-        $player->firstname    = explode( ' ', $display_name )[0];
-        $player->surname      = explode( ' ', $display_name )[1] ?? '';
+        $player = Player_Test_Factory::create(
+            id: $player_id,
+            display_name: $display_name,
+            gender: $gender,
+            btm: $btm,
+            overrides: [
+                'wtn'       => $wtn,
+                'firstname' => explode( ' ', $display_name )[0],
+                'surname'   => explode( ' ', $display_name )[1] ?? '',
+            ]
+        );
 
         $registration            = new Club_Player();
         $registration->id        = $registration_id;
@@ -1067,9 +1069,8 @@ class Club_Shortcode_Adapter_Test extends TestCase {
     }
 
     private function player_service_returning( int $player_id ): Player_Service {
-        $player     = new Player();
-        $player->id = $player_id;
-        $service    = $this->createStub( Player_Service::class );
+        $player  = Player_Test_Factory::create( id: $player_id );
+        $service = $this->createStub( Player_Service::class );
         $service->method( 'get_player_by_name' )->willReturn( $player );
 
         return $service;

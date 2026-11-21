@@ -11,6 +11,7 @@ use Racketmanager\Domain\Player\Player;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\View_Models\Club_Roster_Player_View_Model;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 
 class Club_Presenter_Test extends TestCase {
     private Club_Presenter $presenter;
@@ -164,12 +165,13 @@ class Club_Presenter_Test extends TestCase {
             facilities: '6 courts',
             address: 'Thorpe Hall Avenue'
         );
-        $secretary               = new Player();
-        $secretary->id           = 77;
-        $secretary->display_name = 'John Doe';
-        $secretary->email        = 'john@example.com';
-        $secretary->contactno    = '07000000000';
-        $roles                   = array( 'chair' => 'Sam' );
+        $secretary = Player_Test_Factory::create(
+            id: 77,
+            display_name: 'John Doe',
+            email: 'john@example.com',
+            overrides: [ 'contactno' => '07000000000' ]
+        );
+        $roles     = array( 'chair' => 'Sam' );
         $dto                     = new Club_Details_DTO( $club, $roles, $secretary );
 
         $vm = $this->presenter->present( $dto );
@@ -239,13 +241,14 @@ class Club_Presenter_Test extends TestCase {
 
     public function test_present_roster_player_from_real_club_player_dto(): void {
         $club         = Club_Test_Factory::create( id: 10, name: 'Leigh Tennis Club', shortcode: 'Leigh TC' );
-        $player       = new Player();
-        $player->id   = 42;
-        $player->display_name = 'Roger Federer';
-        $player->gender       = 'M';
-        $player->btm          = '12345678';
-        $player->wtn          = [ 'S' => '9.4', 'D' => '10.1' ];
-        $registration         = new Club_Player();
+        $player = Player_Test_Factory::create(
+            id: 42,
+            display_name: 'Roger Federer',
+            gender: 'M',
+            btm: '12345678',
+            overrides: [ 'wtn' => [ 'S' => '9.4', 'D' => '10.1' ] ]
+        );
+        $registration = new Club_Player();
         $registration->id     = 101;
         $dto                  = new Club_Player_DTO( $player, $club, $registration );
 

@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Domain\Competition;
 
 use Racketmanager\Tests\Helpers\League_Test_Factory;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Club\Club;
@@ -234,10 +235,11 @@ final class League_Read_Api_Characterization_Test extends TestCase {
 			'points_2_plus'  => 0,
 			'points_2_minus' => 0,
 		) );
-		$captain               = new Player();
-		$captain->display_name = 'Captain Kirk';
-		$captain->user_email   = 'kirk@example.test';
-		$captain->contactno    = '0123';
+		$captain = Player_Test_Factory::create(
+			display_name: 'Captain Kirk',
+			email: 'kirk@example.test',
+			overrides: array( 'contactno' => '0123' )
+		);
 		$member = $this->createStub( Player::class );
 		$member->method( 'get_fullname' )->willReturn( 'Pair Player' );
 		$players = $this->createStub( Player_Repository_Interface::class );
@@ -263,11 +265,8 @@ final class League_Read_Api_Characterization_Test extends TestCase {
 		$league     = $this->league();
 		$repository = $this->createStub( League_Repository_Interface::class );
 		$repository->method( 'query_players' )->willReturn( array( (object) array( 'player_id' => 1 ), (object) array( 'player_id' => 2 ) ) );
-		$alice                = $this->createStub( Player::class );
-		$alice->system_record = false;
-		$alice->method( 'get_fullname' )->willReturn( 'Alice' );
-		$system                = $this->createStub( Player::class );
-		$system->system_record = true;
+		$alice                 = Player_Test_Factory::create( display_name: 'Alice', overrides: array( 'system_record' => null ) );
+		$system                = Player_Test_Factory::create( display_name: 'System', overrides: array( 'system_record' => '1' ) );
 		$players = $this->createStub( Player_Repository_Interface::class );
 		$players->method( 'find' )->willReturnMap( array( array( 1, 'id', $alice ), array( 2, 'id', $system ) ) );
 		$service = new League_Query_Service( $repository, null, null, null, null, null, $players );

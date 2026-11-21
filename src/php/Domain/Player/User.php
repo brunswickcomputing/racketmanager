@@ -21,210 +21,265 @@ class User {
      *
      * @var int
      */
-    public int $ID = 0;
+    public private(set) int $ID = 0;
     /**
      * ID.
      *
      * @var int
      */
-    public int $id;
+    public private(set) int $id;
     /**
      * Email address.
      *
      * @var string
      */
-    public string $email = '';
+    public private(set) string $email = '';
     /**
      * User Email address.
      *
      * @var string
      */
-    public string $user_email = '';
+    public private(set) string $user_email = '';
     /**
      * Fullname - join of first name and surname.
      *
      * @var string
      */
-    public string $fullname;
+    public private(set) string $fullname;
     /**
      * Display name.
      *
      * @var string
      */
-    public string $display_name = '';
+    public private(set) string $display_name = '';
     /**
      * Date player created.
      *
      * @var string
      */
-    public string $created_date;
+    public private(set) string $created_date;
     /**
      * Date player created.
      *
      * @var string
      */
-    public string $user_registered = '';
+    public private(set) string $user_registered = '';
     /**
      * First name.
      *
-     * @var string
+     * @var string|null
      */
-    public mixed $firstname;
+    public private(set) ?string $firstname;
     /**
      * Surname.
      *
-     * @var string
+     * @var string|null
      */
-    public mixed $surname;
+    public private(set) ?string $surname;
     /**
      * Gender.
      *
-     * @var string
+     * @var string|null
      */
-    public mixed $gender;
+    public private(set) ?string $gender;
     /**
      * Type.
      *
-     * @var string
+     * @var string|null
      */
-    public mixed $type;
+    public private(set) ?string $type;
     /**
      * LTA Membership Number.
      *
-     * @var int
+     * @var string|int|null
      */
-    public mixed $btm;
+    public private(set) string|int|null $btm;
     /**
      * Year of birth.
      *
-     * @var int
+     * @var string|int|null
      */
-    public mixed $year_of_birth;
+    public private(set) string|int|null $year_of_birth;
     /**
      * Age.
      *
      * @var string|int|null
      */
-    public string|int|null $age;
+    public private(set) string|int|null $age;
     /**
      * Contact Number.
      *
-     * @var string
+     * @var string|null
      */
-    public mixed $contactno;
+    public private(set) ?string $contactno;
     /**
      * Removed date.
      *
-     * @var string
+     * @var string|null
      */
-    public mixed $removed_date;
+    public private(set) ?string $removed_date;
     /**
      * Removed user.
      *
-     * @var int
+     * @var string|int|null
      */
-    public mixed $removed_user;
+    public private(set) string|int|null $removed_user;
     /**
      * Locked indicator.
      *
-     * @var boolean
+     * @var bool|int|string|null
      */
-    public mixed $locked;
+    public private(set) bool|int|string|null $locked;
     /**
      * Locked date.
      *
-     * @var string
+     * @var string|null
      */
-    public mixed $locked_date;
+    public private(set) ?string $locked_date;
     /**
      * Locked user.
      *
-     * @var int
+     * @var string|int|null
      */
-    public mixed $locked_user;
+    public private(set) string|int|null $locked_user;
     /**
      * Locked username.
      *
      * @var string
      */
-    public string $locked_user_name;
+    public private(set) string $locked_user_name;
     /**
      * System record.
      *
-     * @var string
+     * @var string|null
      */
-    public mixed $system_record;
+    public private(set) ?string $system_record;
     /**
      * Matches.
      *
      * @var array
      */
-    public array $matches = array();
+    public private(set) array $matches = array();
     /**
      * Statistics.
      *
      * @var array
      */
-    public array $statistics = array();
+    public private(set) array $statistics = array();
     /**
      * User password.
      *
      * @var string
      */
-    public string $user_pass;
+    public private(set) string $user_pass;
     /**
      * User nicename.
      *
      * @var string
      */
-    public string $user_nicename;
+    public private(set) string $user_nicename;
     /**
      * User url.
      *
      * @var string
      */
-    public string $user_url;
+    public private(set) string $user_url;
     /**
      * User activation_key.
      *
      * @var string
      */
-    public string $user_activation_key;
+    public private(set) string $user_activation_key;
     /**
      * User login.
      *
      * @var string
      */
-    public string $user_login;
+    public private(set) string $user_login;
     /**
      * User status.
      *
      * @var string
      */
-    public string $user_status;
+    public private(set) string $user_status;
     /**
      * User optins.
      *
-     * @var array
+     * @var array|string|null
      */
-    public mixed $opt_ins;
+    public private(set) array|string|null $opt_ins;
     /**
      * WTN.
      *
      * @var array|null
      */
-    public ?array $wtn = array();
-    public ?string $message;
-    public string $update_result;
-    public array $err_flds;
-    public array $err_msgs;
-    public string $password = '';
-    public string $re_password = '';
-    public array $favourites = array();
-    public string $status;
-    public int $entry_id;
-    public ?object $club;
-    public string $index;
+    public private(set) ?array $wtn = array();
+    /**
+     * Message.
+     *
+     * @var string|null
+     */
+    public private(set) ?string $message;
+    /**
+     * Update result.
+     *
+     * @var string
+     */
+    public private(set) string $update_result;
+    /**
+     * Error fields.
+     *
+     * @var array
+     */
+    public private(set) array $err_flds;
+    /**
+     * Error messages.
+     *
+     * @var array
+     */
+    public private(set) array $err_msgs;
+    /**
+     * Password.
+     *
+     * @var string
+     */
+    public private(set) string $password = '';
+    /**
+     * Repeated password.
+     *
+     * @var string
+     */
+    public private(set) string $re_password = '';
+    /**
+     * Favourites.
+     *
+     * @var array
+     */
+    public private(set) array $favourites = array();
+    /**
+     * Status.
+     *
+     * @var string
+     */
+    public private(set) string $status;
+    /**
+     * Entry ID.
+     *
+     * @var int
+     */
+    public private(set) int $entry_id;
+    /**
+     * Club.
+     *
+     * @var object|null
+     */
+    public private(set) ?object $club;
+    /**
+     * Index.
+     *
+     * @var string
+     */
+    public private(set) string $index;
 
     /**
      * Constructor
@@ -300,5 +355,209 @@ class User {
             return $this->favourites[ $favourites_type ];
         }
         return array();
+    }
+
+    /**
+     * Set user ID.
+     *
+     * @param int $id User ID.
+     * @return void
+     */
+    public function set_id( int $id ): void {
+        $this->id = $id;
+        $this->ID = $id;
+    }
+
+    /**
+     * Set user email.
+     *
+     * @param string $email Email address.
+     * @return void
+     */
+    public function set_email( string $email ): void {
+        $this->email      = $email;
+        $this->user_email = $email;
+    }
+
+    /**
+     * Set display name.
+     *
+     * @param string $display_name Display name.
+     * @return void
+     */
+    public function set_display_name( string $display_name ): void {
+        $this->display_name = $display_name;
+        $this->fullname     = $display_name;
+    }
+
+    /**
+     * Set first name.
+     *
+     * @param ?string $firstname First name.
+     * @return void
+     */
+    public function set_firstname( ?string $firstname ): void {
+        $this->firstname = $firstname;
+    }
+
+    /**
+     * Set surname.
+     *
+     * @param ?string $surname Surname.
+     * @return void
+     */
+    public function set_surname( ?string $surname ): void {
+        $this->surname = $surname;
+    }
+
+    /**
+     * Set contact number.
+     *
+     * @param ?string $contactno Contact number.
+     * @return void
+     */
+    public function set_contactno( ?string $contactno ): void {
+        $this->contactno = $contactno;
+    }
+
+    /**
+     * Set gender.
+     *
+     * @param ?string $gender Gender.
+     * @return void
+     */
+    public function set_gender( ?string $gender ): void {
+        $this->gender = $gender;
+    }
+
+    /**
+     * Set LTA membership number.
+     *
+     * @param string|int|null $btm LTA membership number.
+     * @return void
+     */
+    public function set_btm( string|int|null $btm ): void {
+        $this->btm = $btm;
+    }
+
+    /**
+     * Set year of birth.
+     *
+     * @param string|int|null $year_of_birth Year of birth.
+     * @return void
+     */
+    public function set_year_of_birth( string|int|null $year_of_birth ): void {
+        $this->year_of_birth = $year_of_birth;
+        if ( ! empty( $year_of_birth ) && is_numeric( $year_of_birth ) ) {
+            $this->age = (int) gmdate( 'Y' ) - (int) $year_of_birth;
+        } else {
+            $this->age = 0;
+        }
+    }
+
+    /**
+     * Set password.
+     *
+     * @param string $password Password.
+     * @return void
+     */
+    public function set_password( string $password ): void {
+        $this->password = $password;
+    }
+
+    /**
+     * Set repeated password.
+     *
+     * @param string $re_password Repeated password.
+     * @return void
+     */
+    public function set_re_password( string $re_password ): void {
+        $this->re_password = $re_password;
+    }
+
+    /**
+     * Set opt-in choices.
+     *
+     * @param array|string|null $opt_ins Opt-in choices.
+     * @return void
+     */
+    public function set_opt_ins( array|string|null $opt_ins ): void {
+        if ( is_array( $opt_ins ) ) {
+            $this->opt_ins = array_values( array_map( 'strval', $opt_ins ) );
+        } elseif ( is_string( $opt_ins ) && '' !== $opt_ins ) {
+            $this->opt_ins = array( $opt_ins );
+        } else {
+            $this->opt_ins = array();
+        }
+    }
+
+    /**
+     * Set locked status.
+     *
+     * @param bool|int|string|null $locked Locked indicator.
+     * @param ?string              $locked_date Date locked.
+     * @param int|string|null      $locked_user ID of user who locked.
+     * @param string               $locked_user_name Name of user who locked.
+     * @return void
+     */
+    public function set_locked_status(
+        bool|int|string|null $locked,
+        ?string $locked_date = null,
+        int|string|null $locked_user = null,
+        string $locked_user_name = ''
+    ): void {
+        $this->locked           = $locked;
+        $this->locked_date      = $locked_date;
+        $this->locked_user      = $locked_user;
+        $this->locked_user_name = $locked_user_name;
+    }
+
+    /**
+     * Set favourite IDs.
+     *
+     * @param array $favourites Array of favourite IDs grouped by type.
+     * @return void
+     */
+    public function set_favourites( array $favourites ): void {
+        $this->favourites = $favourites;
+    }
+
+    /**
+     * Update user profile information.
+     *
+     * @param string            $email Email address.
+     * @param ?string           $firstname First name.
+     * @param ?string           $surname Surname.
+     * @param ?string           $contactno Contact number.
+     * @param ?string           $gender Gender.
+     * @param string|int|null   $btm LTA membership number.
+     * @param string|int|null   $year_of_birth Year of birth.
+     * @param string            $password Password.
+     * @param string            $re_password Repeated password.
+     * @param array|string|null $opt_ins Opt-ins.
+     * @return void
+     */
+    public function update_profile(
+        string $email,
+        ?string $firstname,
+        ?string $surname,
+        ?string $contactno,
+        ?string $gender,
+        string|int|null $btm,
+        string|int|null $year_of_birth,
+        string $password = '',
+        string $re_password = '',
+        array|string|null $opt_ins = array()
+    ): void {
+        $this->set_email( $email );
+        $this->set_firstname( $firstname );
+        $this->set_surname( $surname );
+        $this->set_contactno( $contactno );
+        $this->set_gender( $gender );
+        $this->set_btm( $btm );
+        $this->set_year_of_birth( $year_of_birth );
+        $this->set_password( $password );
+        $this->set_re_password( $re_password );
+        $this->set_opt_ins( $opt_ins );
     }
 }

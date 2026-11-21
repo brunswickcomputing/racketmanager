@@ -391,11 +391,12 @@ class Tournament_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         if ( $result->player ) {
             $tournament_player = $result->player;
             if ( ! empty( $tournament_player->matches ) && is_array( $tournament_player->matches ) ) {
-                $tournament_player->matches = $this->tournament_presenter->present_match_cards(
+                $match_cards = $this->tournament_presenter->present_match_cards(
                     $tournament_player->matches,
                     $tournament,
                     $tournament_player
                 );
+                $tournament_player->set_matches( $match_cards );
             }
 
             $player_vm = $this->player_presenter->present_player( $tournament_player );

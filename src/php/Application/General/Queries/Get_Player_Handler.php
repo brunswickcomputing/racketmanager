@@ -73,7 +73,8 @@ readonly class Get_Player_Handler {
 
         $titles = $this->player_service->get_titles_for_player( $player_id );
 
-        $player->stats = $this->player_stats_service->get_career_stats( $player );
+        $stats = $this->player_stats_service->get_career_stats( $player );
+        $player->set_stats( $stats );
 
         $player_competitions = [];
         $competition_types   = [ 'cup', 'league', 'tournament' ];

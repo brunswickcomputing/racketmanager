@@ -31,6 +31,7 @@ use Racketmanager\Application\Tournament\Queries\Get_Tournament_Withdrawal_Handl
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Withdrawal_Query;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
@@ -470,6 +471,53 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
 
         $this->assertSame( 'player', $vm->template );
         $this->assertSame( $player, $vm->vars['tournament_player'] );
+    }
+
+    public function test_players_handler_single_player_replaces_matches_with_presented_cards(): void {
+        $tournament = $this->createStub( Tournament::class );
+        $tournament->method( 'get_id' )->willReturn( 3 );
+        $raw_match = (object) [ 'id' => 1 ];
+        $cards     = [ 'card-1', 'card-2' ];
+        $player    = Player_Test_Factory::create( id: 7, display_name: 'John Smith', overrides: [ 'matches' => [ $raw_match ] ] );
+
+        $tournament_presenter = $this->createMock( Tournament_Presenter::class );
+        $tournament_presenter->expects( $this->once() )
+            ->method( 'present_match_cards' )
+            ->with( [ $raw_match ], $tournament, $player )
+            ->willReturn( $cards );
+        $adapter = new Tournament_Shortcode_Adapter( $tournament_presenter, new Player_Presenter() );
+
+        $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
+        $this->tournament_service->method( 'get_player_details_for_tournament' )->willReturn( $player );
+
+        $handler = new Get_Tournament_Players_Handler( $this->tournament_service );
+        $result  = $handler->handle( new Get_Tournament_Players_Query( tournament_id: 3, player_id: 7 ) );
+        $vm      = $adapter->present_players( $result );
+
+        $this->assertSame( 'player', $vm->template );
+        $this->assertSame( $player, $vm->vars['tournament_player'] );
+        $this->assertSame( $cards, $player->matches );
+        $this->assertSame( $cards, $vm->vars['tournament_player']->matches );
+    }
+
+    public function test_players_handler_single_player_without_matches_skips_card_presentation(): void {
+        $tournament = $this->createStub( Tournament::class );
+        $tournament->method( 'get_id' )->willReturn( 3 );
+        $player = Player_Test_Factory::create( id: 7, display_name: 'John Smith' );
+
+        $tournament_presenter = $this->createMock( Tournament_Presenter::class );
+        $tournament_presenter->expects( $this->never() )->method( 'present_match_cards' );
+        $adapter = new Tournament_Shortcode_Adapter( $tournament_presenter, new Player_Presenter() );
+
+        $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
+        $this->tournament_service->method( 'get_player_details_for_tournament' )->willReturn( $player );
+
+        $handler = new Get_Tournament_Players_Handler( $this->tournament_service );
+        $result  = $handler->handle( new Get_Tournament_Players_Query( tournament_id: 3, player_id: 7 ) );
+        $vm      = $adapter->present_players( $result );
+
+        $this->assertSame( 'player', $vm->template );
+        $this->assertSame( [], $player->matches );
     }
 
     public function test_players_handler_player_not_found(): void {

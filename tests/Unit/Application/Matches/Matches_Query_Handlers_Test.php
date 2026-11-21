@@ -30,6 +30,7 @@ use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 
 class Matches_Query_Handlers_Test extends TestCase {
 
@@ -306,8 +307,7 @@ class Matches_Query_Handlers_Test extends TestCase {
         $fixture = Fixture_Test_Factory::create( id: 42, final: 'semi' );
         $details = $this->create_fixture_details( $fixture );
 
-        $player     = $this->createStub( Player::class );
-        $player->id = 99;
+        $player = Player_Test_Factory::create( id: 99 );
 
         $player_service = $this->createMock( Player_Service::class );
         $player_service->expects( $this->once() )->method( 'get_player' )->with( 99 )->willReturn( $player );

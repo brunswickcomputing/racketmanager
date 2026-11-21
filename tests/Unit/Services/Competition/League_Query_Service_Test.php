@@ -13,6 +13,7 @@ use Racketmanager\Domain\DTO\Competition\League_Hydration_DTO;
 use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Player\Player;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
@@ -424,9 +425,7 @@ class League_Query_Service_Test extends TestCase {
 		$league_row->seasons = array( '2026' => array( 'name' => '2026' ) );
 		$league              = League_Test_Factory::from_object( $league_row );
 
-		$player_mock                = $this->createMock( Player::class );
-		$player_mock->system_record = false;
-		$player_mock->method( 'get_fullname' )->willReturn( 'Alice Smith' );
+		$player_mock = Player_Test_Factory::create( id: 77, display_name: 'Alice Smith', overrides: array( 'system_record' => null ) );
 
 		$league->current_season = array( 'name' => '2026' );
 
@@ -525,12 +524,9 @@ class League_Query_Service_Test extends TestCase {
 		$league                 = $this->player_league();
 		$league->current_season = array( 'name' => '2026' );
 
-		$bob                = $this->createStub( Player::class );
-		$bob->system_record = false;
-		$sys                = $this->createStub( Player::class );
-		$sys->system_record = true;
-		$amy                = $this->createStub( Player::class );
-		$amy->system_record = false;
+		$bob = Player_Test_Factory::create( id: 1, display_name: 'Bob', overrides: array( 'system_record' => null ) );
+		$sys = Player_Test_Factory::create( id: 2, display_name: 'Sys', overrides: array( 'system_record' => '1' ) );
+		$amy = Player_Test_Factory::create( id: 4, display_name: 'Amy', overrides: array( 'system_record' => null ) );
 
 		$this->league_repository->method( 'query_players' )->willReturn(
 			array(

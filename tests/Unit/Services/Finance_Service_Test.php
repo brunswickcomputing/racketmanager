@@ -15,6 +15,7 @@ use Racketmanager\Domain\Enums\Invoice_Status;
 use Racketmanager\Domain\Finance\Charge;
 use Racketmanager\Domain\Finance\Invoice;
 use Racketmanager\Domain\Player\Player;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use Racketmanager\Domain\Tournament\Currency;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
@@ -421,9 +422,7 @@ class Finance_Service_Test extends TestCase {
     private function build_invoice_details(): Invoice_Full_Details_DTO {
         $invoice     = new Invoice();
         $invoice->id = 10;
-        $contact     = new Player();
-        $contact->display_name = 'Jane Doe';
-        $contact->email        = 'jane.doe@example.com';
+        $contact = Player_Test_Factory::create( display_name: 'Jane Doe', email: 'jane.doe@example.com' );
 
         $details                  = $this->createStub( Invoice_Full_Details_DTO::class );
         $details->invoice         = $invoice;

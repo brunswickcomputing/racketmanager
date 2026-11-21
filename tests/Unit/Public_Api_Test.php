@@ -12,6 +12,7 @@ namespace Racketmanager\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Player\User;
+use Racketmanager\Domain\Player\User_Factory;
 use Racketmanager\Infrastructure\Wordpress\Bootstrap\Plugin_Bootstrap;
 use Racketmanager\Public_Api;
 use Racketmanager\Repositories\Interfaces\Message_Repository_Interface;
@@ -69,9 +70,12 @@ final class Public_Api_Test extends TestCase {
     }
 
     public function test_get_user_delegates_to_user_repository(): void {
-        $user       = new User();
-        $user->id   = 42;
-        $user->display_name = 'Jane Doe';
+        $user      = User_Factory::from_array(
+            array(
+                'id'           => 42,
+                'display_name' => 'Jane Doe',
+            )
+        );
 
         $user_repo = $this->createMock( User_Repository_Interface::class );
         $user_repo->expects( $this->once() )

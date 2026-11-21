@@ -11,6 +11,7 @@ use Racketmanager\Application\Message\Queries\Get_Messages_Handler;
 use Racketmanager\Application\Message\Queries\Get_Messages_Query;
 use Racketmanager\Domain\Communication\Message;
 use Racketmanager\Domain\Player\User;
+use Racketmanager\Domain\Player\User_Factory;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Message_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Message_Presenter;
@@ -68,8 +69,7 @@ class Message_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_messages_handler_when_logged_in(): void {
-        $user = $this->createStub( User::class );
-        $user->id = 101;
+        $user = User_Factory::from_array( [ 'id' => 101 ] );
         $details = [ (object) [ 'id' => 15 ] ];
         $message_calls = [];
         $user_repository = $this->createMock( User_Repository_Interface::class );
@@ -269,8 +269,7 @@ class Message_Shortcode_Handlers_Test extends TestCase {
                 'from_name' => 'Admin', 'from_email' => 'a@example.com', 'message_object' => '',
             ];
         };
-        $user = $this->createStub( User::class );
-        $user->id = 101;
+        $user = User_Factory::from_array( [ 'id' => 101 ] );
         $user_repository = $this->createStub( User_Repository_Interface::class );
         $user_repository->method( 'find' )->willReturn( $user );
         $message_repository = $this->createStub( Message_Repository_Interface::class );
@@ -314,8 +313,7 @@ class Message_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_messages_handler_without_messages_passes_empty_view_model_and_renders(): void {
-        $user = $this->createStub( User::class );
-        $user->id = 101;
+        $user = User_Factory::from_array( [ 'id' => 101 ] );
         $user_repository = $this->createStub( User_Repository_Interface::class );
         $user_repository->method( 'find' )->willReturn( $user );
         $message_repository = $this->createStub( Message_Repository_Interface::class );

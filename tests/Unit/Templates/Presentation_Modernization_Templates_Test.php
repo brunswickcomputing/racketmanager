@@ -437,7 +437,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             email: 'rafa@tennis.local',
             overrides: [ 'contactno' => '0123456789' ]
         );
-        $t_player->matches = [];
+        $t_player->set_matches( [] );
 
         $entry1               = new stdClass();
         $entry1->event_id     = 501;
@@ -445,7 +445,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $entry1->partner_id   = 102;
         $entry1->partner_name = 'Carlos Alcaraz';
 
-        $t_player->teams = [ $entry1 ];
+        $t_player->set_teams( [ $entry1 ] );
 
         $tournament_service->method( 'get_player_details_for_tournament' )->willReturn( $t_player );
 

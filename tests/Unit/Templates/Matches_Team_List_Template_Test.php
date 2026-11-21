@@ -17,6 +17,7 @@ use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture_Team_Resolver_Interface;
 use Racketmanager\Domain\Player\Player;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\League_Shortcode_Adapter;
@@ -533,15 +534,17 @@ class Matches_Team_List_Template_Test extends TestCase {
             'match_time' => '19:30:00',
         ];
 
-        $player = $this->createStub( Player::class );
-        $player->id = 55;
-        $player->method( 'get_id' )->willReturn( 55 );
-        $player->method( 'get_fullname' )->willReturn( 'Alice Walker' );
-        $player->wtn = [ 'D' => '24.5', 'S' => '22.1' ];
-        $player->played = 4;
-        $player->matches_won = 3;
-        $player->matches_lost = 1;
-        $player->win_pct = 75;
+        $player = Player_Test_Factory::create(
+            id: 55,
+            display_name: 'Alice Walker',
+            overrides: [
+                'wtn'          => [ 'D' => '24.5', 'S' => '22.1' ],
+                'played'       => 4,
+                'matches_won'  => 3,
+                'matches_lost' => 1,
+                'win_pct'      => 75,
+            ]
+        );
 
         $team->players = [ $player ];
 
@@ -678,15 +681,17 @@ class Matches_Team_List_Template_Test extends TestCase {
             'match_time' => '19:30:00',
         ];
 
-        $player = $this->createStub( Player::class );
-        $player->id = 55;
-        $player->method( 'get_id' )->willReturn( 55 );
-        $player->method( 'get_fullname' )->willReturn( 'Alice Walker' );
-        $player->wtn = [ 'D' => '24.5', 'S' => '22.1' ];
-        $player->played = 4;
-        $player->matches_won = 3;
-        $player->matches_lost = 1;
-        $player->win_pct = 75;
+        $player = Player_Test_Factory::create(
+            id: 55,
+            display_name: 'Alice Walker',
+            overrides: [
+                'wtn'          => [ 'D' => '24.5', 'S' => '22.1' ],
+                'played'       => 4,
+                'matches_won'  => 3,
+                'matches_lost' => 1,
+                'win_pct'      => 75,
+            ]
+        );
 
         $team->players = [ $player ];
 

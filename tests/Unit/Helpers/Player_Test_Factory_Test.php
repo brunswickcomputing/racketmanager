@@ -24,10 +24,10 @@ final class Player_Test_Factory_Test extends TestCase {
         $this->assertSame( 1, $player->ID );
         $this->assertSame( 'Test Player', $player->fullname );
 
-        $player->id = 2;
+        $player->set_id( 2 );
         $this->assertSame( 2, $player->ID );
 
-        $player->display_name = 'Updated Player';
+        $player->set_display_name( 'Updated Player' );
         $this->assertSame( 'Updated Player', $player->fullname );
     }
 

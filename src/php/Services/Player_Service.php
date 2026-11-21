@@ -132,11 +132,30 @@ class Player_Service implements Player_Service_Interface {
         if ( $this->player_repository->find_by_btm( $player->btm ) ) {
             throw new Duplicate_Btm_Exception( __( 'A player with the LTA Tennis number already exists', 'racketmanager' ) );
         }
-        $player->display_name    = $player->firstname . ' ' . $player->surname;
-        $player->user_registered = gmdate( 'Y-m-d H:i:s' );
-        $player->user_login      = strtolower( $player->firstname ) . '.' . strtolower( $player->surname );
-        $player->user_pass       = $player->user_login . '1';
-        $player                  = Player_Factory::from_object( $player );
+        $display_name    = $player->firstname . ' ' . $player->surname;
+        $user_registered = gmdate( 'Y-m-d H:i:s' );
+        $user_login      = strtolower( (string) $player->firstname ) . '.' . strtolower( (string) $player->surname );
+        $user_pass       = $user_login . '1';
+
+        if ( $player instanceof Player ) {
+            $player_data = (object) array_merge(
+                (array) $player,
+                array(
+                    'display_name'    => $display_name,
+                    'user_registered' => $user_registered,
+                    'user_login'      => $user_login,
+                    'user_pass'       => $user_pass,
+                )
+            );
+            $player      = Player_Factory::from_object( $player_data );
+        } else {
+            // Supports generic input objects (e.g. stdClass from registration forms or controllers).
+            $player->display_name    = $display_name;
+            $player->user_registered = $user_registered;
+            $player->user_login      = $user_login;
+            $player->user_pass       = $user_pass;
+            $player                  = Player_Factory::from_object( $player );
+        }
         $this->player_repository->add( $player );
 
         return $player;
@@ -272,8 +291,14 @@ class Player_Service implements Player_Service_Interface {
         if ( ! $player ) {
             throw new Player_Not_Found_Exception( Util_Messages::player_not_found( $player_id ) );
         }
-        $updates                      = array();
-        $updated_player->display_name = $updated_player->firstname . ' ' . $updated_player->surname;
+        $updates      = array();
+        $display_name = $updated_player->firstname . ' ' . $updated_player->surname;
+        if ( $updated_player instanceof Player ) {
+            $updated_player->set_display_name( $display_name );
+        } else {
+            // Supports generic input objects (e.g. stdClass from admin forms or controllers).
+            $updated_player->display_name = $display_name;
+        }
         if ( $updated_player->firstname !== $player->firstname ) {
             $player->set_firstname( $updated_player->firstname );
             $updates['core'] = true;

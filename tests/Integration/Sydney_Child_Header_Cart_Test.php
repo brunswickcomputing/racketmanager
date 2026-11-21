@@ -13,6 +13,7 @@ namespace Racketmanager\Tests\Integration;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Player\User;
+use Racketmanager\Domain\Player\User_Factory;
 use Racketmanager\Public_Api;
 use Racketmanager\Repositories\Interfaces\Message_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
@@ -51,11 +52,13 @@ final class Sydney_Child_Header_Cart_Test extends TestCase {
     public function test_header_cart_logged_in_with_encoded_btm_and_messages(): void {
         $this->load_theme_functions();
 
-        $user               = new User();
-        $user->id           = 7;
-        $user->ID           = 7;
-        $user->display_name = 'Roger Federer';
-        $user->btm          = 'AB 12/3&x';
+        $user = User_Factory::from_array(
+            array(
+                'id'           => 7,
+                'display_name' => 'Roger Federer',
+                'btm'          => 'AB 12/3&x',
+            )
+        );
 
         $user_repo = $this->createMock( User_Repository_Interface::class );
         $user_repo->expects( self::once() )
@@ -91,11 +94,13 @@ final class Sydney_Child_Header_Cart_Test extends TestCase {
     public function test_header_cart_logged_in_without_btm(): void {
         $this->load_theme_functions();
 
-        $user               = new User();
-        $user->id           = 8;
-        $user->ID           = 8;
-        $user->display_name = 'Rafael Nadal';
-        $user->btm          = '';
+        $user = User_Factory::from_array(
+            array(
+                'id'           => 8,
+                'display_name' => 'Rafael Nadal',
+                'btm'          => '',
+            )
+        );
 
         $user_repo = $this->createMock( User_Repository_Interface::class );
         $user_repo->expects( self::once() )

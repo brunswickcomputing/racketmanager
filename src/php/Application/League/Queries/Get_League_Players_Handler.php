@@ -77,9 +77,9 @@ readonly class Get_League_Players_Handler {
                 return League_Players_Result::error( __( 'Player not found', 'racketmanager' ) );
             }
 
-            $player->matches = $this->player_query_service->get_matches( $player, $league, $season_name, 'league' );
-            $player->stats   = $this->player_stats_service->get_stats( $player );
-            $league->player  = $player;
+            $player->set_matches( $this->player_query_service->get_matches( $player, $league, $season_name, 'league' ) );
+            $player->set_stats( $this->player_stats_service->get_stats( $player ) );
+            $league->player = $player;
         } else {
             $league->players = $this->player_stats_service->populate_players_stats(
                 $this->league_query()->get_players( $league ),
@@ -88,13 +88,14 @@ readonly class Get_League_Players_Handler {
                 'league'
             );
             foreach ( $league->players as $p ) {
-                $p->team = $this->league_repository->get_player_team(
+                $team = $this->league_repository->get_player_team(
                     $league->get_id(),
                     [
                         'player' => $p->get_id(),
                         'season' => $season_name,
                     ]
                 ) ?? new stdClass();
+                $p->set_team( $team );
             }
         }
 

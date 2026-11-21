@@ -939,9 +939,7 @@ class Entry_And_Match_Templates_Test extends TestCase {
 
         $player_presenter = new Player_Presenter( option_gateway: $option_gateway );
 
-        $player               = new Player();
-        $player->id           = 42;
-        $player->display_name = 'Roger Federer';
+        $player = Player_Test_Factory::create( id: 42, display_name: 'Roger Federer' );
 
         $club_active            = new Club();
         $club_active->id        = 10;

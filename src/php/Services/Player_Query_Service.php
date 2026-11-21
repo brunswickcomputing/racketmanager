@@ -216,20 +216,23 @@ class Player_Query_Service implements Player_Query_Service_Interface {
      * @return array
      */
     public function get_matches( Player $player, ?object $grouping, ?string $season, string $match_source, ?int $period = null, ?string $type = null ): array {
-        $matches    = $this->fetch_matches( $player, $grouping, $season, $match_source, $period, $type );
-        $stats_ref  = array();
-        $league_ref = 0;
+        $matches        = $this->fetch_matches( $player, $grouping, $season, $match_source, $period, $type );
+        $stats_ref      = array();
+        $league_ref     = 0;
+        $player_matches = array();
 
         foreach ( $matches as $match ) {
             $league_ref = $this->determine_league_ref( $match, $match_source );
-            $this->record_player_match( $player, $match, $match_source );
+            $this->record_player_match( $player_matches, $match, $match_source );
             $this->accumulate_match_statistics( $stats_ref, $league_ref, $match, $player );
         }
 
+        $player->set_matches( $player_matches );
+
         if ( $league_ref ) {
-            $player->statistics = $stats_ref;
+            $player->set_statistics( $stats_ref );
         } else {
-            $player->statistics = $stats_ref[0] ?? array();
+            $player->set_statistics( $stats_ref[0] ?? array() );
         }
 
         return $player->matches;
@@ -446,16 +449,16 @@ class Player_Query_Service implements Player_Query_Service_Interface {
     }
 
     /**
-     * Record a match on the player object, grouping by league if applicable.
+     * Record a match on the player matches array, grouping by league if applicable.
      *
-     * @param Player $player player object.
+     * @param array  $player_matches player matches array reference.
      * @param object $match match object.
      * @param string $match_source match source string.
      * @return void
      */
-    private function record_player_match( Player $player, object $match, string $match_source ): void {
+    private function record_player_match( array &$player_matches, object $match, string $match_source ): void {
         if ( 'competition' !== $match_source && 'event' !== $match_source ) {
-            $player->matches[] = $match;
+            $player_matches[] = $match;
             return;
         }
 
@@ -471,15 +474,15 @@ class Player_Query_Service implements Player_Query_Service_Interface {
             $key = (string) ( $match->league->name ?? $match->league->title ?? '' );
         }
 
-        if ( false === array_key_exists( $key, $player->matches ) ) {
-            $player->matches[ $key ]           = array();
-            $player->matches[ $key ]['league'] = $match_league;
-            if ( is_object( $player->matches[ $key ]['league'] ) ) {
-                $player->matches[ $key ]['league']->season = $match->season ?? ( method_exists( $match, 'get_season' ) ? $match->get_season() : null );
+        if ( false === array_key_exists( $key, $player_matches ) ) {
+            $player_matches[ $key ]           = array();
+            $player_matches[ $key ]['league'] = $match_league;
+            if ( is_object( $player_matches[ $key ]['league'] ) ) {
+                $player_matches[ $key ]['league']->season = $match->season ?? ( method_exists( $match, 'get_season' ) ? $match->get_season() : null );
             }
         }
 
-        $player->matches[ $key ]['matches'][] = $match;
+        $player_matches[ $key ]['matches'][] = $match;
     }
 
     /**

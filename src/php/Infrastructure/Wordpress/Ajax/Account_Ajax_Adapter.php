@@ -312,17 +312,18 @@ class Account_Ajax_Adapter {
             return $this->response_factory->create_error_response( $validator, 401 );
         }
 
-        $user->email         = $command->username ?? '';
-        $user->user_email    = $command->username ?? '';
-        $user->firstname     = $command->firstname ?? '';
-        $user->surname       = $command->lastname ?? '';
-        $user->contactno     = $command->contactno;
-        $user->gender        = $command->gender;
-        $user->btm           = $command->btm;
-        $user->year_of_birth = $command->year_of_birth;
-        $user->password      = (string) ( $command->password ?? '' );
-        $user->re_password   = (string) ( $command->re_password ?? '' );
-        $user->opt_ins       = $this->normalize_opt_ins( $command->opt_ins );
+        $user->update_profile(
+            $command->username ?? '',
+            $command->firstname ?? '',
+            $command->lastname ?? '',
+            $command->contactno,
+            $command->gender,
+            $command->btm,
+            $command->year_of_birth,
+            (string) ( $command->password ?? '' ),
+            (string) ( $command->re_password ?? '' ),
+            $this->normalize_opt_ins( $command->opt_ins )
+        );
 
         $saved = $this->user_repository->save( $user );
 

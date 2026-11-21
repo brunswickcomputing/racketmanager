@@ -826,12 +826,12 @@ class Tournament_Service implements Tournament_Service_Interface {
             throw new Tournament_Entry_Not_Found_Exception( Util_Messages::tournament_entry_not_found() );
         }
         if ( ! empty( $tournament_entry->get_club_id() ) ) {
-            $player->club = $this->club_service->get_club( $tournament_entry->get_club_id() );
+            $player->set_club( $this->club_service->get_club( $tournament_entry->get_club_id() ) );
         }
-        $player->teams      = $this->tournament_repository->find_event_entry_details_for_player_in_tournament( $player_id, $tournament_id );
-        $fixtures           = $this->fixture_service->get_fixtures_for_player_for_tournament( $player->get_id(), $tournament->get_id() );
-        $player->matches    = $fixtures;
-        $player->statistics = $this->get_statistics_for_a_player_by_tournament( $player, $fixtures );
+        $player->set_teams( $this->tournament_repository->find_event_entry_details_for_player_in_tournament( $player_id, $tournament_id ) );
+        $fixtures = $this->fixture_service->get_fixtures_for_player_for_tournament( $player->get_id(), $tournament->get_id() );
+        $player->set_matches( $fixtures );
+        $player->set_statistics( $this->get_statistics_for_a_player_by_tournament( $player, $fixtures ) );
 
         return $player;
 

@@ -4,6 +4,7 @@ namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Ajax;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Player\User;
+use Racketmanager\Domain\Player\User_Factory;
 use Racketmanager\Application\Ports\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Account_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Account_Ajax_Controller;
@@ -145,9 +146,7 @@ class Account_Ajax_Controller_Test extends TestCase {
         $option_service->method( 'get_options' )
             ->willReturn( array( 'btm' => '1' ) );
 
-        $user      = new User();
-        $user->id  = 5;
-        $user->ID  = 5;
+        $user      = User_Factory::from_array( [ 'id' => 5 ] );
         $user_repo = $this->createStub( User_Repository_Interface::class );
         $user_repo->method( 'find' )->willReturn( $user );
 

@@ -5,6 +5,7 @@ namespace Racketmanager\Tests\Unit\Repositories;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Player\User;
+use Racketmanager\Domain\Player\User_Factory;
 use Racketmanager\Repositories\User_Repository;
 
 class User_Repository_Test extends TestCase {
@@ -111,6 +112,100 @@ class User_Repository_Test extends TestCase {
         $this->assertSame( 'Updated', $fresh_user->firstname );
     }
 
+    public function test_find_hydrates_all_metadata_fields(): void {
+        $GLOBALS['wp_stubs_userdata'][8] = (object) [
+            'ID'           => 8,
+            'display_name' => 'Admin Boss',
+        ];
+        $GLOBALS['wp_stubs_userdata'][78] = (object) [
+            'data' => (object) [
+                'ID'           => '78',
+                'user_email'   => 'full@example.test',
+                'display_name' => 'Full User',
+            ],
+        ];
+        $GLOBALS['wp_stubs_user_meta'][78] = [
+            'first_name'           => [ 'John' ],
+            'last_name'            => [ 'Doe' ],
+            'gender'               => [ 'M' ],
+            'racketmanager_type'   => [ 'player' ],
+            'btm'                  => [ '123456' ],
+            'year_of_birth'        => [ '1990' ],
+            'contactno'            => [ '07123456789' ],
+            'remove_date'          => [ '2026-01-15' ],
+            'remove_user'          => [ '4' ],
+            'locked'               => [ '1' ],
+            'locked_date'          => [ '2026-02-01' ],
+            'locked_user'          => [ '8' ],
+            'racketmanager_opt_in' => [ 1, 2 ],
+        ];
+
+        $user = $this->repository->find( 78 );
+        $this->assertInstanceOf( User::class, $user );
+        $this->assertSame( 78, $user->id );
+        $this->assertSame( 78, $user->ID );
+        $this->assertSame( 'full@example.test', $user->email );
+        $this->assertSame( 'Full User', $user->display_name );
+        $this->assertSame( 'John', $user->firstname );
+        $this->assertSame( 'Doe', $user->surname );
+        $this->assertSame( 'M', $user->gender );
+        $this->assertSame( 'player', $user->type );
+        $this->assertSame( '123456', $user->btm );
+        $this->assertSame( '1990', $user->year_of_birth );
+        $this->assertSame( (int) gmdate( 'Y' ) - 1990, $user->age );
+        $this->assertSame( '07123456789', $user->contactno );
+        $this->assertSame( '2026-01-15', $user->removed_date );
+        $this->assertSame( '4', $user->removed_user );
+        $this->assertSame( '1', $user->locked );
+        $this->assertSame( '2026-02-01', $user->locked_date );
+        $this->assertSame( '8', $user->locked_user );
+        $this->assertSame( 'Admin Boss', $user->locked_user_name );
+        $this->assertSame( 'player', $user->system_record );
+        $this->assertSame( [ '1', '2' ], $user->opt_ins );
+    }
+
+    public function test_find_with_empty_metadata_preserves_empty_strings_and_defaults(): void {
+        $GLOBALS['wp_stubs_userdata'][79] = (object) [
+            'data' => (object) [
+                'ID'           => '79',
+                'user_email'   => 'empty@example.test',
+                'display_name' => 'Empty User',
+            ],
+        ];
+        $GLOBALS['wp_stubs_user_meta'][79] = [];
+
+        $user = $this->repository->find( 79 );
+        $this->assertInstanceOf( User::class, $user );
+
+        $empty_string_fields = [
+            'firstname',
+            'surname',
+            'gender',
+            'type',
+            'btm',
+            'year_of_birth',
+            'contactno',
+            'removed_date',
+            'removed_user',
+            'locked',
+            'locked_date',
+            'locked_user',
+            'locked_user_name',
+            'system_record',
+        ];
+
+        foreach ( $empty_string_fields as $field ) {
+            $this->assertTrue( isset( $user->$field ), "Field {$field} should be set" );
+            $this->assertSame( '', $user->$field, "Field {$field} should be empty string" );
+        }
+
+        $this->assertTrue( isset( $user->age ) );
+        $this->assertSame( 0, $user->age );
+
+        $this->assertTrue( isset( $user->opt_ins ) );
+        $this->assertSame( [], $user->opt_ins );
+    }
+
     public function test_save_writes_changed_fields_password_and_opt_ins(): void {
         $GLOBALS['wp_stubs_user_meta'][55]['first_name'] = [ 'Old' ];
         $GLOBALS['wp_stubs_user_meta'][55]['racketmanager_opt_in'] = [ '1' ];
@@ -118,19 +213,20 @@ class User_Repository_Test extends TestCase {
         $GLOBALS['wp_stubs_wp_set_auth_cookie'] = [];
         $GLOBALS['wp_stubs_update_user_meta'] = [];
 
-        $user = new User();
-        $user->id = 55;
-        $user->ID = 55;
-        $user->email = 'new@example.test';
-        $user->user_email = 'new@example.test';
-        $user->firstname = 'Jane';
-        $user->surname = 'Doe';
-        $user->contactno = '07111';
-        $user->gender = 'F';
-        $user->btm = 99;
-        $user->year_of_birth = 1988;
-        $user->password = 'secret';
-        $user->opt_ins = [ '1' ];
+        $user = User_Factory::from_array(
+            [
+                'id'            => 55,
+                'email'         => 'new@example.test',
+                'firstname'     => 'Jane',
+                'surname'       => 'Doe',
+                'contactno'     => '07111',
+                'gender'        => 'F',
+                'btm'           => 99,
+                'year_of_birth' => 1988,
+                'password'      => 'secret',
+                'opt_ins'       => [ '1' ],
+            ]
+        );
 
         $result = $this->repository->save( $user );
         $this->assertSame( 55, $result );
@@ -148,18 +244,19 @@ class User_Repository_Test extends TestCase {
         $GLOBALS['wp_stubs_wp_update_user'] = [];
         $GLOBALS['wp_stubs_update_user_meta'] = [];
 
-        $user = new User();
-        $user->id = 101;
-        $user->ID = 101;
-        $user->email = 'user101@example.test';
-        $user->user_email = 'user101@example.test';
-        $user->password = '';
-        $user->firstname = '';
-        $user->surname = '';
-        $user->contactno = '';
-        $user->gender = '';
-        $user->btm = '';
-        $user->year_of_birth = '';
+        $user = User_Factory::from_array(
+            [
+                'id'            => 101,
+                'email'         => 'user101@example.test',
+                'password'      => '',
+                'firstname'     => '',
+                'surname'       => '',
+                'contactno'     => '',
+                'gender'        => '',
+                'btm'           => '',
+                'year_of_birth' => '',
+            ]
+        );
 
         $result = $this->repository->save( $user );
         $this->assertSame( 0, $result );
@@ -169,26 +266,30 @@ class User_Repository_Test extends TestCase {
 
     public function test_save_adds_and_removes_opt_ins(): void {
         $GLOBALS['wp_stubs_user_meta'][12]['racketmanager_opt_in'] = [ '1' ];
-        $user = new User();
-        $user->id = 12;
-        $user->ID = 12;
-        $user->email = 'user12@example.test';
-        $user->opt_ins = [];
+        $user = User_Factory::from_array(
+            [
+                'id'      => 12,
+                'email'   => 'user12@example.test',
+                'opt_ins' => [],
+            ]
+        );
 
         $this->assertSame( 12, $this->repository->save( $user ) );
         $this->assertSame( [], $GLOBALS['wp_stubs_user_meta'][12]['racketmanager_opt_in'] );
 
-        $user->opt_ins = [ '1' ];
+        $user->set_opt_ins( [ '1' ] );
         $this->assertSame( 12, $this->repository->save( $user ) );
         $this->assertSame( [ '1' ], $GLOBALS['wp_stubs_user_meta'][12]['racketmanager_opt_in'] );
     }
 
     public function test_update_contact_returns_false_on_wp_error(): void {
         $GLOBALS['wp_stubs_wp_update_user_error'] = 'bad email';
-        $user = new User();
-        $user->id = 9;
-        $user->ID = 9;
-        $user->user_email = 'old@example.test';
+        $user = User_Factory::from_array(
+            [
+                'id'         => 9,
+                'user_email' => 'old@example.test',
+            ]
+        );
 
         $this->assertFalse( $this->repository->update_contact( $user, '07700', 'new@example.test' ) );
         unset( $GLOBALS['wp_stubs_wp_update_user_error'] );

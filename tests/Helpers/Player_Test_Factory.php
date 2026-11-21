@@ -7,6 +7,7 @@ use Racketmanager\Domain\DTO\Player\Player_Hydration_DTO;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Player\Player_Factory;
 use InvalidArgumentException;
+use ReflectionProperty;
 
 /**
  * Builds real Player entities for tests.
@@ -93,7 +94,16 @@ final class Player_Test_Factory {
         $player = Player_Factory::from_array( $hydration_data );
 
         foreach ( $property_overrides as $key => $value ) {
-            $player->$key = $value;
+            $key_str = (string) $key;
+            $setter  = 'set_' . $key_str;
+
+            if ( method_exists( $player, $setter ) ) {
+                $player->$setter( $value );
+                continue;
+            }
+
+            $ref_prop = new ReflectionProperty( Player::class, $key_str );
+            $ref_prop->setValue( $player, $value );
         }
 
         return $player;

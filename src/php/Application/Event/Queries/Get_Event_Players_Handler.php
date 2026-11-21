@@ -115,10 +115,11 @@ readonly class Get_Event_Players_Handler {
         }
 
         if ( $player ) {
-            $season          = isset( $event->current_season['name'] ) ? (string) $event->current_season['name'] : null;
-            $player->matches = $this->player_query_service->get_matches( $player, $event, $season, 'event' );
-            asort( $player->matches );
-            $player->stats = $this->player_stats_service->get_stats( $player );
+            $season  = isset( $event->current_season['name'] ) ? (string) $event->current_season['name'] : null;
+            $matches = $this->player_query_service->get_matches( $player, $event, $season, 'event' );
+            asort( $matches );
+            $player->set_matches( $matches );
+            $player->set_stats( $this->player_stats_service->get_stats( $player ) );
         }
 
         return $player;

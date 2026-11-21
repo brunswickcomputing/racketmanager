@@ -12,6 +12,7 @@ use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\DTO\Competition\Competition_Overview_DTO;
 use Racketmanager\Domain\Player\Player;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Competition_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
@@ -276,9 +277,7 @@ class Public_Headers_And_Lists_Templates_Test extends TestCase {
         $tourn_service = $this->createStub( Tournament_Service::class );
         $player_service = $this->createStub( Player_Service::class );
         $player_query_service = $this->createStub( Player_Query_Service::class );
-        $player = new Player();
-        $player->id = 42;
-        $player->display_name = 'John Smith';
+        $player = Player_Test_Factory::create( id: 42, display_name: 'John Smith' );
         $player_service->method( 'get_player' )->willReturn( $player );
         $player_query_service->method( 'get_competitions' )->willReturn( [ $comp ] );
         $competition_presenter = new Competition_Shortcode_Presenter(

@@ -34,14 +34,17 @@ class Player_Stats_Service implements Player_Stats_Service_Interface {
      * @param string $match_source
      */
     public function populate_player_stats( Player $player, ?object $grouping, string|int|null $season, string $match_source ): void {
-        $season_str      = null !== $season ? (string) $season : null;
-        $player->matches = $this->query_service->get_matches( $player, $grouping, $season_str, $match_source );
-        $player->stats        = $this->get_stats( $player );
-        $total                = $player->stats['total'] ?? null;
-        $player->win_pct      = $total->win_pct ?? 0;
-        $player->matches_won  = $total->matches_won ?? 0;
-        $player->matches_lost = $total->matches_lost ?? 0;
-        $player->played       = $total->played ?? 0;
+        $season_str = null !== $season ? (string) $season : null;
+        $player->set_matches( $this->query_service->get_matches( $player, $grouping, $season_str, $match_source ) );
+        $stats = $this->get_stats( $player );
+        $player->set_stats( $stats );
+        $total = $stats['total'] ?? null;
+        $player->set_stats_summary(
+            $total->matches_won ?? 0,
+            $total->matches_lost ?? 0,
+            (float) ( $total->win_pct ?? 0 ),
+            $total->played ?? 0
+        );
     }
 
     /**
@@ -82,57 +85,58 @@ class Player_Stats_Service implements Player_Stats_Service_Interface {
             $stats = array();
         }
         ksort( $stats );
-        $player->statistics           = array();
-        $player->statistics['detail'] = $stats;
-        $total_stats                  = array();
-        $total_stats_sets             = array();
-        $total_stats_games            = array();
-        $stat_types                   = array( 'winner', 'loser', 'draw' );
+        $statistics           = array();
+        $statistics['detail'] = $stats;
+        $total_stats          = array();
+        $total_stats_sets     = array();
+        $total_stats_games    = array();
+        $stat_types           = array( 'winner', 'loser', 'draw' );
         foreach ( $stat_types as $stat_type ) {
             $total_stats[ $stat_type ]       = 0;
             $total_stats_sets[ $stat_type ]  = 0;
             $total_stats_games[ $stat_type ] = 0;
         }
         $total_stats_walkover = 0;
-        foreach ( $stats as $statistics ) {
-            if ( ! empty( $statistics['played'] ) ) {
+        foreach ( $stats as $statistics_item ) {
+            if ( ! empty( $statistics_item['played'] ) ) {
                 foreach ( $stat_types as $stat_type ) {
-                    if ( ! empty( $statistics['played'][ $stat_type ] ) ) {
-                        $total_stats[ $stat_type ] += $statistics['played'][ $stat_type ];
+                    if ( ! empty( $statistics_item['played'][ $stat_type ] ) ) {
+                        $total_stats[ $stat_type ] += $statistics_item['played'][ $stat_type ];
                     }
                 }
             }
-            if ( ! empty( $statistics['sets'] ) ) {
+            if ( ! empty( $statistics_item['sets'] ) ) {
                 foreach ( $stat_types as $stat_type ) {
-                    if ( ! empty( $statistics['sets'][ $stat_type ] ) ) {
-                        $total_stats_sets[ $stat_type ] += $statistics['sets'][ $stat_type ];
+                    if ( ! empty( $statistics_item['sets'][ $stat_type ] ) ) {
+                        $total_stats_sets[ $stat_type ] += $statistics_item['sets'][ $stat_type ];
                     }
                 }
             }
-            if ( ! empty( $statistics['games'] ) ) {
+            if ( ! empty( $statistics_item['games'] ) ) {
                 foreach ( $stat_types as $stat_type ) {
-                    if ( ! empty( $statistics['games'][ $stat_type ] ) ) {
-                        $total_stats_games[ $stat_type ] += $statistics['games'][ $stat_type ];
+                    if ( ! empty( $statistics_item['games'][ $stat_type ] ) ) {
+                        $total_stats_games[ $stat_type ] += $statistics_item['games'][ $stat_type ];
                     }
                 }
             }
-            if ( ! empty( $statistics['walkover'] ) ) {
-                $total_stats_walkover += $statistics['walkover'];
+            if ( ! empty( $statistics_item['walkover'] ) ) {
+                $total_stats_walkover += $statistics_item['walkover'];
             }
         }
-        $player->statistics['total']               = new stdClass();
-        $player->statistics['total']->matches_won  = $total_stats['winner'];
-        $player->statistics['total']->matches_lost = $total_stats['loser'];
-        $player->statistics['total']->matches_tie  = $total_stats['draw'];
-        $player->statistics['total']->played       = $player->statistics['total']->matches_won + $player->statistics['total']->matches_lost + $player->statistics['total']->matches_tie;
-        if ( $player->statistics['total']->played ) {
-            $player->statistics['total']->win_pct = ceil( ( $player->statistics['total']->matches_won / $player->statistics['total']->played ) * 100 );
+        $statistics['total']               = new stdClass();
+        $statistics['total']->matches_won  = $total_stats['winner'];
+        $statistics['total']->matches_lost = $total_stats['loser'];
+        $statistics['total']->matches_tie  = $total_stats['draw'];
+        $statistics['total']->played       = $statistics['total']->matches_won + $statistics['total']->matches_lost + $statistics['total']->matches_tie;
+        if ( $statistics['total']->played ) {
+            $statistics['total']->win_pct = ceil( ( $statistics['total']->matches_won / $statistics['total']->played ) * 100 );
         }
-        $player->statistics['total']->sets_won   = $total_stats_sets['winner'];
-        $player->statistics['total']->sets_lost  = $total_stats_sets['loser'];
-        $player->statistics['total']->games_won  = $total_stats_games['winner'];
-        $player->statistics['total']->games_lost = $total_stats_games['loser'];
-        $player->statistics['total']->walkover   = empty( $total_stats_walkover ) ? '' : $total_stats_walkover;
+        $statistics['total']->sets_won   = $total_stats_sets['winner'];
+        $statistics['total']->sets_lost  = $total_stats_sets['loser'];
+        $statistics['total']->games_won  = $total_stats_games['winner'];
+        $statistics['total']->games_lost = $total_stats_games['loser'];
+        $statistics['total']->walkover   = empty( $total_stats_walkover ) ? '' : $total_stats_walkover;
+        $player->set_statistics( $statistics );
         return $player->statistics;
     }
 

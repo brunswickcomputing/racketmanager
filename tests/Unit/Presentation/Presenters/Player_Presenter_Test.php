@@ -13,6 +13,7 @@ use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\View_Models\Club_Membership_View_Model;
 use Racketmanager\Presentation\View_Models\Competition_List_Item_View_Model;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 
 class Player_Presenter_Test extends TestCase {
     private Player_Presenter $presenter;
@@ -303,9 +304,10 @@ class Player_Presenter_Test extends TestCase {
 
         $presenter = new Player_Presenter( option_gateway: $option_gateway );
 
-        $player               = new Player();
-        $player->id           = 42;
-        $player->display_name = 'Andy Murray';
+        $player = Player_Test_Factory::create(
+            id: 42,
+            display_name: 'Andy Murray'
+        );
 
         $club                 = new Club();
         $club->id             = 101;
@@ -351,8 +353,7 @@ class Player_Presenter_Test extends TestCase {
     public function test_present_club_membership_with_system_record_true(): void {
         $presenter = new Player_Presenter();
 
-        $player = new Player();
-        $player->id = 42;
+        $player = Player_Test_Factory::create( id: 42 );
 
         $club = new Club();
         $club->id = 101;
@@ -374,9 +375,10 @@ class Player_Presenter_Test extends TestCase {
     public function test_present_club_membership_with_null_and_zero_dates(): void {
         $presenter = new Player_Presenter();
 
-        $player               = new Player();
-        $player->id           = 42;
-        $player->display_name = 'Andy Murray';
+        $player = Player_Test_Factory::create(
+            id: 42,
+            display_name: 'Andy Murray'
+        );
 
         $club                 = new Club();
         $club->id             = 101;

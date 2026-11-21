@@ -9,6 +9,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Domain\Finance\Charge;
 use Racketmanager\Domain\Player\Player;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Exceptions\Database_Operation_Exception;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
@@ -94,11 +95,7 @@ class Tournament_Service_Test extends TestCase {
     }
 
     private function make_finalist( string $display_name, string $email ): Player {
-        $player               = new Player();
-        $player->display_name = $display_name;
-        $player->email        = $email;
-
-        return $player;
+        return Player_Test_Factory::create( display_name: $display_name, email: $email );
     }
 
     private function get_finalist_notification_service( Mailer_Interface $mailer, Option_Service $option_service, array $finalists ): MockObject|Tournament_Service {

@@ -46,6 +46,7 @@ use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use Racketmanager\Tests\Helpers\Creates_Test_Container;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 
 class Matches_Shortcode_Adapter_Test extends TestCase {
     use Creates_Test_Container;
@@ -371,9 +372,8 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
         $league->num_rubbers = 4;
         $dto                 = $this->details_dto( $fixture, $league );
 
-        $player     = $this->createStub( Player::class );
-        $player->id = 9;
-        $players    = $this->createStub( Player_Service::class );
+        $player  = Player_Test_Factory::create( id: 9 );
+        $players = $this->createStub( Player_Service::class );
         $players->method( 'get_player' )->willReturn( $player );
 
         $captured = null;

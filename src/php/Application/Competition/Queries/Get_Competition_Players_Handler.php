@@ -68,9 +68,10 @@ class Get_Competition_Players_Handler {
             }
 
             if ( $player ) {
-                $player->matches     = $this->player_query_service->get_matches( $player, $competition, $season_str, 'competition' );
-                asort( $player->matches );
-                $player->stats       = $this->player_stats_service->get_stats( $player );
+                $matches = $this->player_query_service->get_matches( $player, $competition, $season_str, 'competition' );
+                asort( $matches );
+                $player->set_matches( $matches );
+                $player->set_stats( $this->player_stats_service->get_stats( $player ) );
                 $competition->set_player( $player );
             } else {
                 return Competition_Players_Result::error( __( 'Player not found', 'racketmanager' ) );

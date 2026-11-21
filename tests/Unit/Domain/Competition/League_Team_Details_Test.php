@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Domain\Competition;
 
 use Racketmanager\Tests\Helpers\League_Test_Factory;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Team;
@@ -81,11 +82,12 @@ final class League_Team_Details_Test extends TestCase {
         ] );
         $league->current_season = [ 'name' => '2026' ];
 
-        $captain               = new Player();
-        $captain->id           = 55;
-        $captain->display_name = 'User 55';
-        $captain->user_email   = 'user55@example.test';
-        $captain->contactno    = '01234 567890';
+        $captain = Player_Test_Factory::create(
+            id: 55,
+            display_name: 'User 55',
+            email: 'user55@example.test',
+            overrides: [ 'contactno' => '01234 567890' ]
+        );
         $player_repository     = $this->createMock( Player_Repository_Interface::class );
         $player_repository->expects( $this->once() )->method( 'find' )->with( 55 )->willReturn( $captain );
 

@@ -37,6 +37,7 @@ use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 
 class Match_Tournament_Real_Template_Test extends TestCase {
     protected function setUp(): void {
@@ -222,12 +223,11 @@ class Match_Tournament_Real_Template_Test extends TestCase {
     }
 
     private function create_test_player( int $id, string $fullname ): Player {
-        $player = $this->createStub( Player::class );
-        $player->method( 'get_id' )->willReturn( $id );
-        $player->method( 'get_fullname' )->willReturn( $fullname );
-        $player->id = $id;
-        $player->display_name = $fullname;
-        return $player;
+        return Player_Test_Factory::create(
+            id: $id,
+            display_name: $fullname,
+            overrides: [ 'fullname' => $fullname ]
+        );
     }
 
     private function render_match_card(
@@ -683,9 +683,9 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         );
 
         $tournament_player = $player1;
-        $tournament_player->matches = [ $detail ];
-        $tournament_player->teams = [];
-        $tournament_player->statistics = [];
+        $tournament_player->set_matches( [ $detail ] );
+        $tournament_player->set_teams( [] );
+        $tournament_player->set_statistics( [] );
 
         $tournament = $this->createStub( Tournament::class );
         $tournament->id = 5;

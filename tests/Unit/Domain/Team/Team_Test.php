@@ -9,6 +9,7 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\DTO\Team\Team_Hydration_DTO;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Team\Team;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use Racketmanager\Domain\Team\Team_Factory;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Repositories\Club_Repository;
@@ -112,8 +113,7 @@ final class Team_Test extends TestCase {
         $this->assertFalse( $bye->has_player( 10 ) );
 
         // Loaded players array
-        $p1 = new Player();
-        $p1->id = 10;
+        $p1 = Player_Test_Factory::create( id: 10 );
         $team->set_players( [ $p1 ] );
         $this->assertTrue( $team->has_player( 10 ) );
         $this->assertFalse( $team->has_player( 11 ) );
@@ -135,8 +135,7 @@ final class Team_Test extends TestCase {
         $wpdb->prefix = 'wp_';
         $player_repo = $this->createMock( Player_Repository_Interface::class );
 
-        $p_player = new Player();
-        $p_player->id = 77;
+        $p_player = Player_Test_Factory::create( id: 77 );
         $player_repo->expects( $this->once() )->method( 'find' )->with( 77 )->willReturn( $p_player );
 
         $wpdb->method( 'prepare' )->willReturnCallback( fn( ...$args ) => 'PREPARED_QUERY' );
@@ -350,8 +349,7 @@ final class Team_Test extends TestCase {
             ->with( 10, 5, '2026', '2', 'Wednesday', '19:30' )
             ->willReturn( true );
 
-        $p2 = new Player();
-        $p2->id = 2;
+        $p2 = Player_Test_Factory::create( id: 2 );
         $player_serv->expects( $this->once() )->method( 'get_player' )->with( 2 )->willReturn( $p2 );
         $player_serv->expects( $this->once() )
             ->method( 'update_contact_details' )
@@ -468,8 +466,7 @@ final class Team_Test extends TestCase {
         ] );
 
         $event_repo->expects( $this->once() )->method( 'find_by_id' )->with( 5 )->willReturn( $event );
-        $p2 = new Player();
-        $p2->id = 2;
+        $p2 = Player_Test_Factory::create( id: 2 );
         $player_serv->expects( $this->once() )->method( 'get_player' )->with( 2 )->willReturn( $p2 );
         $player_serv->expects( $this->once() )
             ->method( 'update_contact_details' )

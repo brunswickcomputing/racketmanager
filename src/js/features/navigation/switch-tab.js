@@ -9,7 +9,7 @@
  */
 export function switchTab(elem) {
   if (!elem) return;
-  const selectedTab = (elem.getAttribute('data-tabid') || '').toLowerCase();
+  const selectedTab = (elem.dataset?.tabid || '').toLowerCase();
   const $matches = jQuery('.match');
   const $matchGroup = jQuery('.match-group');
   const $tabList = jQuery('#tab-list');

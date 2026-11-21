@@ -5,7 +5,11 @@ export function showMessage(messageText) {
 
     if (!messageContainer) {
         // Fallback: console log if container is missing
-        try { console.warn('payment-message container not found'); } catch(_) {}
+        try {
+            console.warn('payment-message container not found');
+        } catch (_) {
+            // Intentionally ignore logging failure if console.warn is unavailable or throws in restricted environments
+        }
         return;
     }
 

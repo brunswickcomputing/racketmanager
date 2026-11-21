@@ -46,7 +46,7 @@ export function openClubRoleModal(event, clubRoleId) {
         try {
           const data = JSON.parse(response);
           jQuery(ROLES_ERROR_TEXT).html(data.message || 'An error occurred');
-        } catch (_) {
+        } catch {
           handleAjaxError(xhr, ROLES_ERROR_TEXT, ROLES_ERROR_FIELD);
         }
         jQuery(ROLES_ERROR_FIELD).show();
@@ -65,7 +65,7 @@ export function openClubRoleModal(event, clubRoleId) {
  * @param {HTMLElement} link - the clicked button inside the modal footer
  */
 export function setClubRole(link) {
-  if (!link || !link.form || !link.form.id) return;
+  if (!link?.form?.id) return;
   const formId = `#${link.form.id}`;
   let $form = jQuery(formId).serialize();
   $form += '&action=racketmanager_set_club_role';
@@ -111,7 +111,7 @@ function initUserAutocomplete(context = document) {
       response(results);
     },
     select: function(_event, ui) {
-      if (ui && ui.item) {
+      if (ui?.item) {
         if (ui.item.value === 'null') ui.item.value = '';
         jQuery('#userName').val(ui.item.value || '');
         jQuery('#userId').val(ui.item.playerId || '');
@@ -134,7 +134,7 @@ export function initializeClubAdmin() {
   jQuery(document)
     .off('click.racketmanager.clubAdmin', '.club-role, [data-action="open-club-role-modal"]')
     .on('click.racketmanager.clubAdmin', '.club-role, [data-action="open-club-role-modal"]', function (e) {
-      const clubRoleId = this.getAttribute('data-club-role-id') || jQuery(this).data('clubRoleId');
+      const clubRoleId = this.dataset?.clubRoleId || jQuery(this).data('clubRoleId');
       return openClubRoleModal(e, clubRoleId);
     });
 

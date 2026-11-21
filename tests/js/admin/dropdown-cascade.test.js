@@ -6,6 +6,8 @@ import {
   getLeagueDropdown,
   getSeasonDropdown,
   getMatchDropdown,
+  invokeRacketmanagerMethod,
+  handleDropdownChange,
   registerDropdownCascades,
 } from '../../../src/js/admin/features/dropdowns/dropdown-cascade.js';
 import { createJQueryStub } from './support/jquery-stub.js';
@@ -454,6 +456,83 @@ describe('Admin feature: dropdown-cascade requests', () => {
 
       el.dispatchEvent(new Event('change', { bubbles: true }));
       expect(window.Racketmanager.getMatchDropdown).toHaveBeenCalledWith(null, '2028');
+    });
+  });
+
+  describe('invokeRacketmanagerMethod helper', () => {
+    it('invokes existing method with arguments', () => {
+      window.Racketmanager = {
+        testMethod: jest.fn(),
+      };
+      invokeRacketmanagerMethod('testMethod', 'a', 123);
+      expect(window.Racketmanager.testMethod).toHaveBeenCalledWith('a', 123);
+      delete window.Racketmanager;
+    });
+
+    it('does not throw when window.Racketmanager or method is missing', () => {
+      delete window.Racketmanager;
+      expect(() => invokeRacketmanagerMethod('nonExistent', 1)).not.toThrow();
+
+      window.Racketmanager = { other: 'not-a-func' };
+      expect(() => invokeRacketmanagerMethod('other', 1)).not.toThrow();
+      expect(() => invokeRacketmanagerMethod('missing', 1)).not.toThrow();
+      delete window.Racketmanager;
+    });
+  });
+
+  describe('handleDropdownChange helper', () => {
+    beforeEach(() => {
+      window.Racketmanager = {
+        getEventDropdown: jest.fn(),
+        getLeagueDropdown: jest.fn(),
+        getSeasonDropdown: jest.fn(),
+        getMatchDropdown: jest.fn(),
+      };
+    });
+
+    afterEach(() => {
+      delete window.Racketmanager;
+    });
+
+    it('returns early when target or closest is not available', () => {
+      expect(() => handleDropdownChange({})).not.toThrow();
+      expect(() => handleDropdownChange({ target: null })).not.toThrow();
+      expect(() => handleDropdownChange({ target: {} })).not.toThrow();
+    });
+
+    it('dispatches actionMap actions directly', () => {
+      const select = document.createElement('select');
+      select.dataset.action = 'get-event-dropdown';
+      select.innerHTML = '<option value="99" selected>99</option>';
+
+      handleDropdownChange({ target: select });
+      expect(window.Racketmanager.getEventDropdown).toHaveBeenCalledWith('99');
+    });
+
+    it('dispatches get-match-dropdown directly with leagueId', () => {
+      const select = document.createElement('select');
+      select.dataset.action = 'get-match-dropdown';
+      select.dataset.leagueId = '50';
+      select.innerHTML = '<option value="2026" selected>2026</option>';
+
+      handleDropdownChange({ target: select });
+      expect(window.Racketmanager.getMatchDropdown).toHaveBeenCalledWith('50', '2026');
+    });
+
+    it('does not dispatch or match inherited Object prototype properties or unmapped actions', () => {
+      const select = document.createElement('select');
+      select.innerHTML = '<option value="val" selected>val</option>';
+
+      const prototypeKeys = ['constructor', 'toString', 'valueOf', '__proto__', 'isPrototypeOf', 'propertyIsEnumerable', 'unmapped-action'];
+      for (const actionKey of prototypeKeys) {
+        select.dataset.action = actionKey;
+        handleDropdownChange({ target: select });
+      }
+
+      expect(window.Racketmanager.getEventDropdown).not.toHaveBeenCalled();
+      expect(window.Racketmanager.getLeagueDropdown).not.toHaveBeenCalled();
+      expect(window.Racketmanager.getSeasonDropdown).not.toHaveBeenCalled();
+      expect(window.Racketmanager.getMatchDropdown).not.toHaveBeenCalled();
     });
   });
 });

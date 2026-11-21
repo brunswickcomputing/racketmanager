@@ -4,7 +4,7 @@
  */
 
 /**
- * Initialize match viewer
+ * Initialise match viewer
  */
 export function initializeMatchViewer() {
     attachMatchViewEventListeners();
@@ -36,9 +36,7 @@ function setupMatchElementObserver() {
         mutations.forEach((mutation) => {
             mutation.addedNodes.forEach((node) => {
                 if (node.nodeType === 1) { // Element node
-                    if (node.classList && node.classList.contains('score-row__wrapper')) {
-                        hasNewMatches = true;
-                    } else if (node.querySelector && node.querySelector('.score-row__wrapper')) {
+                    if (node.classList?.contains('score-row__wrapper') || node.querySelector?.('.score-row__wrapper')) {
                         hasNewMatches = true;
                     }
                 }

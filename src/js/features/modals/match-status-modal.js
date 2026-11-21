@@ -56,7 +56,7 @@ export function openMatchStatusModal(event, matchId) {
                 try {
                     const parsed = JSON.parse(response.data);
                     jQuery(HEADER_RESPONSE_TEXT_ID).html(parsed.message || 'An error occurred');
-                } catch (_) {
+                } catch {
                     jQuery(HEADER_RESPONSE_TEXT_ID).html('An error occurred');
                 }
                 jQuery(HEADER_ALERT_ID).show();
@@ -79,7 +79,7 @@ export function initializeMatchStatusModal() {
     jQuery(document)
         .off('click.racketmanager.matchStatus', '[data-action="open-match-status-modal"]')
         .on('click.racketmanager.matchStatus', '[data-action="open-match-status-modal"]', function (e) {
-            const matchId = this.getAttribute('data-match-id');
+            const matchId = this.dataset.matchId;
             return openMatchStatusModal(e, matchId);
         });
 }

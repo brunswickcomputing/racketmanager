@@ -22,8 +22,8 @@ export function openRubberStatusModal(event) {
     }
 
     const trigger = event?.currentTarget || this;
-    const rubberId = trigger?.getAttribute('data-rubber-id');
-    const rubberNumber = trigger?.getAttribute('data-rubber-number');
+    const rubberId = trigger?.dataset?.rubberId;
+    const rubberNumber = trigger?.dataset?.rubberNumber;
 
     try { jQuery(LOADING_MODAL).modal('show'); } catch (e) { console.error(e); }
 
@@ -49,7 +49,7 @@ export function openRubberStatusModal(event) {
                 try {
                     const data = JSON.parse(response);
                     jQuery(errorResponseField).html(data.message || 'An error occurred');
-                } catch (_) {
+                } catch {
                     jQuery(errorResponseField).html('An error occurred');
                 }
                 jQuery(errorField).show();
@@ -66,7 +66,7 @@ export function openRubberStatusModal(event) {
  * @param {HTMLElement} link - the clicked button inside the modal footer
  */
 export function setRubberStatus(link) {
-    if (!link || !link.form || !link.form.id) return;
+    if (!link?.form?.id) return;
 
     const formId = `#${link.form.id}`;
     let $form = jQuery(formId).serialize();

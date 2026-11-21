@@ -122,6 +122,40 @@ describe('features/match/set-match-status', () => {
         spyTeamMsg.mockRestore();
     });
 
+    test('safely catches modal hide exceptions', () => {
+        const spyError = jest.spyOn(console, 'error').mockImplementation(() => {});
+        const spyAjax = jest.spyOn(jQuery, 'ajax');
+
+        document.body.innerHTML = `
+            <div id="splashBlockMatch"></div>
+            <div id="matchStatusResponse"></div>
+            <div id="matchStatusResponseText"></div>
+            <input id="match_status" />
+            <form id="statusForm">
+                <button id="btnStatus" type="button"></button>
+            </form>
+        `;
+
+        jQuery.fn.modal = jest.fn().mockImplementation(() => {
+            throw new Error('Modal error');
+        });
+
+        const btn = document.getElementById('btnStatus');
+        setMatchStatus(btn);
+
+        const ajaxOptions = spyAjax.mock.calls[0][0];
+        ajaxOptions.success({
+            data: {
+                match_status: 'completed',
+                modal: 'brokenModal'
+            }
+        });
+
+        expect(spyError).toHaveBeenCalled();
+        expect(jQuery('#match_status').attr('value')).toBe('completed');
+        spyError.mockRestore();
+    });
+
     test('handles AJAX error response and silences console output', () => {
         const spyError = jest.spyOn(console, 'error').mockImplementation(() => {});
         const spyAjax = jest.spyOn(jQuery, 'ajax');

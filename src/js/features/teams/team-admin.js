@@ -63,7 +63,7 @@ export function teamEditModal(event, teamId, eventId) {
         try {
           const data = JSON.parse(response);
           jQuery(errorResponseField).html(data.message || 'An error occurred');
-        } catch (_) {
+        } catch {
           handleAjaxError(xhr, errorResponseField, errorField);
         }
         jQuery(errorField).show();
@@ -89,8 +89,8 @@ export function initializeTeamsAdmin() {
   jQuery(document)
     .off('click.racketmanager.teamAdmin', '[data-action="open-team-edit-modal"]')
     .on('click.racketmanager.teamAdmin', '[data-action="open-team-edit-modal"]', function (e) {
-      const teamId = this.getAttribute('data-team-id');
-      const eventId = this.getAttribute('data-event-id');
+      const teamId = this.dataset.teamId;
+      const eventId = this.dataset.eventId;
       return teamEditModal(e, teamId, eventId);
     });
 

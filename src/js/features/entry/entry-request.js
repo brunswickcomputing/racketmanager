@@ -82,7 +82,7 @@ export function initializeEntryRequest() {
   jQuery(document)
     .off('click.racketmanager.entryRequest', '[data-action="entry-submit"]')
     .on('click.racketmanager.entryRequest', '[data-action="entry-submit"]', function (e) {
-      const type = this.getAttribute('data-type') || jQuery(this).data('type');
+      const type = this.dataset?.type || jQuery(this).data('type');
       return entryRequest(e, type);
     });
 }

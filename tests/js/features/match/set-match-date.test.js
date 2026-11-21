@@ -1,4 +1,4 @@
-import { setMatchDate } from '../../../../src/js/features/match/set-match-date';
+import { setMatchDate, initializeSetMatchDate } from '../../../../src/js/features/match/set-match-date';
 import { matchHeader } from '../../../../src/js/features/match/match-header';
 
 jest.mock('../../../../src/js/features/match/match-header', () => ({
@@ -184,5 +184,90 @@ describe('setMatchDate', () => {
     expect(jQuery('#schedule-dateFeedback').html()).toBe('Date not changed');
     expect(jQuery('#schedule-date').hasClass('is-invalid')).toBe(true);
     expect(jQuery.fn.modal).not.toHaveBeenCalled();
+  });
+
+  test('exits early if link or link.form is missing', () => {
+    setMatchDate(null);
+    setMatchDate({});
+    setMatchDate({ form: {} });
+    expect(jQuery.ajax).not.toHaveBeenCalled();
+  });
+
+  test('handles success when schedule_date is missing', () => {
+    const response = {
+      data: {
+        msg: 'Date cleared',
+        modal: 'testModal',
+        match_id: 123
+      }
+    };
+
+    jQuery.ajax.mockImplementation((settings) => {
+      settings.success(response);
+    });
+
+    setMatchDate(link, false);
+
+    expect(jQuery('#matchOptionsAlert').hasClass('alert--success')).toBe(true);
+    expect(jQuery('#matchDateAlert').hasClass('alert--success')).toBe(true);
+    expect(jQuery('#alertMatchDateResponse').html()).toBe('Date cleared');
+    expect(matchHeader).not.toHaveBeenCalled();
+  });
+
+  test('initializeSetMatchDate uses tournament alerts and header for delegated tournament action', () => {
+    document.body.innerHTML += `
+      <form id="actionForm">
+        <button id="actionBtn" data-action="set-match-date" data-is-tournament="true"></button>
+      </form>
+    `;
+
+    jQuery.ajax.mockImplementation((settings) => {
+      settings.success({
+        data: {
+          msg: 'Tournament date updated',
+          match_id: 456,
+          schedule_date: '2026-06-01'
+        }
+      });
+    });
+
+    initializeSetMatchDate();
+    const btn = document.getElementById('actionBtn');
+    btn.click();
+
+    expect(jQuery.ajax).toHaveBeenCalledWith(expect.objectContaining({
+      type: 'POST',
+      data: expect.stringContaining('action=racketmanager_set_fixture_date')
+    }));
+    expect(jQuery('#matchAlert').hasClass('alert--success')).toBe(true);
+    expect(jQuery('#matchAlertResponse').html()).toBe('Tournament date updated');
+    expect(jQuery('#match-tournament-date-header').html()).toBe('2026-06-01');
+    expect(matchHeader).not.toHaveBeenCalled();
+  });
+
+  test('initializeSetMatchDate uses league alerts when tournament data attribute is absent', () => {
+    document.body.innerHTML += `
+      <form id="actionForm">
+        <button id="actionBtn" data-action="set-match-date"></button>
+      </form>
+    `;
+
+    jQuery.ajax.mockImplementation((settings) => {
+      settings.success({
+        data: {
+          msg: 'League date updated',
+          match_id: 789,
+          schedule_date: '2026-07-01'
+        }
+      });
+    });
+
+    initializeSetMatchDate();
+    document.getElementById('actionBtn').click();
+
+    expect(jQuery('#matchOptionsAlert').hasClass('alert--success')).toBe(true);
+    expect(jQuery('#alertMatchOptionsResponse').html()).toBe('League date updated');
+    expect(jQuery('#matchAlert').hasClass('alert--success')).toBe(false);
+    expect(matchHeader).toHaveBeenCalledWith(789);
   });
 });

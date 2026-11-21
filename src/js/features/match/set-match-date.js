@@ -14,12 +14,71 @@ const ALERT_DATE_TEXT = '#alertMatchDateResponse';
 const UPDATE_STATUS_RESPONSE = '#updateStatusResponse';
 
 /**
+ * Render success alerts for match date update
+ * @param {Object} data
+ * @param {string} alert1
+ * @param {string} alert1Text
+ */
+function renderMatchDateAlerts(data, alert1, alert1Text) {
+  const message = data.msg;
+
+  jQuery(ALERT_DATE).show().addClass('alert--success');
+  const alertDateText = document.querySelector(ALERT_DATE_TEXT);
+  if (alertDateText) {
+    alertDateText.innerHTML = message;
+  }
+  jQuery(alert1).show().addClass('alert--success');
+  jQuery(alert1Text).html(message);
+}
+
+function updateTournamentDateUI(matchDate) {
+  const tournamentDateHeader = document.getElementById('match-tournament-date-header');
+  if (tournamentDateHeader) {
+    tournamentDateHeader.innerHTML = matchDate;
+  }
+}
+
+function updateLeagueMatchDateUI(data, link, matchId) {
+  const modalEl = link?.closest('.modal') || (data.modal ? document.getElementById(data.modal) : null) || document.getElementById('matchModal');
+  if (modalEl) {
+    jQuery(modalEl).off('hidden.bs.modal.setMatchDate').one('hidden.bs.modal.setMatchDate', function () {
+      matchHeader(matchId);
+    });
+    return;
+  }
+  matchHeader(matchId);
+}
+
+/**
+ * Update match date in UI headers or defer match header update on modal hide
+ * @param {Object} data
+ * @param {boolean} isTournament
+ * @param {HTMLElement} link
+ * @param {string|number} matchId
+ */
+function updateMatchDateUI(data, isTournament, link, matchId) {
+  const matchDate = data.schedule_date;
+  if (!matchDate) {
+    return;
+  }
+
+  if (isTournament) {
+    updateTournamentDateUI(matchDate);
+    return;
+  }
+
+  updateLeagueMatchDateUI(data, link, matchId);
+}
+
+/**
  * Submit match date form
  * @param {HTMLElement} link - Button inside the form
  * @param {boolean} isTournament - indicates tournament page variant
  */
 export function setMatchDate(link, isTournament = false) {
-  if (!link || !link.form || !link.form.id) return;
+  if (!link?.form?.id) {
+    return;
+  }
 
   const formId = `#${link.form.id}`;
   let $form = jQuery(formId).serialize();
@@ -39,35 +98,10 @@ export function setMatchDate(link, isTournament = false) {
     data: $form,
     success: function (response) {
       const data = response?.data || {};
-      const message = data.msg;
       const matchId = data.match_id;
-      const matchDate = data.schedule_date;
 
-      jQuery(ALERT_DATE).show().addClass('alert--success');
-      const alertDateText = document.querySelector(ALERT_DATE_TEXT);
-      if (alertDateText) {
-        alertDateText.innerHTML = message;
-      }
-      jQuery(alert1).show().addClass('alert--success');
-      jQuery(alert1Text).html(message);
-
-      if (matchDate) {
-        if (isTournament) {
-          const tournamentDateHeader = document.getElementById('match-tournament-date-header');
-          if (tournamentDateHeader) {
-            tournamentDateHeader.innerHTML = matchDate;
-          }
-        } else {
-          const modalEl = link?.closest('.modal') || (data.modal ? document.getElementById(data.modal) : null) || document.getElementById('matchModal');
-          if (modalEl) {
-            jQuery(modalEl).off('hidden.bs.modal.setMatchDate').one('hidden.bs.modal.setMatchDate', function () {
-              matchHeader(matchId);
-            });
-          } else {
-            matchHeader(matchId);
-          }
-        }
-      }
+      renderMatchDateAlerts(data, alert1, alert1Text);
+      updateMatchDateUI(data, isTournament, link, matchId);
     },
     error: function (response) {
       handleAjaxError(response, ALERT_DATE_TEXT, ALERT_DATE);
@@ -80,8 +114,10 @@ export function initializeSetMatchDate() {
   jQuery(document)
     .off('click.racketmanager.setMatchDate', '[data-action="set-match-date"]')
     .on('click.racketmanager.setMatchDate', '[data-action="set-match-date"]', function (e) {
-      if (e && typeof e.preventDefault === 'function') e.preventDefault();
-      const isTournament = this.getAttribute('data-is-tournament') === 'true' || this.dataset?.isTournament === 'true';
+      if (e && typeof e.preventDefault === 'function') {
+        e.preventDefault();
+      }
+      const isTournament = this.dataset?.isTournament === 'true';
       return setMatchDate(this, isTournament);
     });
 }

@@ -83,7 +83,7 @@ export function openPartnerModal(event, eventId) {
  * @param {HTMLElement} link - the clicked button element inside the form
  */
 export function savePartner(link) {
-  if (!link || !link.form || !link.form.id) return;
+  if (!link?.form?.id) return;
 
   const formId = `#${link.form.id}`;
   let $form = jQuery(formId).serialize();
@@ -100,7 +100,7 @@ export function savePartner(link) {
     type: 'POST',
     data: $form,
     success: function (response) {
-      const data = response && response.data ? response.data : [];
+      const data = response?.data ? response.data : [];
       const modal = `#${data[0]}`; // modal id
       const partnerId = data[1];
       const partnerName = data[2];
@@ -136,7 +136,7 @@ export function initializePartnerModal() {
   jQuery(document)
     .off('click.racketmanager.partnerModal', '[data-action="open-partner-modal"]')
     .on('click.racketmanager.partnerModal', '[data-action="open-partner-modal"]', function (e) {
-      const eventId = this.getAttribute('data-event-id');
+      const eventId = this.dataset.eventId;
       return openPartnerModal(e, eventId);
     });
 

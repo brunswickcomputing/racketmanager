@@ -4,10 +4,188 @@
 import { getAjaxUrl, getAjaxNonce } from '../../config/ajax-config.js';
 
 /**
+ * Build payment request payload for AJAX POST.
+ *
+ * @param {string|number} tournamentEntry
+ * @param {string|number} invoiceId
+ * @param {string|number} tournamentId
+ * @param {string|number} playerId
+ * @returns {object}
+ */
+function buildPaymentData(tournamentEntry, invoiceId, tournamentId, playerId) {
+  const data = {
+    tournament_entry: tournamentEntry,
+    invoiceId: invoiceId,
+    action: 'racketmanager_tournament_payment_create',
+    security: getAjaxNonce(),
+  };
+  if (tournamentId) {
+    data.tournamentId = tournamentId;
+    data.tournament_id = tournamentId;
+  }
+  if (playerId) {
+    data.playerId = playerId;
+  }
+  return data;
+}
+
+/**
+ * Build URLSearchParams form data for fetch POST.
+ *
+ * @param {string|number} tournamentEntry
+ * @param {string|number} invoiceId
+ * @param {string|number} tournamentId
+ * @param {string|number} playerId
+ * @returns {URLSearchParams}
+ */
+function buildPaymentFormData(tournamentEntry, invoiceId, tournamentId, playerId) {
+  const formData = new URLSearchParams();
+  formData.set('tournament_entry', tournamentEntry);
+  formData.set('invoiceId', invoiceId);
+  if (tournamentId) {
+    formData.set('tournamentId', tournamentId);
+    formData.set('tournament_id', tournamentId);
+  }
+  if (playerId) {
+    formData.set('playerId', playerId);
+  }
+  formData.set('action', 'racketmanager_tournament_payment_create');
+  formData.set('security', getAjaxNonce() || '');
+  return formData;
+}
+
+/**
+ * Safely invoke a callback suppressing any consumer errors.
+ *
+ * @param {Function} callback
+ * @param {*} output
+ */
+function invokeCallbackSafely(callback, output) {
+  try {
+    callback(output);
+  } catch (_) {
+    // Intentionally ignore consumer callback errors to preserve legacy backward-compatibility contract
+  }
+}
+
+/**
+ * Legacy callback-based payment request via jQuery AJAX.
+ *
+ * @param {string|number} tournamentEntry
+ * @param {string|number} invoiceId
+ * @param {string|number} tournamentId
+ * @param {string|number} playerId
+ * @param {(output:string)=>void} callback
+ */
+function createPaymentRequestLegacy(tournamentEntry, invoiceId, tournamentId, playerId, callback) {
+  if (typeof jQuery === 'undefined' || !jQuery.ajax || !getAjaxUrl()) {
+    invokeCallbackSafely(callback, 'Ajax configuration is missing.');
+    return;
+  }
+
+  let output;
+  const data = buildPaymentData(tournamentEntry, invoiceId, tournamentId, playerId);
+
+  jQuery.ajax({
+    url: getAjaxUrl(),
+    type: 'POST',
+    data: data,
+    success: function (response) {
+      output = response?.data;
+    },
+    error: function (xhr) {
+      if (xhr?.responseJSON) {
+        output = xhr.responseJSON.data;
+      } else {
+        output = xhr?.statusText || 'Network error creating payment.';
+      }
+    },
+    complete: function () {
+      invokeCallbackSafely(callback, output);
+    },
+  });
+}
+
+/**
+ * Fallback to jQuery AJAX for payment request when modern fetch fails.
+ *
+ * @param {string|number} tournamentEntry
+ * @param {string|number} invoiceId
+ * @param {string|number} tournamentId
+ * @param {string|number} playerId
+ * @param {Error} fallbackError
+ * @returns {Promise<string>}
+ */
+function fallbackJQueryPayment(tournamentEntry, invoiceId, tournamentId, playerId, fallbackError) {
+  if (typeof jQuery === 'undefined' || !jQuery?.ajax) {
+    throw fallbackError;
+  }
+
+  return new Promise((resolve, reject) => {
+    const postData = buildPaymentData(tournamentEntry, invoiceId, tournamentId, playerId);
+
+    jQuery.ajax({
+      url: getAjaxUrl(),
+      type: 'POST',
+      data: postData,
+      success: function (response) {
+        if (response && response.success) {
+          resolve(response.data);
+        } else {
+          reject(new Error(response?.data || 'Unable to create payment.'));
+        }
+      },
+      error: function (xhr) {
+        const msg = xhr?.responseJSON?.data || xhr?.statusText || 'Network error creating payment.';
+        reject(new Error(msg));
+      },
+    });
+  });
+}
+
+/**
+ * Modern Promise-based payment request via fetch with jQuery fallback.
+ *
+ * @param {string|number} tournamentEntry
+ * @param {string|number} invoiceId
+ * @param {string|number} tournamentId
+ * @param {string|number} playerId
+ * @returns {Promise<string>}
+ */
+async function createPaymentRequestPromise(tournamentEntry, invoiceId, tournamentId, playerId) {
+  const ajaxUrl = getAjaxUrl();
+  if (!ajaxUrl) {
+    throw new Error('Ajax configuration is missing. Please reload the page.');
+  }
+
+  const formData = buildPaymentFormData(tournamentEntry, invoiceId, tournamentId, playerId);
+
+  try {
+    const res = await fetch(ajaxUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+      body: formData.toString(),
+      credentials: 'same-origin',
+    });
+
+    const json = await res.json();
+
+    if (json?.success) {
+      return json.data;
+    }
+
+    const message = typeof json?.data === 'string' ? json.data : (json?.data?.message || 'Unable to create payment.');
+    throw new Error(message);
+  } catch (err) {
+    return await fallbackJQueryPayment(tournamentEntry, invoiceId, tournamentId, playerId, err);
+  }
+}
+
+/**
  * Create a PaymentIntent for the given tournament entry and invoice.
  *
  * Backward compatibility with legacy racketmanager.legacy.js:
- * - When a callback function is provided as the third argument, this mirrors the
+ * - When a callback function is provided as the fifth argument, this mirrors the
  *   legacy behavior and invokes the callback with the output string on completion.
  *   It does not throw; it passes either the client secret (success) or an error message (failure).
  * - When no callback is provided, it returns a Promise that resolves to the client secret
@@ -21,126 +199,10 @@ import { getAjaxUrl, getAjaxNonce } from '../../config/ajax-config.js';
  * @returns {Promise<string>|void}
  */
 export async function createPaymentRequest(tournamentEntry, invoiceId, tournamentId, playerId, callback) {
-  const hasCallback = typeof callback === 'function';
-
-  // If using legacy-style callback, mirror racketmanager.legacy.js behavior closely.
-  if (hasCallback) {
-    // Ensure minimum globals exist; if not, fail fast through the callback.
-    if (typeof jQuery === 'undefined' || !jQuery.ajax || !getAjaxUrl()) {
-      try { callback('Ajax configuration is missing.'); } catch (_) {}
-      return;
-    }
-    let output;
-    const data = {
-      tournament_entry: tournamentEntry,
-      invoiceId: invoiceId,
-      action: 'racketmanager_tournament_payment_create',
-      security: getAjaxNonce(),
-    };
-    if (tournamentId) {
-      data.tournamentId = tournamentId;
-      data.tournament_id = tournamentId;
-    }
-    if (playerId) {
-      data.playerId = playerId;
-    }
-    jQuery.ajax({
-      url: getAjaxUrl(),
-      type: 'POST',
-      data: data,
-      success: function (response) {
-        // Legacy placed response.data into output regardless of type
-        output = response?.data;
-      },
-      error: function (xhr) {
-        if (xhr?.responseJSON) {
-          output = xhr.responseJSON.data;
-        } else {
-          output = xhr?.statusText || 'Network error creating payment.';
-        }
-      },
-      complete: function () {
-        try { callback(output); } catch (_) {}
-      },
-    });
+  if (typeof callback === 'function') {
+    createPaymentRequestLegacy(tournamentEntry, invoiceId, tournamentId, playerId, callback);
     return;
   }
 
-  // Modern Promise-based usage (module consumers)
-  // Use centralized config getters instead of touching ajax_var directly
-  const ajaxUrl = getAjaxUrl();
-  const ajaxNonce = getAjaxNonce();
-  if (!ajaxUrl) {
-    throw new Error('Ajax configuration is missing. Please reload the page.');
-  }
-
-  const formData = new URLSearchParams();
-  formData.set('tournament_entry', tournamentEntry);
-  formData.set('invoiceId', invoiceId);
-  if (tournamentId) {
-    formData.set('tournamentId', tournamentId);
-    formData.set('tournament_id', tournamentId);
-  }
-  if (playerId) {
-    formData.set('playerId', playerId);
-  }
-  formData.set('action', 'racketmanager_tournament_payment_create');
-  formData.set('security', ajaxNonce || '');
-
-  try {
-    const res = await fetch(ajaxUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-      body: formData.toString(),
-      credentials: 'same-origin',
-    });
-
-    // WordPress admin-ajax returns 200 with a JSON envelope { success, data }
-    const json = await res.json();
-
-    if (json?.success) {
-      return json.data; // expected to be client_secret
-    }
-
-    // If not success, attempt to extract message
-    const message = typeof json?.data === 'string' ? json.data : (json?.data?.message || 'Unable to create payment.');
-    throw new Error(message);
-  } catch (err) {
-    // Fallback: try jQuery Ajax if available
-    if (typeof jQuery !== 'undefined' && jQuery?.ajax) {
-      const jqResult = await new Promise((resolve, reject) => {
-        const postData = {
-          tournament_entry: tournamentEntry,
-          invoiceId: invoiceId,
-          action: 'racketmanager_tournament_payment_create',
-          security: getAjaxNonce(),
-        };
-        if (tournamentId) {
-          postData.tournamentId = tournamentId;
-          postData.tournament_id = tournamentId;
-        }
-        if (playerId) {
-          postData.playerId = playerId;
-        }
-        jQuery.ajax({
-          url: getAjaxUrl(),
-          type: 'POST',
-          data: postData,
-          success: function (response) {
-            if (response && response.success) {
-              resolve(response.data);
-            } else {
-              reject(new Error(response?.data || 'Unable to create payment.'));
-            }
-          },
-          error: function (xhr) {
-            const msg = xhr?.responseJSON?.data || xhr?.statusText || 'Network error creating payment.';
-            reject(new Error(msg));
-          },
-        });
-      });
-      return jqResult;
-    }
-    throw err;
-  }
+  return createPaymentRequestPromise(tournamentEntry, invoiceId, tournamentId, playerId);
 }

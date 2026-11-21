@@ -5,6 +5,13 @@
  */
 
 import { getAjaxUrl, getAjaxNonce } from '../../../config/ajax-config.js';
+import { getDataAttr } from '../../../utils/dom-utils.js';
+
+const DROPDOWN_ACTION_MAP = Object.freeze(Object.assign(Object.create(null), {
+    'get-event-dropdown': 'getEventDropdown',
+    'get-league-dropdown': 'getLeagueDropdown',
+    'get-season-dropdown': 'getSeasonDropdown',
+}));
 
 /**
  * Fetch and render event dropdown for a given competition.
@@ -195,6 +202,43 @@ export function getMatchDropdown(league_id, season) {
 }
 
 /**
+ * Invoke a method on window.Racketmanager if available.
+ *
+ * @param {string} method
+ * @param {...*} args
+ */
+export function invokeRacketmanagerMethod(method, ...args) {
+    if (window.Racketmanager && typeof window.Racketmanager[method] === 'function') {
+        window.Racketmanager[method](...args);
+    }
+}
+
+/**
+ * Handle delegated change event for dropdown cascade actions.
+ *
+ * @param {Event} e
+ */
+export function handleDropdownChange(e) {
+    const target = e.target;
+    const el = target && typeof target.closest === 'function' ? target.closest('[data-action]') : null;
+    if (!el) return;
+
+    const action = getDataAttr(el, 'action');
+    if (!action) return;
+
+    if (action === 'get-match-dropdown') {
+        const leagueId = getDataAttr(el, 'leagueId');
+        invokeRacketmanagerMethod('getMatchDropdown', leagueId, el.value);
+        return;
+    }
+
+    const method = DROPDOWN_ACTION_MAP[action];
+    if (method) {
+        invokeRacketmanagerMethod(method, el.value);
+    }
+}
+
+/**
  * Register delegated change events for dropdown cascade actions.
  *
  * @param {Document|HTMLElement} [root=document]
@@ -204,40 +248,5 @@ export function registerDropdownCascades(root = document) {
     if (root.__rmDropdownCascadesRegistered) return;
     root.__rmDropdownCascadesRegistered = true;
 
-    root.addEventListener('change', function (e) {
-        const target = e.target;
-        const el = target && typeof target.closest === 'function' ? target.closest('[data-action]') : null;
-        if (!el) return;
-
-        const action = el.getAttribute('data-action') || (el.dataset ? el.dataset.action : null);
-        if (!action) return;
-
-        switch (action) {
-            case 'get-event-dropdown': {
-                if (window.Racketmanager && typeof window.Racketmanager.getEventDropdown === 'function') {
-                    window.Racketmanager.getEventDropdown(el.value);
-                }
-                break;
-            }
-            case 'get-league-dropdown': {
-                if (window.Racketmanager && typeof window.Racketmanager.getLeagueDropdown === 'function') {
-                    window.Racketmanager.getLeagueDropdown(el.value);
-                }
-                break;
-            }
-            case 'get-season-dropdown': {
-                if (window.Racketmanager && typeof window.Racketmanager.getSeasonDropdown === 'function') {
-                    window.Racketmanager.getSeasonDropdown(el.value);
-                }
-                break;
-            }
-            case 'get-match-dropdown': {
-                const leagueId = el.getAttribute('data-league-id') || (el.dataset ? el.dataset.leagueId : null);
-                if (window.Racketmanager && typeof window.Racketmanager.getMatchDropdown === 'function') {
-                    window.Racketmanager.getMatchDropdown(leagueId, el.value);
-                }
-                break;
-            }
-        }
-    });
+    root.addEventListener('change', handleDropdownChange);
 }

@@ -58,7 +58,7 @@ export function openPurchaseOrderModal(e, invoiceId, options = {}) {
                 try {
                     const data = JSON.parse(response);
                     jQuery(ERROR_TEXT_ID).html(data.message || 'Error loading modal');
-                } catch (err) {
+                } catch {
                     jQuery(ERROR_TEXT_ID).html('Error loading modal');
                 }
                 jQuery(ERROR_ALERT_ID).show();
@@ -79,7 +79,7 @@ export function initializePOModal() {
     const trigger = document.getElementById('POModalLink');
     if (trigger) {
         trigger.addEventListener('click', function (e) {
-            const invoiceId = this.getAttribute('data-invoice-id');
+            const invoiceId = this.dataset.invoiceId;
             openPurchaseOrderModal(e, invoiceId);
         });
     }

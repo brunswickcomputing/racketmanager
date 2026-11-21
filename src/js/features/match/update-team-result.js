@@ -14,16 +14,106 @@ const SPLASH = '#splash';
 const RUBBERS_CONTAINER = '#showMatchRubbers';
 const UPDATE_BUTTON = '#updateRubberResults';
 
+function setPlayerInputValues(teamName, rubberNo, team = []) {
+  team.forEach((player, p) => {
+    const id = p + 1;
+    jQuery(`#${teamName}player${id}_${rubberNo}`).val(player);
+    jQuery(`#players_${rubberNo}_${teamName}_${id}`).val(player);
+  });
+}
+
+/**
+ * Populate player fields for a single rubber
+ * @param {Object} players
+ * @param {number} rubberNo
+ */
+function populateRubberPlayers(players, rubberNo) {
+  for (const [teamName, team] of Object.entries(players || {})) {
+    if (Array.isArray(team)) {
+      setPlayerInputValues(teamName, rubberNo, team);
+    }
+  }
+}
+
+/**
+ * Populate set scores for a single rubber
+ * @param {Object} sets
+ * @param {number} rubberNo
+ */
+function populateRubberSets(sets, rubberNo) {
+  for (const [setName, team] of Object.entries(sets || {})) {
+    for (const [playerNo, score] of Object.entries(team || {})) {
+      jQuery(`#set_${rubberNo}_${setName}_${playerNo}`).val(score);
+    }
+  }
+}
+
+/**
+ * Populate rubber winners, players, and set scores
+ * @param {Object} rubbers
+ */
+function populateRubberResults(rubbers) {
+  let rubberNo = 1;
+  for (const [, rubber] of Object.entries(rubbers || {})) {
+    if (!rubber) {
+      rubberNo++;
+      continue;
+    }
+    const winner = rubber.winner;
+    const winnerField = `#match-status-${rubberNo}-${winner}`;
+    jQuery(winnerField).addClass('winner').val('W');
+
+    populateRubberPlayers(rubber.players, rubberNo);
+    populateRubberSets(rubber.sets, rubberNo);
+    rubberNo++;
+  }
+}
+
+/**
+ * Apply field-level validation warnings
+ * @param {Object|null} warnings
+ */
+function applyFieldWarnings(warnings) {
+  if (!warnings) {
+    return;
+  }
+  for (const [w, warningMsg] of Object.entries(warnings)) {
+    const playerRef = `#${w}`;
+    jQuery(playerRef).addClass('is-invalid');
+    jQuery(`${playerRef}Feedback`).html(warningMsg);
+  }
+}
+
+/**
+ * Apply field-level validation errors
+ * @param {Array<string>} [errFields=[]]
+ * @param {Array<string>} [errMsgs=[]]
+ */
+function applyFieldErrors(errFields = [], errMsgs = []) {
+  errFields.forEach((field, index) => {
+    const $field = jQuery(`#${field}`);
+    $field.addClass('is-invalid');
+    const $feedback = jQuery(`#${field}Feedback`);
+    if ($feedback.length && errMsgs[index]) {
+      $feedback.html(errMsgs[index]);
+    }
+  });
+}
+
 /**
  * Update team (rubber) results
  * @param {HTMLElement} link - clicked button inside a form
  */
 export function updateTeamResult(link) {
-  if (!link || !link.form || !link.form.id) return;
+  if (!link?.form?.id) {
+    return;
+  }
 
   // Guard against double-trigger: ignore if already processing
   const $btn = jQuery(link);
-  if ($btn.data('busy') === true) return;
+  if ($btn.data('busy') === true) {
+    return;
+  }
   $btn.data('busy', true).prop('disabled', true).addClass('disabled');
 
   const formId = `#${link.form.id}`;
@@ -55,71 +145,16 @@ export function updateTeamResult(link) {
       jQuery(ALERT_FIELD).addClass(`alert--${status}`);
       jQuery(ALERT_TEXT).html(message);
 
-      // Populate winners/players/sets
-      let rubberNo = 1;
-      for (const r in rubbers) {
-        if (!Object.prototype.hasOwnProperty.call(rubbers, r)) continue;
-        const rubber = rubbers[r];
-        const winner = rubber['winner'];
-        const winnerField = `#match-status-${rubberNo}-${winner}`;
-        jQuery(winnerField).addClass('winner').val('W');
-
-        // Players
-        const players = rubber['players'] || {};
-        for (const t in players) { // home or away
-          if (!Object.prototype.hasOwnProperty.call(players, t)) continue;
-          const team = players[t];
-          for (let p = 0; p < team.length; p++) {
-            const player = team[p];
-            const id = p + 1;
-            let field = `#${t}player${id}_${rubberNo}`;
-            jQuery(field).val(player);
-            field = `#players_${rubberNo}_${t}_${id}`;
-            jQuery(field).val(player);
-          }
-        }
-        // Sets
-        const sets = rubber['sets'] || {};
-        for (const s in sets) {
-          if (!Object.prototype.hasOwnProperty.call(sets, s)) continue;
-          const team = sets[s];
-          for (const p in team) {
-            if (!Object.prototype.hasOwnProperty.call(team, p)) continue;
-            const score = team[p];
-            const field = `#set_${rubberNo}_${s}_${p}`;
-            jQuery(field).val(score);
-          }
-        }
-        rubberNo++;
-      }
-
-      // Field-level warnings
-      if (warnings) {
-        for (const w in warnings) {
-          if (!Object.prototype.hasOwnProperty.call(warnings, w)) continue;
-          const playerRef = `#${w}`;
-          jQuery(playerRef).addClass('is-invalid');
-          const feedback = `${playerRef}Feedback`;
-          jQuery(feedback).html(warnings[w]);
-        }
-      }
-
-      // Field-level errors (from structured error mapping)
-      const errFields = data.err_flds || [];
-      const errMsgs = data.err_msgs || [];
-      if (errFields.length > 0) {
-        errFields.forEach((field, index) => {
-          const $field = jQuery(`#${field}`);
-          $field.addClass('is-invalid');
-          const $feedback = jQuery(`#${field}Feedback`);
-          if ($feedback.length && errMsgs[index]) {
-            $feedback.html(errMsgs[index]);
-          }
-        });
-      }
+      populateRubberResults(rubbers);
+      applyFieldWarnings(warnings);
+      applyFieldErrors(data.err_flds || [], data.err_msgs || []);
 
       // Refresh header
-      try { matchHeader(matchId, match_edit); } catch (e) { console.error(e); }
+      try {
+        matchHeader(matchId, match_edit);
+      } catch (e) {
+        console.error(e);
+      }
     },
     error: function (response) {
       handleAjaxError(response, ALERT_TEXT, ALERT_FIELD);
@@ -129,7 +164,11 @@ export function updateTeamResult(link) {
       jQuery(SPLASH).css('opacity', 0).hide();
       jQuery(RUBBERS_CONTAINER).show();
       // Re-enable the clicked button and clear busy flag
-      try { $btn.prop('disabled', false).removeClass('disabled').data('busy', false); } catch (e) { console.error(e); }
+      try {
+        $btn.prop('disabled', false).removeClass('disabled').data('busy', false);
+      } catch (e) {
+        console.error(e);
+      }
     }
   });
 }
@@ -142,7 +181,9 @@ export function initializeTeamMatchResult() {
   jQuery(document)
     .off('click.racketmanager.updateTeamResult', '[data-action="update-team-result"]')
     .on('click.racketmanager.updateTeamResult', '[data-action="update-team-result"]', function (e) {
-      if (e && typeof e.preventDefault === 'function') e.preventDefault();
+      if (e && typeof e.preventDefault === 'function') {
+        e.preventDefault();
+      }
       return updateTeamResult(this);
-    })
+    });
 }

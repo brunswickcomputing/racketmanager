@@ -19,7 +19,7 @@ function safeConsole(method, args) {
     }
     /* eslint-enable no-console */
   } catch (_) {
-    // no-op
+    // Resilience: suppress errors if console logging methods are restricted or throw in the host environment
   }
 }
 

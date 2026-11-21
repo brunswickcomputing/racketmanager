@@ -1,4 +1,8 @@
-import { initializeSetCalculator, SetCalculator, SetCalculatorTieBreak } from '../../../../src/js/features/match/set-calculator';
+import {
+  initializeSetCalculator,
+  SetCalculator,
+  SetCalculatorTieBreak,
+} from '../../../../src/js/features/match/set-calculator';
 
 describe('Set Calculator feature', () => {
   let container;
@@ -172,6 +176,222 @@ describe('Set Calculator feature', () => {
       expect(() => SetCalculator(undefined)).not.toThrow();
       expect(() => SetCalculatorTieBreak(null)).not.toThrow();
       expect(() => SetCalculatorTieBreak(undefined)).not.toThrow();
+    });
+
+    it('does not throw when SetCalculator throws an unexpected error on focusout', () => {
+      const { player1 } = setupSetDom('set_error_test');
+      player1.value = '6';
+      const origGetAttribute = player1.getAttribute;
+      player1.getAttribute = () => { throw new Error('Unexpected attribute error'); };
+      try {
+        expect(() => {
+          player1.dispatchEvent(new Event('focusout', { bubbles: true }));
+        }).not.toThrow();
+      } finally {
+        player1.getAttribute = origGetAttribute;
+      }
+    });
+  });
+
+  describe('tiebreak UI management and visibility syncing', () => {
+    it('shows tiebreak wrapper and focuses tiebreak input when player 2 input reaches tiebreak condition (7-6)', () => {
+      const { player1, player2, tiebreak, tiebreakWrapper } = setupSetDom('set_2_0');
+      const focusSpy = jest.spyOn(tiebreak, 'focus');
+
+      player1.value = '6';
+      player2.value = '7';
+      player2.dispatchEvent(new Event('focusout', { bubbles: true }));
+
+      expect(tiebreakWrapper.style.display).not.toBe('none');
+      expect(focusSpy).toHaveBeenCalled();
+      focusSpy.mockRestore();
+    });
+
+    it('shows tiebreak wrapper and focuses tiebreak input when player 2 input completes 6-7 tiebreak', () => {
+      const { player1, player2, tiebreak, tiebreakWrapper } = setupSetDom('set_2_1');
+      const focusSpy = jest.spyOn(tiebreak, 'focus');
+
+      player1.value = '7';
+      player2.value = '6';
+      player2.dispatchEvent(new Event('focusout', { bubbles: true }));
+
+      expect(tiebreakWrapper.style.display).not.toBe('none');
+      expect(focusSpy).toHaveBeenCalled();
+      focusSpy.mockRestore();
+    });
+
+    it('hides tiebreak wrapper and resets tiebreak score when player 2 input does not reach tiebreak (6-4)', () => {
+      const { player1, player2, tiebreak, tiebreakWrapper } = setupSetDom('set_2_2');
+      tiebreakWrapper.style.display = 'block';
+      tiebreak.value = '7';
+
+      player1.value = '6';
+      player2.value = '4';
+      player2.dispatchEvent(new Event('focusout', { bubbles: true }));
+
+      expect(tiebreakWrapper.style.display).toBe('none');
+      expect(tiebreak.value).toBe('');
+    });
+
+    it('does not alter tiebreak visibility when player 1 input is blurred', () => {
+      const { player1, player2, tiebreakWrapper } = setupSetDom('set_2_3');
+      tiebreakWrapper.style.display = 'none';
+
+      player1.value = '7';
+      player2.value = '6';
+      player1.dispatchEvent(new Event('focusout', { bubbles: true }));
+
+      // Only player 2 blur triggers tiebreak visibility sync in legacy logic
+      expect(tiebreakWrapper.style.display).toBe('none');
+    });
+  });
+
+  describe('tennis score validation rules and edge cases', () => {
+    it('marks both player inputs with input-validation-error when scores are equal (5-5)', () => {
+      const { player1, player2 } = setupSetDom('set_3_0');
+
+      player1.value = '5';
+      player2.value = '5';
+      player1.dispatchEvent(new Event('focusout', { bubbles: true }));
+
+      expect(player1.classList.contains('input-validation-error')).toBe(true);
+      expect(player2.classList.contains('input-validation-error')).toBe(true);
+      expect(player1.classList.contains('match-points__cell-input--won')).toBe(false);
+      expect(player2.classList.contains('match-points__cell-input--won')).toBe(false);
+    });
+
+    it('marks both inputs with input-validation-error on invalid minWin score (6-5 when maxWin is 7)', () => {
+      const { player1, player2 } = setupSetDom('set_3_1');
+
+      player1.value = '6';
+      player2.value = '5';
+      player1.dispatchEvent(new Event('focusout', { bubbles: true }));
+
+      expect(player1.classList.contains('input-validation-error')).toBe(true);
+      expect(player2.classList.contains('input-validation-error')).toBe(true);
+    });
+
+    it('marks both inputs with input-validation-error on invalid maxWin score (7-3 when maxLoss is 5)', () => {
+      const { player1, player2 } = setupSetDom('set_3_2');
+
+      player1.value = '7';
+      player2.value = '3';
+      player1.dispatchEvent(new Event('focusout', { bubbles: true }));
+
+      expect(player1.classList.contains('input-validation-error')).toBe(true);
+      expect(player2.classList.contains('input-validation-error')).toBe(true);
+    });
+
+    it('marks winning input with won class at 7-6 without flagging an empty tiebreak input', () => {
+      const { player1, player2, tiebreak } = setupSetDom('set_3_3');
+      player1.value = '7';
+      player2.value = '6';
+      player2.dispatchEvent(new Event('focusout', { bubbles: true }));
+
+      expect(player1.classList.contains('match-points__cell-input--won')).toBe(true);
+      expect(player1.classList.contains('input-validation-error')).toBe(false);
+      expect(tiebreak.classList.contains('input-validation-error')).toBe(false);
+    });
+
+    it('marks winning input with won class when maxWin is valid (7-5)', () => {
+      const { player1, player2 } = setupSetDom('set_3_4');
+
+      player1.value = '7';
+      player2.value = '5';
+      player1.dispatchEvent(new Event('focusout', { bubbles: true }));
+
+      expect(player1.classList.contains('match-points__cell-input--won')).toBe(true);
+      expect(player1.classList.contains('input-validation-error')).toBe(false);
+      expect(player2.classList.contains('input-validation-error')).toBe(false);
+    });
+
+    it('validates advantage sets where maxWin is larger than 7 (8-6 valid, 8-5 invalid)', () => {
+      const wrapper = document.createElement('div');
+      wrapper.id = 'set_4_0';
+      wrapper.setAttribute('data-maxwin', '12');
+      wrapper.setAttribute('data-minwin', '6');
+      wrapper.setAttribute('data-maxloss', '5');
+      wrapper.setAttribute('data-minloss', '4');
+      wrapper.setAttribute('data-tiebreakset', '12');
+      wrapper.innerHTML = `
+        <input type="number" id="set_4_0_player1" class="points" data-action="set-calculator" value="" />
+        <input type="number" id="set_4_0_player2" class="points" data-action="set-calculator" value="" />
+      `;
+      container.appendChild(wrapper);
+
+      const p1 = wrapper.querySelector('#set_4_0_player1');
+      const p2 = wrapper.querySelector('#set_4_0_player2');
+
+      // 8-5: invalid advantage (not 2-game margin)
+      p1.value = '8';
+      p2.value = '5';
+      p1.dispatchEvent(new Event('focusout', { bubbles: true }));
+      expect(p1.classList.contains('input-validation-error')).toBe(true);
+
+      // 8-3: invalid advantage (team2 < minLoss)
+      p1.value = '8';
+      p2.value = '3';
+      p1.dispatchEvent(new Event('focusout', { bubbles: true }));
+      expect(p1.classList.contains('input-validation-error')).toBe(true);
+
+      // 8-6: valid advantage win
+      p1.value = '8';
+      p2.value = '6';
+      p1.dispatchEvent(new Event('focusout', { bubbles: true }));
+      expect(p1.classList.contains('match-points__cell-input--won')).toBe(true);
+      expect(p1.classList.contains('input-validation-error')).toBe(false);
+    });
+
+    it('supports 3-part set reference IDs (set_0_player1 with setLength 5)', () => {
+      const wrapper = document.createElement('div');
+      wrapper.id = 'set_0';
+      wrapper.setAttribute('data-maxwin', '7');
+      wrapper.setAttribute('data-minwin', '6');
+      wrapper.setAttribute('data-maxloss', '5');
+      wrapper.setAttribute('data-minloss', '4');
+      wrapper.setAttribute('data-tiebreakset', '6');
+      wrapper.innerHTML = `
+        <input type="number" id="set_0_player1" class="points" data-action="set-calculator" value="" />
+        <input type="number" id="set_0_player2" class="points" data-action="set-calculator" value="" />
+      `;
+      container.appendChild(wrapper);
+
+      const p1 = wrapper.querySelector('#set_0_player1');
+      const p2 = wrapper.querySelector('#set_0_player2');
+
+      p1.value = '6';
+      p2.value = '3';
+      p1.dispatchEvent(new Event('focusout', { bubbles: true }));
+
+      expect(p1.classList.contains('match-points__cell-input--won')).toBe(true);
+    });
+  });
+
+  describe('boundary score rules from public API', () => {
+    it('does not flag 6-5 when maxWin equals minWin and marks the winner as won', () => {
+      const wrapper = document.createElement('div');
+      wrapper.id = 'set_5_0';
+      wrapper.setAttribute('data-maxwin', '6');
+      wrapper.setAttribute('data-minwin', '6');
+      wrapper.setAttribute('data-maxloss', '5');
+      wrapper.setAttribute('data-minloss', '4');
+      wrapper.setAttribute('data-tiebreakset', '6');
+      wrapper.innerHTML = `
+        <input type="number" id="set_5_0_player1" class="points" data-action="set-calculator" value="" />
+        <input type="number" id="set_5_0_player2" class="points" data-action="set-calculator" value="" />
+      `;
+      container.appendChild(wrapper);
+
+      const p1 = wrapper.querySelector('#set_5_0_player1');
+      const p2 = wrapper.querySelector('#set_5_0_player2');
+
+      p1.value = '6';
+      p2.value = '5';
+      p1.dispatchEvent(new Event('focusout', { bubbles: true }));
+
+      expect(p1.classList.contains('match-points__cell-input--won')).toBe(true);
+      expect(p1.classList.contains('input-validation-error')).toBe(false);
+      expect(p2.classList.contains('input-validation-error')).toBe(false);
     });
   });
 });

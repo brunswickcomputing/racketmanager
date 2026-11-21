@@ -14,7 +14,7 @@ export function activateTab(tabId) {
     // Bootstrap 5 + jQuery plugin interface
     jQuery('.nav-tabs button[data-bs-target="#' + tabId + '"]').tab('show');
     jQuery('.nav-pills button[data-bs-target="#' + tabId + '"]').tab('show');
-  } catch (_) {
+  } catch {
     // Fallback: toggle classes manually if Bootstrap tab plugin not present
     try {
       const btn = document.querySelector('.nav-tabs button[data-bs-target="#' + tabId + '"], .nav-pills button[data-bs-target="#' + tabId + '"]');
@@ -43,7 +43,7 @@ export function activateTab(tabId) {
 export function initializeActivateTab() {
   try {
     jQuery('[data-action="activate-tab"]').each(function () {
-      const tabId = this.getAttribute('data-tabid') || jQuery(this).data('tabid');
+      const tabId = this.dataset?.tabid || jQuery(this).data('tabid');
       if (tabId) {
         activateTab(tabId);
       }

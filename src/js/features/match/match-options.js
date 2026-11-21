@@ -56,7 +56,7 @@ export function openMatchOptions(event, matchId, optionKey) {
         try {
           const data = JSON.parse(response);
           jQuery(HEADER_ALERT_TEXT).html(data.message || 'An error occurred');
-        } catch (_) {
+        } catch {
           handleAjaxError(xhr, HEADER_ALERT_TEXT, HEADER_ALERT);
         }
         jQuery(HEADER_ALERT).show();
@@ -75,8 +75,8 @@ export function initializeMatchOptions() {
   jQuery(document)
     .off('click.racketmanager.matchOptions', '.matchOptionLink')
     .on('click.racketmanager.matchOptions', '.matchOptionLink', function (e) {
-      const matchId = this.getAttribute('data-match-id') || jQuery(this).data('matchId');
-      const optionKey = this.getAttribute('data-match-option') || jQuery(this).data('matchOption');
+      const matchId = this.dataset?.matchId || jQuery(this).data('matchId');
+      const optionKey = this.dataset?.matchOption || jQuery(this).data('matchOption');
       return openMatchOptions(e, matchId, optionKey);
     });
 }

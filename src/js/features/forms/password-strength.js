@@ -38,7 +38,9 @@ function meterPasswordStrength($pwd, $confirmPwd, $strengthStatus, $submitBtn, b
     if (globalThis.wp && wp.passwordStrength && typeof wp.passwordStrength.meter === 'function') {
       pwdStrength = wp.passwordStrength.meter(pwd, blacklistedWords, confirmPwd);
     }
-  } catch (_) { /* default 0 */ }
+  } catch (_) {
+    // Fail-safe: if WordPress password meter throws, fall back to default score 0 (weak) to keep submission disabled
+  }
 
   // check the password strength
   switch (pwdStrength) {

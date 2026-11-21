@@ -1,86 +1,129 @@
 // set-calculator.js (moved into main src/js module bundle)
 // Provides set score validation and auto-calculation helpers via delegated focusout listeners.
 
-function SetCalculator(inputdata) {
-	if (!inputdata || !inputdata.id) return;
-	let classes = {
-		inputError: 'input-validation-error',
-		won: 'match-points__cell-input--won'
-	}
-	let fieldRef = inputdata.id;
-	let team = "#" + fieldRef;
+const SET_CLASSES = {
+	inputError: 'input-validation-error',
+	won: 'match-points__cell-input--won'
+};
+
+function parseSetFieldInfo(fieldRef) {
 	let fieldSplit = fieldRef.split('_');
-	let setLength;
-	if (fieldSplit.length === 4) {
-		setLength = 7;
-	} else {
-		setLength = 5;
-	}
+	let setLength = fieldSplit.length === 4 ? 7 : 5;
 	let setRef = fieldRef.substring(0, setLength);
-	let teamRefAlt;
 	let teamRef = fieldRef.substr(fieldRef.length - 1, 1);
-	if (teamRef === "1") {
-		teamRefAlt = "2";
-	} else {
-		teamRefAlt = "1";
+	let teamRefAlt = teamRef === '1' ? '2' : '1';
+
+	return {
+		fieldRef,
+		team: '#' + fieldRef,
+		setRef,
+		teamRef,
+		teamRefAlt,
+		teamAlt: '#' + setRef + '_player' + teamRefAlt,
+		tieBreak: '#' + setRef + '_tiebreak',
+		tieBreakWrapper: '#' + setRef + '_tiebreak_wrapper',
+		setGroup: '#' + setRef
+	};
+}
+
+function parseScoreInput(value) {
+	if (value === '' || value === null || value === undefined) {
+		return null;
 	}
-	let teamScore;
-	if (inputdata.value === '') {
-        teamScore = null;
-	} else {
-        teamScore = Number.parseInt(inputdata.value, 10);
+	return Number.parseInt(value, 10);
+}
+
+function syncTiebreakVisibility(teamRef, teamScore, teamScoreAlt, maxWin, tiebreakSet, tieBreakWrapper, tieBreak) {
+	if (teamRef !== '2') {
+		return false;
 	}
-	let teamAlt = "#" + setRef + "_player" + teamRefAlt;
-	let teamDataAlt = jQuery(teamAlt)[0];
-	if (!teamDataAlt) return;
-	let teamScoreAlt;
-	if (teamDataAlt.value === '') {
-        teamScoreAlt = null;
-	} else {
-        teamScoreAlt = Number.parseInt(teamDataAlt.value, 10);
+	if ((teamScore === maxWin && teamScoreAlt === tiebreakSet) || (teamScoreAlt === maxWin && teamScore === tiebreakSet)) {
+		jQuery(tieBreakWrapper).show();
+		jQuery(tieBreak).focus();
+		return false;
 	}
-	let tieBreak = "#" + setRef + "_tiebreak";
-	let tieBreakWrapper = tieBreak + '_wrapper';
-	let tieBreakData = jQuery(tieBreak)[0];
-	let tieBreakScore;
-	if (tieBreakData && tieBreakData.value !== '') {
-		tieBreakScore = Number.parseInt(tieBreakData.value, 10);
-	}
-	let setGroup = '#' + setRef;
-	let maxWin = jQuery(setGroup).data('maxwin');
-	let minWin = jQuery(setGroup).data('minwin');
-	let maxLoss = jQuery(setGroup).data('maxloss');
-	let minLoss = jQuery(setGroup).data('minloss');
-	let tiebreakSet = jQuery(setGroup).data('tiebreakset');
-	if (teamRef === "1") {
-		if (teamScoreAlt === null) {
-			teamScoreAlt = CalculateAltScore(teamScore, maxWin, maxLoss, minWin);
+	jQuery(tieBreakWrapper).hide();
+	return true;
+}
+
+function markInputError(...selectors) {
+	selectors.forEach((sel) => {
+		if (sel) {
+			jQuery(sel).addClass(SET_CLASSES.inputError);
 		}
-	} else if (teamRef === "2") {
-		if (teamScoreAlt === null) {
-			teamScoreAlt = CalculateAltScore(teamScore, maxWin, maxLoss, minWin);
-		}
-		if ((teamScore === maxWin && teamScoreAlt === tiebreakSet) || (teamScoreAlt === maxWin && teamScore === tiebreakSet)) {
-			jQuery(tieBreakWrapper).show();
-			jQuery(tieBreak).focus();
-		} else {
-			tieBreakScore = null;
-			jQuery(tieBreakWrapper).hide();
-		}
+	});
+}
+
+function markInputWon(selector) {
+	if (selector) {
+		jQuery(selector).addClass(SET_CLASSES.won);
 	}
-	jQuery(team).removeClass('input-validation-error match-points__cell-input--won is-invalid');
-	jQuery(teamAlt).removeClass('input-validation-error match-points__cell-input--won is-invalid');
-	jQuery(tieBreak).removeClass(classes.inputError);
+}
+
+function validateTieBreakScore(tieBreak, tieBreakScore) {
+	if ('' === tieBreakScore) {
+		jQuery(tieBreak).addClass(SET_CLASSES.inputError);
+	}
+}
+
+function isInvalidHighScore(team1Score, maxWin) {
+	return team1Score > maxWin;
+}
+
+function isInvalidMinWinScore(team1Score, team2Score, minWin, minLoss, maxWin) {
+	return team1Score === minWin && team2Score > minLoss && maxWin !== minWin;
+}
+
+function isInvalidMaxWinScore(team1Score, team2Score, maxWin, maxLoss, minWin) {
+	return team1Score === maxWin && team2Score < maxLoss && maxWin !== minWin;
+}
+
+function isInvalidAdvantageScore(team1Score, team2Score, minWin, minLoss) {
+	if (team1Score <= minWin) {
+		return false;
+	}
+	return team2Score < minLoss || (team2Score > minLoss && team2Score !== (team1Score - 2));
+}
+
+function SetValidator(team1, team2, team1Score, team2Score, tieBreak, tieBreakScore, maxLoss, maxWin, minLoss, minWin) {
+	if (isInvalidHighScore(team1Score, maxWin)) {
+		markInputError(team1);
+		return;
+	}
+	if (isInvalidMinWinScore(team1Score, team2Score, minWin, minLoss, maxWin)) {
+		markInputError(team1, team2);
+		return;
+	}
+	if (isInvalidMaxWinScore(team1Score, team2Score, maxWin, maxLoss, minWin)) {
+		markInputError(team1, team2);
+		return;
+	}
+	if (team1Score === maxWin) {
+		markInputWon(team1);
+		if (team2Score > maxLoss) {
+			validateTieBreakScore(tieBreak, tieBreakScore);
+		}
+		return;
+	}
+	if (isInvalidAdvantageScore(team1Score, team2Score, minWin, minLoss)) {
+		markInputError(team1);
+		return;
+	}
+	markInputWon(team1);
+}
+
+function applySetValidation(team, teamAlt, teamScore, teamScoreAlt, tieBreak, tieBreakScore, maxLoss, maxWin, minLoss, minWin) {
 	if (teamScore > teamScoreAlt) {
 		SetValidator(team, teamAlt, teamScore, teamScoreAlt, tieBreak, tieBreakScore, maxLoss, maxWin, minLoss, minWin);
 	} else if (teamScore < teamScoreAlt) {
 		SetValidator(teamAlt, team, teamScoreAlt, teamScore, tieBreak, tieBreakScore, maxLoss, maxWin, minLoss, minWin);
-	} else if (teamScore === teamScoreAlt) {
-		if (!Number.isNaN(teamScore)) {
-			jQuery(team).addClass(classes.inputError);
-			jQuery(teamAlt).addClass(classes.inputError)
-		}
+	} else if (teamScore === teamScoreAlt && !Number.isNaN(teamScore)) {
+		jQuery(team).addClass(SET_CLASSES.inputError);
+		jQuery(teamAlt).addClass(SET_CLASSES.inputError);
 	}
+}
+
+function updateScoreValues(team, teamAlt, tieBreak, teamScore, teamScoreAlt, tieBreakScore) {
 	if (!Number.isNaN(teamScore)) {
 		jQuery(team).val(teamScore);
 	}
@@ -92,69 +135,86 @@ function SetCalculator(inputdata) {
 	}
 }
 
-function CalculateAltScore(teamScore, maxWin, maxLoss, minWin) {
-	let teamScoreAlt = '';
-	if (teamScore === minWin) {
-		if ((teamScore + 2) < maxWin) {
-			teamScoreAlt = teamScore + 2;
-		} else {
-			teamScoreAlt = maxWin;
-		}
-	} else if (teamScore === maxWin) {
-		teamScoreAlt = minWin;
-	} else if (null !== teamScore) {
-		if (teamScore === maxLoss) {
-			teamScoreAlt = maxWin;
-		} else if (teamScore < minWin) {
-			teamScoreAlt = minWin;
-		}
+function SetCalculator(inputdata) {
+	if (!inputdata?.id) {
+		return;
 	}
-	return teamScoreAlt
+	let {
+		team,
+		teamRef,
+		teamAlt,
+		tieBreak,
+		tieBreakWrapper,
+		setGroup
+	} = parseSetFieldInfo(inputdata.id);
+
+	let teamDataAlt = jQuery(teamAlt)[0];
+	if (!teamDataAlt) {
+		return;
+	}
+
+	let teamScore = parseScoreInput(inputdata.value);
+	let teamScoreAlt = parseScoreInput(teamDataAlt.value);
+
+	let tieBreakData = jQuery(tieBreak)[0];
+	let tieBreakScore;
+	if (tieBreakData && tieBreakData.value !== '') {
+		tieBreakScore = parseScoreInput(tieBreakData.value);
+	}
+
+	let maxWin = jQuery(setGroup).data('maxwin');
+	let minWin = jQuery(setGroup).data('minwin');
+	let maxLoss = jQuery(setGroup).data('maxloss');
+	let minLoss = jQuery(setGroup).data('minloss');
+	let tiebreakSet = jQuery(setGroup).data('tiebreakset');
+
+	if (teamScoreAlt === null) {
+		teamScoreAlt = CalculateAltScore(teamScore, maxWin, maxLoss, minWin);
+	}
+	const shouldClearTieBreak = syncTiebreakVisibility(teamRef, teamScore, teamScoreAlt, maxWin, tiebreakSet, tieBreakWrapper, tieBreak);
+	if (shouldClearTieBreak) {
+		tieBreakScore = null;
+	}
+
+	jQuery(team).removeClass('input-validation-error match-points__cell-input--won is-invalid');
+	jQuery(teamAlt).removeClass('input-validation-error match-points__cell-input--won is-invalid');
+	jQuery(tieBreak).removeClass(SET_CLASSES.inputError);
+
+	applySetValidation(team, teamAlt, teamScore, teamScoreAlt, tieBreak, tieBreakScore, maxLoss, maxWin, minLoss, minWin);
+
+	updateScoreValues(team, teamAlt, tieBreak, teamScore, teamScoreAlt, tieBreakScore);
 }
 
-function SetValidator(team1, team2, team1Score, team2Score, tieBreak, tieBreakScore, maxLoss, maxWin, minLoss, minWin) {
-	let classes = {
-		inputError: 'input-validation-error',
-		won: 'match-points__cell-input--won'
-	}
-	if (team1Score > maxWin) {
-		jQuery(team1).addClass(classes.inputError);
-	} else if (team1Score === minWin && team2Score > minLoss && maxWin !== minWin) {
-		jQuery(team1).addClass(classes.inputError);
-		jQuery(team2).addClass(classes.inputError);
-	} else if (team1Score === maxWin) {
-		if (team2Score < maxLoss && maxWin !== minWin) {
-			jQuery(team1).addClass(classes.inputError);
-			jQuery(team2).addClass(classes.inputError);
-		} else if (team2Score > maxLoss) {
-			jQuery(team1).addClass(classes.won);
-			if ('' === tieBreakScore) {
-				jQuery(tieBreak).addClass(classes.inputError);
-			}
-		} else {
-			jQuery(team1).addClass(classes.won)
+function CalculateAltScore(teamScore, maxWin, maxLoss, minWin) {
+	if (teamScore === minWin) {
+		if ((teamScore + 2) < maxWin) {
+			return teamScore + 2;
 		}
-	} else if (team1Score > minWin && team2Score < minLoss) {
-		jQuery(team1).addClass(classes.inputError);
-	} else if (team1Score > minWin && team2Score > minLoss && team2Score !== (team1Score - 2)) {
-		jQuery(team1).addClass(classes.inputError);
-	} else {
-		jQuery(team1).addClass(classes.won);
+		return maxWin;
 	}
+	if (teamScore === maxWin) {
+		return minWin;
+	}
+	if (teamScore === maxLoss) {
+		return maxWin;
+	}
+	if (teamScore !== null && teamScore < minWin) {
+		return minWin;
+	}
+	return '';
 }
 
 function SetCalculatorTieBreak(inputdata) {
-	if (!inputdata || !inputdata.id) return;
-	let classes = {
-		inputError: 'input-validation-error'
+	if (!inputdata?.id) {
+		return;
 	}
 	let fieldRef = inputdata.id;
-	let tieBreak = "#" + fieldRef;
+	let tieBreak = '#' + fieldRef;
 	let tieBreakScore = Number.parseInt(inputdata.value, 10);
 	if (Number.isNaN(tieBreakScore)) {
-		jQuery(tieBreak).addClass(classes.inputError);
+		jQuery(tieBreak).addClass(SET_CLASSES.inputError);
 	} else {
-		jQuery(tieBreak).removeClass(classes.inputError);
+		jQuery(tieBreak).removeClass(SET_CLASSES.inputError);
 		jQuery(tieBreak).removeClass('is-invalid');
 	}
 }
@@ -162,9 +222,13 @@ function SetCalculatorTieBreak(inputdata) {
 function handleScoreBlur(e) {
   const target = e.target;
   const el = target && typeof target.closest === 'function' ? target.closest('[data-action]') : null;
-  if (!el) return;
-  const action = el.getAttribute('data-action') || (el.dataset ? el.dataset.action : null);
-  if (action !== 'set-calculator' && action !== 'set-calculator-tiebreak') return;
+  if (!el) {
+    return;
+  }
+  const action = el.dataset?.action;
+  if (action !== 'set-calculator' && action !== 'set-calculator-tiebreak') {
+    return;
+  }
 
   try {
     if (action === 'set-calculator') {
@@ -173,7 +237,7 @@ function handleScoreBlur(e) {
       SetCalculatorTieBreak(el);
     }
   } catch (_) {
-    // Graceful handling of unexpected malformed input
+    // Suppress calculation errors on delegated focusout so unexpected or malformed DOM inputs do not break other event handlers
   }
 }
 

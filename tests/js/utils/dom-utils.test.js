@@ -1,4 +1,4 @@
-import { toggleElement, handleCheckboxConditional } from '../../../src/js/utils/dom-utils.js';
+import { toggleElement, handleCheckboxConditional, getDataAttr } from '../../../src/js/utils/dom-utils.js';
 
 describe('dom-utils', () => {
     describe('toggleElement', () => {
@@ -90,6 +90,53 @@ describe('dom-utils', () => {
             checkbox.setAttribute('aria-controls', 'non-existent-section');
 
             expect(() => handleCheckboxConditional(checkbox)).not.toThrow();
+        });
+    });
+
+    describe('getDataAttr', () => {
+        test('returns null when element is null or undefined', () => {
+            expect(getDataAttr(null, 'action')).toBeNull();
+            expect(getDataAttr(undefined, 'action')).toBeNull();
+        });
+
+        test('reads property from element.dataset when available', () => {
+            const el = document.createElement('div');
+            el.dataset.action = 'submit-form';
+            el.dataset.leagueId = '42';
+
+            expect(getDataAttr(el, 'action')).toBe('submit-form');
+            expect(getDataAttr(el, 'leagueId')).toBe('42');
+        });
+
+        test('preserves empty string values in dataset', () => {
+            const el = document.createElement('div');
+            el.dataset.action = '';
+
+            expect(getDataAttr(el, 'action')).toBe('');
+        });
+
+        test('falls back to attributes.getNamedItem when dataset is undefined', () => {
+            const el = document.createElement('button');
+            el.setAttribute('data-action', 'delete-user');
+            el.setAttribute('data-league-id', '101');
+            Object.defineProperty(el, 'dataset', { value: undefined, configurable: true });
+
+            expect(getDataAttr(el, 'action')).toBe('delete-user');
+            expect(getDataAttr(el, 'leagueId')).toBe('101');
+        });
+
+        test('falls back to getAttribute when attributes.getNamedItem is unavailable', () => {
+            const stub = {
+                getAttribute: jest.fn((attr) => (attr === 'data-action' ? 'stub-action' : null)),
+            };
+
+            expect(getDataAttr(stub, 'action')).toBe('stub-action');
+            expect(stub.getAttribute).toHaveBeenCalledWith('data-action');
+        });
+
+        test('returns null when element has neither dataset nor matching attribute', () => {
+            const el = document.createElement('div');
+            expect(getDataAttr(el, 'action')).toBeNull();
         });
     });
 });

@@ -12,7 +12,7 @@ import { logger, recordEvent } from '../../utils/logger.js';
  * @param {jqXHR} response
  * @returns {string}
  */
-function extractMessage(response) {
+export function extractMessage(response) {
     if (response?.responseJSON?.data) {
         const data = response.responseJSON.data;
         // Try common fields first
@@ -29,6 +29,34 @@ function extractMessage(response) {
 }
 
 /**
+ * Apply field-level validation error classes and feedback text,
+ * returning any messages that could not be displayed adjacent to fields.
+ *
+ * @param {object} [data]
+ * @returns {string[]}
+ */
+export function applyFieldValidation(data) {
+    const extraMessages = [];
+    if (!Array.isArray(data?.err_flds) || !Array.isArray(data?.err_msgs)) {
+        return extraMessages;
+    }
+
+    for (let i = 0; i < data.err_flds.length; i++) {
+        const formField = '#' + data.err_flds[i];
+        jQuery(formField).addClass('is-invalid');
+        const feedback = formField + 'Feedback';
+        const $feedback = jQuery(feedback);
+        if ($feedback.length) {
+            $feedback.html(data.err_msgs[i]);
+        } else if (data.err_msgs[i]) {
+            extraMessages.push(data.err_msgs[i]);
+        }
+    }
+
+    return extraMessages;
+}
+
+/**
  * Centralized AJAX error handler.
  * - Writes a message into alertTextField (HTML)
  * - Adds alert--danger to alertField
@@ -40,25 +68,7 @@ function extractMessage(response) {
  */
 export function handleAjaxError(response, alertTextField, alertField) {
     let message = extractMessage(response);
-    const extraMessages = [];
-
-    // Field-level validation support (err_flds/err_msgs)
-    if (response?.responseJSON?.data) {
-        const data = response.responseJSON.data;
-        if (Array.isArray(data.err_flds) && Array.isArray(data.err_msgs)) {
-            for (let i = 0; i < data.err_flds.length; i++) {
-                let formField = '#' + data.err_flds[i];
-                jQuery(formField).addClass('is-invalid');
-                const feedback = formField + 'Feedback';
-                const $feedback = jQuery(feedback);
-                if ($feedback.length) {
-                    $feedback.html(data.err_msgs[i]);
-                } else if (data.err_msgs[i]) {
-                    extraMessages.push(data.err_msgs[i]);
-                }
-            }
-        }
-    }
+    const extraMessages = applyFieldValidation(response?.responseJSON?.data);
 
     if (extraMessages.length > 0) {
         message += '<br>' + extraMessages.join('<br>');

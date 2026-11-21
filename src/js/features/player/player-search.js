@@ -18,7 +18,7 @@ function getBaseUrl() {
   try {
     const url = new URL(globalThis.location.href);
     return url.protocol + '//' + url.hostname + url.pathname;
-  } catch (_) {
+  } catch {
     return globalThis.location?.pathname || '/';
   }
 }
@@ -32,7 +32,7 @@ function pushQueryToHistory(q) {
       globalThis.history.pushState(state, '', newUri.toString());
     }
   } catch (_) {
-    // no-op
+    // Best-effort history update: ignore pushState failures (e.g. sandboxed iframes or quota limits) so search results remain visible
   }
 }
 

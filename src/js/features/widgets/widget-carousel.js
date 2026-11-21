@@ -37,6 +37,10 @@ export function initializeWidgetCarousel() {
     });
     container.dataset.rmCarouselInit = '1';
   } catch (e) {
-    try { console.warn('Failed to initialize widget carousel:', e); } catch (_) {}
+    try {
+      console.warn('Failed to initialize widget carousel:', e);
+    } catch (_) {
+      // Intentionally ignore logging failure if console.warn is unavailable or throws in restricted environments
+    }
   }
 }

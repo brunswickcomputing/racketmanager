@@ -4,18 +4,25 @@
 import {
   validateTeamPlayerForm,
   initTeamValidation,
+  checkTeamNameExists,
+  checkRequiredPlayers,
+  checkClubSelected,
+  displayValidationErrorMessage,
 } from '../../../src/js/admin/features/forms/team-validation.js';
 
 describe('Admin feature: team-validation', () => {
   let container;
+  let originalJQuery;
 
   beforeEach(() => {
+    originalJQuery = window.jQuery;
     container = document.createElement('div');
     document.body.appendChild(container);
   });
 
   afterEach(() => {
     document.body.removeChild(container);
+    window.jQuery = originalJQuery;
     jest.clearAllMocks();
   });
 
@@ -369,6 +376,123 @@ describe('Admin feature: team-validation', () => {
 
       window.jQuery.ajax.mockImplementation((opts) => opts.success({ data: null }));
       expect(validateTeamPlayerForm({ preventDefault: jest.fn() })).toBe(true);
+    });
+  });
+
+  describe('validation message order and edge cases', () => {
+    it('maintains exact error message ordering when all validations fail (empty team name)', () => {
+      container.innerHTML = `
+        <form id="teamPlayerFrm">
+          <input type="text" id="team" value="">
+          <input type="hidden" id="team_id" value="">
+          <input type="text" id="teamPlayer1" value="">
+          <input type="hidden" id="teamPlayerId2" value="">
+          <input type="hidden" id="clubId" value="0">
+          <div id="errorMsg" style="display:none;"></div>
+        </form>
+      `;
+
+      const preventDefault = jest.fn();
+      const result = validateTeamPlayerForm({ preventDefault });
+
+      expect(result).toBe(false);
+      expect(preventDefault).toHaveBeenCalled();
+      expect(container.querySelector('#errorMsg').textContent).toBe(
+        'Team name not set\nPlayer 1 not set\nPlayer 2 not set\nClub not set\n'
+      );
+    });
+
+    it('maintains exact error message ordering when team already exists and club is missing', () => {
+      container.innerHTML = `
+        <form id="teamPlayerFrm">
+          <input type="text" id="team" value="Duplicate Team">
+          <input type="hidden" id="team_id" value="">
+          <input type="text" id="teamPlayer1" value="">
+          <input type="hidden" id="teamPlayerId2" value="">
+          <div id="errorMsg" style="display:none;"></div>
+        </form>
+      `;
+
+      window.jQuery = {
+        ajax: jest.fn((opts) => opts.success({ data: true })),
+      };
+
+      const preventDefault = jest.fn();
+      const result = validateTeamPlayerForm({ preventDefault });
+
+      expect(result).toBe(false);
+      expect(preventDefault).toHaveBeenCalled();
+      expect(container.querySelector('#errorMsg').textContent).toBe(
+        'Team already exists\nPlayer 1 not set\nPlayer 2 not set\nClub not set\n'
+      );
+    });
+
+    it('maintains exact error message ordering with error check, omitted player 2, and empty clubId', () => {
+      container.innerHTML = `
+        <form id="teamPlayerFrm">
+          <input type="text" id="team" value="Leigh">
+          <input type="hidden" id="team_id" value="">
+          <input type="text" id="teamPlayer1" value="">
+          <input type="hidden" id="clubId" value="">
+          <div id="errorMsg" style="display:none;"></div>
+        </form>
+      `;
+
+      window.jQuery = {
+        ajax: jest.fn((opts) => opts.error()),
+      };
+
+      const preventDefault = jest.fn();
+      const result = validateTeamPlayerForm({ preventDefault });
+
+      expect(result).toBe(false);
+      expect(preventDefault).toHaveBeenCalled();
+      expect(container.querySelector('#errorMsg').textContent).toBe(
+        'Error with team name check\nPlayer 1 not set\nClub not set\n'
+      );
+    });
+
+    it('omits Player 2 validation when #teamPlayerId2 is not in DOM', () => {
+      container.innerHTML = `
+        <form id="teamPlayerFrm">
+          <input type="text" id="team" value="Leigh 1">
+          <input type="hidden" id="team_id" value="5">
+          <input type="text" id="teamPlayer1" value="Player One">
+          <input type="hidden" id="clubId" value="10">
+          <div id="errorMsg" style="display:none;"></div>
+        </form>
+      `;
+
+      expect(validateTeamPlayerForm()).toBe(true);
+      const errorMsgEl = container.querySelector('#errorMsg');
+      expect(errorMsgEl ? errorMsgEl.textContent : '').toBe('');
+    });
+
+    it('validates helper functions independently', () => {
+      expect(checkTeamNameExists('', '')).toBe('Team name not set\n');
+      expect(checkTeamNameExists('Existing Team', '123')).toBe('');
+
+      expect(checkRequiredPlayers('', '')).toBe('Player 1 not set\nPlayer 2 not set\n');
+      expect(checkRequiredPlayers('Alice', '')).toBe('Player 2 not set\n');
+      expect(checkRequiredPlayers('Alice', null)).toBe('');
+      expect(checkRequiredPlayers('Alice', undefined)).toBe('');
+      expect(checkRequiredPlayers(null, undefined)).toBe('Player 1 not set\n');
+
+      expect(checkClubSelected('0')).toBe('Club not set\n');
+      expect(checkClubSelected('')).toBe('Club not set\n');
+      expect(checkClubSelected(null)).toBe('Club not set\n');
+      expect(checkClubSelected(undefined)).toBe('Club not set\n');
+      expect(checkClubSelected('10')).toBe('');
+
+      const dummyDiv = document.createElement('div');
+      dummyDiv.id = 'errorMsg';
+      dummyDiv.style.display = 'none';
+      container.appendChild(dummyDiv);
+      const mockEvent = { preventDefault: jest.fn() };
+      displayValidationErrorMessage('Test Error\n', mockEvent);
+      expect(dummyDiv.style.display).toBe('');
+      expect(dummyDiv.textContent).toBe('Test Error\n');
+      expect(mockEvent.preventDefault).toHaveBeenCalled();
     });
   });
 });

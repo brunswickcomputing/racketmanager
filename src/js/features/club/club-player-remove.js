@@ -32,7 +32,7 @@ export function clubPlayerRemove(formSelector, gender) {
     async: false,
     data: $form,
     success: function (response) {
-      const data = response && response.data ? response.data : {};
+      const data = response?.data ? response.data : {};
       const msg = typeof data === 'string' ? data : (data.msg || '');
       const status = data.status || 'success';
       jQuery(alertField).addClass(`alert--${status}`);
@@ -62,11 +62,12 @@ export function initializeClubPlayerRemove() {
     .off('click.racketmanager.clubPlayerRemove', '[data-action="club-player-remove"], #clubPlayerRemoveSubmit')
     .on('click.racketmanager.clubPlayerRemove', '[data-action="club-player-remove"], #clubPlayerRemoveSubmit', function (e) {
       if (e && typeof e.preventDefault === 'function') e.preventDefault();
-      if (this.getAttribute && this.getAttribute('onclick')) return;
-      const formId = this.getAttribute('data-form-id');
-      const gender = this.getAttribute('data-gender');
+      if (this.getAttribute?.('onclick')) return;
+      const formId = this.dataset?.formId;
+      const gender = this.dataset?.gender;
       // If attributes not provided (legacy id case), attempt to infer from enclosing table heading
-      const selector = formId ? `#${formId}` : (this.form ? `#${this.form.id}` : undefined);
+      const formTarget = formId || this.form?.id;
+      const selector = formTarget ? `#${formTarget}` : undefined;
       if (!selector || !gender) return;
       return clubPlayerRemove(selector, gender);
     });

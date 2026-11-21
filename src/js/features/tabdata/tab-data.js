@@ -4,7 +4,7 @@
  */
 
 import { getAjaxUrl, getAjaxNonce } from '../../config/ajax-config.js';
-import { attachMatchViewEventListeners } from '../navigation/match-viewer.js';
+import { attachMatchViewEventListeners } from '../navigation';
 
 /**
  * Initialize tab data handlers
@@ -99,8 +99,8 @@ export function tabData(e, type, targetId, season, name, competitionType) {
 
     // Get active tab to determine content type
     const activeTab = e.currentTarget;
-    const target = activeTab.getAttribute('data-bs-target') ||
-        activeTab.getAttribute('aria-controls');
+    const target = activeTab?.dataset?.bsTarget ||
+        activeTab?.getAttribute('aria-controls');
 
     if (!target) {
         console.error('No tab target found');

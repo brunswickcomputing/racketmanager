@@ -183,6 +183,82 @@ describe('features/match/update-team-result', () => {
         spyError.mockRestore();
     });
 
+    test('handles empty response data gracefully', () => {
+        const spyHeader = jest.spyOn(matchHeaderModule, 'matchHeader').mockImplementation(() => {});
+        const spyAjax = jest.spyOn(jQuery, 'ajax');
+
+        document.body.innerHTML = `
+            <div id="matchAlert"><div id="matchAlertResponse"></div></div>
+            <div id="splash" class="d-none"></div>
+            <div id="showMatchRubbers"></div>
+            <form id="rubberForm">
+                <button id="submitBtn" type="button"></button>
+            </form>
+        `;
+
+        const btn = document.getElementById('submitBtn');
+        updateTeamResult(btn);
+
+        const ajaxOptions = spyAjax.mock.calls[0][0];
+        ajaxOptions.success({});
+
+        expect(jQuery('#matchAlert').hasClass('alert--success')).toBe(true);
+        expect(jQuery('#matchAlertResponse').html()).toBe('');
+        expect(spyHeader).toHaveBeenCalled();
+
+        spyHeader.mockRestore();
+    });
+
+    test('preserves rubber field indexes when a response contains a null rubber', () => {
+        const spyHeader = jest.spyOn(matchHeaderModule, 'matchHeader').mockImplementation(() => {});
+        const spyAjax = jest.spyOn(jQuery, 'ajax');
+
+        document.body.innerHTML = `
+            <div id="matchAlert"><div id="matchAlertResponse"></div></div>
+            <input id="match-status-1-away" />
+            <input id="awayplayer1_1" />
+            <input id="players_1_away_1" />
+            <input id="set_1_1_away" />
+            <input id="match-status-2-away" />
+            <input id="awayplayer1_2" />
+            <input id="players_2_away_1" />
+            <input id="set_2_1_away" />
+            <form id="rubberForm">
+                <button id="submitBtn" type="button"></button>
+            </form>
+        `;
+
+        updateTeamResult(document.getElementById('submitBtn'));
+
+        const ajaxOptions = spyAjax.mock.calls[0][0];
+        ajaxOptions.success({
+            data: {
+                rubbers: {
+                    '1': null,
+                    '2': {
+                        winner: 'away',
+                        players: { away: ['X'] },
+                        sets: { '1': { away: 6 } }
+                    }
+                }
+            }
+        });
+
+        expect(jQuery('#match-status-2-away').hasClass('winner')).toBe(true);
+        expect(jQuery('#match-status-2-away').val()).toBe('W');
+        expect(jQuery('#awayplayer1_2').val()).toBe('X');
+        expect(jQuery('#players_2_away_1').val()).toBe('X');
+        expect(jQuery('#set_2_1_away').val()).toBe('6');
+
+        expect(jQuery('#match-status-1-away').hasClass('winner')).toBe(false);
+        expect(jQuery('#match-status-1-away').val()).toBe('');
+        expect(jQuery('#awayplayer1_1').val()).toBe('');
+        expect(jQuery('#players_1_away_1').val()).toBe('');
+        expect(jQuery('#set_1_1_away').val()).toBe('');
+
+        spyHeader.mockRestore();
+    });
+
     test('initializeTeamMatchResult binds click on [data-action="update-team-result"]', () => {
         document.body.innerHTML = `
             <form id="actionForm">

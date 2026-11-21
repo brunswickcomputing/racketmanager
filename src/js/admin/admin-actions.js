@@ -4,6 +4,52 @@
  * @module admin-actions
  */
 
+import { getDataAttr } from '../utils/dom-utils.js';
+
+/**
+ * Invoke a method on window.Racketmanager if available.
+ *
+ * @param {string} method
+ * @param {...*} args
+ */
+export function invokeRacketmanagerMethod(method, ...args) {
+  if (typeof window !== 'undefined' && window.Racketmanager && typeof window.Racketmanager[method] === 'function') {
+    window.Racketmanager[method](...args);
+  }
+}
+
+export function handleCheckAllAction(el) {
+  var form = null;
+  var targetId = el.dataset?.target || null;
+  if (targetId) {
+    form = document.getElementById(targetId);
+  }
+  if (!form) {
+    form = (typeof el.closest === 'function' ? el.closest('form') : null) || el.form;
+  }
+  if (form) {
+    invokeRacketmanagerMethod('checkAll', form);
+  }
+}
+
+export function handleNotifyTeamsAction(el) {
+  var matchId = el.dataset?.matchId ?? null;
+  invokeRacketmanagerMethod('notifyTeams', matchId);
+}
+
+export function handleSetNumMatchDaysClickAction(el) {
+  // Only handle click for radio buttons, matching the original onclick attribute in season-edit.php
+  if (el.type === 'radio') {
+    invokeRacketmanagerMethod('setNumMatchDays');
+  }
+}
+
+const CLICK_ACTION_MAP = Object.freeze(Object.assign(Object.create(null), {
+  'check-all': handleCheckAllAction,
+  'notify-teams': handleNotifyTeamsAction,
+  'set-num-match-days': handleSetNumMatchDaysClickAction,
+}));
+
 /**
  * Handle delegated click events.
  *
@@ -12,42 +58,66 @@
 function handleClick(e) {
   var target = e.target;
   var el = target && typeof target.closest === 'function' ? target.closest('[data-action]') : null;
-  if (!el) return;
+  if (!el) {
+    return;
+  }
 
-  var action = el.getAttribute('data-action') || (el.dataset ? el.dataset.action : null);
-  if (!action) return;
+  var action = getDataAttr(el, 'action');
+  if (!action) {
+    return;
+  }
 
-  switch (action) {
-    case 'check-all': {
-      var form = null;
-      var targetId = el.getAttribute('data-target') || (el.dataset ? el.dataset.target : null);
-      if (targetId) {
-        form = document.getElementById(targetId);
-      }
-      if (!form) {
-        form = (typeof el.closest === 'function' ? el.closest('form') : null) || el.form;
-      }
-      if (form && window.Racketmanager && typeof window.Racketmanager.checkAll === 'function') {
-        window.Racketmanager.checkAll(form);
-      }
-      break;
-    }
-    case 'notify-teams': {
-      var matchId = el.getAttribute('data-match-id') || (el.dataset ? el.dataset.matchId : null);
-      if (window.Racketmanager && typeof window.Racketmanager.notifyTeams === 'function') {
-        window.Racketmanager.notifyTeams(matchId);
-      }
-      break;
-    }
-    case 'set-num-match-days': {
-      // Only handle click for radio buttons, matching the original onclick attribute in season-edit.php
-      if (el.type === 'radio' && window.Racketmanager && typeof window.Racketmanager.setNumMatchDays === 'function') {
-        window.Racketmanager.setNumMatchDays();
-      }
-      break;
-    }
+  var handler = CLICK_ACTION_MAP[action];
+  if (handler) {
+    handler(el);
   }
 }
+
+export function handleSetMatchDateAction(el) {
+  var idx = Number(el.dataset?.index ?? 0);
+  var maxFixtures = Number(el.dataset?.maxFixtures ?? 0);
+  var mode = el.dataset?.mode || '';
+  invokeRacketmanagerMethod('setMatchDate', el.value, idx, maxFixtures, mode);
+}
+
+export function handleSetMatchDayPopUpAction(el) {
+  var popIdx = Number(el.dataset?.index ?? 0);
+  var popMaxFixtures = Number(el.dataset?.maxFixtures ?? 0);
+  var popMode = el.dataset?.mode || '';
+  invokeRacketmanagerMethod('setMatchDayPopUp', el.value, popIdx, popMaxFixtures, popMode);
+}
+
+export function handleInsertHomeStadiumAction(el) {
+  var stadiumIdx = Number(el.dataset?.index ?? 0);
+  var homeTeamInput = document.getElementById('home_team_' + stadiumIdx);
+  var teamId = homeTeamInput ? homeTeamInput.value : el.value;
+  invokeRacketmanagerMethod('insertHomeStadium', teamId, stadiumIdx);
+}
+
+export function handleSetNumMatchDaysChangeAction(el) {
+  // Only handle change for non-radio inputs (e.g. #max_teams number input),
+  // preventing duplicate calls when a radio button is clicked (firing both click and change).
+  if (el.type !== 'radio') {
+    invokeRacketmanagerMethod('setNumMatchDays');
+  }
+}
+
+const CHANGE_ZERO_ARG_ACTIONS = Object.freeze(Object.assign(Object.create(null), {
+  'set-end-date': 'setEndDate',
+  'set-event-name': 'setEventName',
+  'set-shortcode': 'setShortcode',
+  'set-tournament-open-date': 'setTournamentOpenDate',
+}));
+
+const CHANGE_ACTION_HANDLERS = Object.freeze(Object.assign(Object.create(null), {
+  'set-num-match-days': handleSetNumMatchDaysChangeAction,
+  'get-import-option': function (el) {
+    invokeRacketmanagerMethod('getImportOption', el.value);
+  },
+  'set-match-date': handleSetMatchDateAction,
+  'set-match-day-pop-up': handleSetMatchDayPopUpAction,
+  'insert-home-stadium': handleInsertHomeStadiumAction,
+}));
 
 /**
  * Handle delegated change events.
@@ -57,77 +127,24 @@ function handleClick(e) {
 function handleChange(e) {
   var target = e.target;
   var el = target && typeof target.closest === 'function' ? target.closest('[data-action]') : null;
-  if (!el) return;
+  if (!el) {
+    return;
+  }
 
-  var action = el.getAttribute('data-action') || (el.dataset ? el.dataset.action : null);
-  if (!action) return;
+  var action = getDataAttr(el, 'action');
+  if (!action) {
+    return;
+  }
 
-  switch (action) {
-    case 'set-end-date': {
-      if (window.Racketmanager && typeof window.Racketmanager.setEndDate === 'function') {
-        window.Racketmanager.setEndDate();
-      }
-      break;
-    }
-    case 'set-num-match-days': {
-      // Only handle change for non-radio inputs (e.g. #max_teams number input),
-      // preventing duplicate calls when a radio button is clicked (firing both click and change).
-      if (el.type !== 'radio' && window.Racketmanager && typeof window.Racketmanager.setNumMatchDays === 'function') {
-        window.Racketmanager.setNumMatchDays();
-      }
-      break;
-    }
-    case 'set-event-name': {
-      if (window.Racketmanager && typeof window.Racketmanager.setEventName === 'function') {
-        window.Racketmanager.setEventName();
-      }
-      break;
-    }
-    case 'set-shortcode': {
-      if (window.Racketmanager && typeof window.Racketmanager.setShortcode === 'function') {
-        window.Racketmanager.setShortcode();
-      }
-      break;
-    }
-    case 'set-tournament-open-date': {
-      if (window.Racketmanager && typeof window.Racketmanager.setTournamentOpenDate === 'function') {
-        window.Racketmanager.setTournamentOpenDate();
-      }
-      break;
-    }
-    case 'get-import-option': {
-      if (window.Racketmanager && typeof window.Racketmanager.getImportOption === 'function') {
-        window.Racketmanager.getImportOption(el.value);
-      }
-      break;
-    }
-    case 'set-match-date': {
-      var idx = Number(el.getAttribute('data-index') || (el.dataset ? el.dataset.index : 0));
-      var maxFixtures = Number(el.getAttribute('data-max-fixtures') || (el.dataset ? el.dataset.maxFixtures : 0));
-      var mode = el.getAttribute('data-mode') || (el.dataset ? el.dataset.mode : '');
-      if (window.Racketmanager && typeof window.Racketmanager.setMatchDate === 'function') {
-        window.Racketmanager.setMatchDate(el.value, idx, maxFixtures, mode);
-      }
-      break;
-    }
-    case 'set-match-day-pop-up': {
-      var popIdx = Number(el.getAttribute('data-index') || (el.dataset ? el.dataset.index : 0));
-      var popMaxFixtures = Number(el.getAttribute('data-max-fixtures') || (el.dataset ? el.dataset.maxFixtures : 0));
-      var popMode = el.getAttribute('data-mode') || (el.dataset ? el.dataset.mode : '');
-      if (window.Racketmanager && typeof window.Racketmanager.setMatchDayPopUp === 'function') {
-        window.Racketmanager.setMatchDayPopUp(el.value, popIdx, popMaxFixtures, popMode);
-      }
-      break;
-    }
-    case 'insert-home-stadium': {
-      var stadiumIdx = Number(el.getAttribute('data-index') || (el.dataset ? el.dataset.index : 0));
-      var homeTeamInput = document.getElementById('home_team_' + stadiumIdx);
-      var teamId = homeTeamInput ? homeTeamInput.value : el.value;
-      if (window.Racketmanager && typeof window.Racketmanager.insertHomeStadium === 'function') {
-        window.Racketmanager.insertHomeStadium(teamId, stadiumIdx);
-      }
-      break;
-    }
+  var zeroArgMethod = CHANGE_ZERO_ARG_ACTIONS[action];
+  if (zeroArgMethod) {
+    invokeRacketmanagerMethod(zeroArgMethod);
+    return;
+  }
+
+  var handler = CHANGE_ACTION_HANDLERS[action];
+  if (handler) {
+    handler(el);
   }
 }
 
@@ -141,9 +158,9 @@ function handleFocusOut(e) {
   var el = target && typeof target.closest === 'function' ? target.closest('[data-action]') : null;
   if (!el) return;
 
-  var action = el.getAttribute('data-action') || (el.dataset ? el.dataset.action : null);
+  var action = getDataAttr(el, 'action');
   if (action === 'save-add-points') {
-    var tableId = el.getAttribute('data-table-id') || (el.dataset ? el.dataset.tableId : null);
+    var tableId = el.dataset?.tableId ?? null;
     if (window.Racketmanager && typeof window.Racketmanager.saveAddPoints === 'function') {
       window.Racketmanager.saveAddPoints(el.value, tableId);
     }
@@ -171,7 +188,7 @@ function getDocHeight(doc) {
 export function setIframeHeight(id) {
   var ifrm = typeof id === 'string' ? document.getElementById(id) : id;
   if (!ifrm) return;
-  var doc = ifrm.contentDocument ? ifrm.contentDocument : (ifrm.contentWindow ? ifrm.contentWindow.document : null);
+  const doc = ifrm.contentDocument || ifrm.contentWindow?.document || null;
   if (!doc) return;
   ifrm.style.visibility = 'hidden';
   ifrm.style.height = '10px';
@@ -187,7 +204,7 @@ export function setIframeHeight(id) {
 function handleLoad(e) {
   var target = e.target;
   var el = (target && typeof target.closest === 'function') ? target.closest('[data-action="set-iframe-height"]') : null;
-  if (!el && target && target.getAttribute && target.getAttribute('data-action') === 'set-iframe-height') {
+  if (!el && getDataAttr(target, 'action') === 'set-iframe-height') {
     el = target;
   }
   if (el) {

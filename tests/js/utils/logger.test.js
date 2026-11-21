@@ -93,6 +93,24 @@ describe('logger and telemetry', () => {
         }
     });
 
+    test('suppresses errors if console method throws when logging', async () => {
+        globalThis.RACKETMANAGER_CONFIG = {
+            env: 'development',
+            logging: { level: 'debug' }
+        };
+
+        const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {
+            throw new Error('Restricted console');
+        });
+
+        const { logger } = await import('../../../src/js/utils/logger.js');
+
+        expect(() => {
+            logger.warn('test throwing console');
+        }).not.toThrow();
+        expect(consoleWarnSpy).toHaveBeenCalledWith('test throwing console');
+    });
+
     test('recordEvent logs debug telemetry when telemetryEnabled is true', async () => {
         globalThis.RACKETMANAGER_CONFIG = {
             env: 'development',

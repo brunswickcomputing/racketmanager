@@ -121,6 +121,56 @@ describe('features/payments/stripe-api', () => {
                 }
             });
         });
+
+        test('swallows errors thrown by callback on completion without crashing or rethrowing', async () => {
+            jest.spyOn(jQuery, 'ajax').mockImplementation((opts) => {
+                opts.success({ data: 'pi_secret' });
+                opts.complete();
+            });
+            const callback = jest.fn(() => {
+                throw new Error('Consumer callback error');
+            });
+
+            await expect(createPaymentRequest('entry-1', 'inv-1', null, null, callback)).resolves.toBeUndefined();
+            expect(callback).toHaveBeenCalledWith('pi_secret');
+        });
+
+        test('swallows errors thrown by callback on early exit when ajax config is missing', async () => {
+            window.ajax_var = { url: '', ajax_nonce: '' };
+            const callback = jest.fn(() => {
+                throw new Error('Consumer callback error on missing config');
+            });
+
+            await expect(createPaymentRequest('entry-1', 'inv-1', null, null, callback)).resolves.toBeUndefined();
+            expect(callback).toHaveBeenCalledWith('Ajax configuration is missing.');
+        });
+
+        test('invokes callback with error message when jQuery is undefined', (done) => {
+            const originalJQuery = window.jQuery;
+            delete window.jQuery;
+            delete window.$;
+
+            createPaymentRequest('entry-1', 'inv-1', null, null, (result) => {
+                try {
+                    expect(result).toBe('Ajax configuration is missing.');
+                    window.jQuery = window.$ = originalJQuery;
+                    done();
+                } catch (e) {
+                    window.jQuery = window.$ = originalJQuery;
+                    done(e);
+                }
+            });
+        });
+
+        test('returns Promise resolving to undefined when callback is provided', async () => {
+            jest.spyOn(jQuery, 'ajax').mockImplementation((opts) => {
+                opts.success({ data: 'pi_secret' });
+                opts.complete();
+            });
+
+            const returnVal = await createPaymentRequest('entry-1', 'inv-1', null, null, () => {});
+            expect(returnVal).toBeUndefined();
+        });
     });
 
     describe('promise mode (modern modules)', () => {
@@ -237,6 +287,38 @@ describe('features/payments/stripe-api', () => {
                 .rejects.toThrow('Fetch failed and no jQuery');
 
             window.jQuery = window.$ = originalJQuery;
+        });
+
+        test('handles fetch returning {success: false} with no data message and falls back to jQuery AJAX', async () => {
+            globalThis.fetch = jest.fn().mockResolvedValue({
+                json: jest.fn().mockResolvedValue({
+                    success: false
+                })
+            });
+
+            const spyAjax = jest.spyOn(jQuery, 'ajax').mockImplementation((opts) => {
+                opts.success({ success: true, data: 'pi_secret_fallback_default' });
+            });
+
+            const result = await createPaymentRequest('entry-fallback', 'inv-fallback', null, null);
+            expect(result).toBe('pi_secret_fallback_default');
+            expect(spyAjax).toHaveBeenCalled();
+        });
+
+        test('rejects with jQuery error when fetch returns {success: false} and jQuery fallback also rejects', async () => {
+            globalThis.fetch = jest.fn().mockResolvedValue({
+                json: jest.fn().mockResolvedValue({
+                    success: false,
+                    data: 'Initial fetch failure'
+                })
+            });
+
+            jest.spyOn(jQuery, 'ajax').mockImplementation((opts) => {
+                opts.error({ responseJSON: { data: 'Fallback jQuery also failed' } });
+            });
+
+            await expect(createPaymentRequest('entry-fallback', 'inv-fallback', null, null))
+                .rejects.toThrow('Fallback jQuery also failed');
         });
     });
 });

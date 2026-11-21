@@ -31,8 +31,12 @@ export function printScoreCard(e, matchId) {
     let head = '<html lang=""><head><title>Match Card</title>';
     for (let item of styleSheetList) {
         try {
-            if (item.href) head += '<link rel="stylesheet" type="text/css" href="' + item.href + '" media="all">';
-        } catch (_) { /* some stylesheets may be cross-origin */ }
+            if (item.href) {
+                head += '<link rel="stylesheet" type="text/css" href="' + item.href + '" media="all">';
+            }
+        } catch (_) {
+            // Defensive: ignore any inaccessible stylesheet properties in restricted environments
+        }
     }
     head += '</head>';
     const foot = '</body></html>';
@@ -53,7 +57,7 @@ export function printScoreCard(e, matchId) {
                 try {
                     matchCardWindow.document.head.innerHTML = head;
                     matchCardWindow.document.body.innerHTML = (response && response.data ? response.data : '') + foot;
-                } catch (_) {
+                } catch {
                     // Fallback: full document write
                     try {
                         matchCardWindow.document.open();

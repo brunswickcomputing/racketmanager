@@ -22,13 +22,13 @@ export function submitResetPassword(btnOrEvent) {
 
     // Derive form element
     let form;
-    if (btnOrEvent && btnOrEvent.form) {
+    if (btnOrEvent?.form) {
         form = btnOrEvent.form;
     } else {
         // Fallback: try to find a visible reset form within the modal
         form = document.querySelector(`${RESET_MODAL} form`) || document.querySelector('form#reset-password');
     }
-    if (!form || !form.id) return;
+    if (!form?.id) return;
 
     const formId = `#${form.id}`;
     let $form = jQuery(formId).serialize();
@@ -58,7 +58,7 @@ export function submitResetPassword(btnOrEvent) {
 }
 
 /**
- * Initialize the delegated handler for reset password submit
+ * Initialise the delegated handler for reset password submit
  * Usage: add data-action="reset-password" to the button inside the reset form/modal
  */
 export function initializeResetPassword() {

@@ -23,7 +23,7 @@ function requestTeamDuplicateCheck(teamVal) {
             security: getAjaxNonce(),
         },
         success: function (response) {
-            if (response && response.data) {
+            if (response?.data) {
                 ajaxMsg = 'Team already exists\n';
             }
         },

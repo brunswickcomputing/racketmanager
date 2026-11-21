@@ -1,6 +1,6 @@
 /**
  * Autocomplete helpers for jQuery UI Autocomplete
- * Provides safe wrappers and guards for autocomplete initialization
+ * Provides safe wrappers and guards for autocomplete initialisation
  */
 
 /**
@@ -25,10 +25,10 @@ function isValidSelector(selector) {
  * @returns {Function|undefined}
  */
 function getJQuery() {
-    if (typeof globalThis !== 'undefined' && typeof globalThis['jQuery'] !== 'undefined') {
+    if (typeof globalThis !== 'undefined' && globalThis['jQuery'] !== undefined) {
         return globalThis['jQuery'];
     }
-    if (typeof window !== 'undefined' && typeof window['jQuery'] !== 'undefined') {
+    if (typeof window !== 'undefined' && window['jQuery'] !== undefined) {
         return window['jQuery'];
     }
     return undefined;
@@ -51,7 +51,7 @@ export function isJQueryUIAvailable() {
  */
 export function isAutocompleteAvailable() {
     const jq = getJQuery();
-    return typeof jq !== 'undefined' && typeof jq.fn?.autocomplete === 'function';
+    return jq !== undefined && typeof jq.fn?.autocomplete === 'function';
 }
 
 /**
@@ -81,11 +81,11 @@ export function whenAutocompleteReady(callback, timeout = 5000, checkInterval = 
 }
 
 /**
- * Safely initialize autocomplete
+ * Safely initialise autocomplete
  *
  * @param {string|Element|object} selector - jQuery selector (can match multiple elements)
  * @param {Object} options - Autocomplete options
- * @returns {boolean} True if at least one element initialized successfully
+ * @returns {boolean} True if at least one element initialised successfully
  */
 export function safeAutocomplete(selector, options = {}) {
     if (!isValidSelector(selector)) {
@@ -103,7 +103,7 @@ export function safeAutocomplete(selector, options = {}) {
         return false;
     }
 
-    // Initialize autocomplete on all matching elements
+    // Initialise autocomplete on all matching elements
     elements.each(function () {
         jq(this).autocomplete(options);
     });
@@ -119,7 +119,7 @@ export function safeAutocomplete(selector, options = {}) {
  */
 export function logJQueryStatus() {
     const jq = getJQuery();
-    const isJQueryLoaded = typeof jq !== 'undefined';
+    const isJQueryLoaded = jq !== undefined;
     const isUIAvailable = isJQueryUIAvailable();
     const status = {
         jQueryLoaded: isJQueryLoaded,

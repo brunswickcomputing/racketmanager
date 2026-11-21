@@ -38,7 +38,7 @@ export function submitLogin(eventOrButton) {
             redirect_to: redirectURL,
         },
         success: function (response) {
-            if (response && response.data) {
+            if (response?.data) {
                 document.location.href = response.data;
             }
         },
@@ -53,7 +53,7 @@ export function submitLogin(eventOrButton) {
 }
 
 /**
- * Initialize the delegated handler for login submit
+ * Initialise the delegated handler for login submit
  * Usage: add data-action="login-submit" to the "submit" button
  */
 export function initializeLogin() {

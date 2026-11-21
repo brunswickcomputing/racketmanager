@@ -1,6 +1,6 @@
 /**
  * App configuration and feature flags
- * Values can be overridden via a global RACKETMANAGER_CONFIG (e.g. wp_localize_script)
+ * Values can be overridden via a global RACKETMANAGER_CONFIG (e.g. wp_localise_script)
  */
 
 const DEFAULT_CONFIG = {
@@ -16,13 +16,13 @@ const DEFAULT_CONFIG = {
 
 function normalize(config) {
   const out = { ...DEFAULT_CONFIG, ...(config || {}) };
-  out.flags = { ...DEFAULT_CONFIG.flags, ...(config && config.flags) };
-  out.logging = { ...DEFAULT_CONFIG.logging, ...(config && config.logging) };
+  out.flags = { ...DEFAULT_CONFIG.flags, ...(config?.flags) };
+  out.logging = { ...DEFAULT_CONFIG.logging, ...(config?.logging) };
 
   // Safety: production defaults to telemetry off and conservative logging
   if (out.env === 'production') {
     out.flags.enableTelemetry = false;
-    if (!config || !config.logging || !config.logging.level) {
+    if (!config?.logging?.level) {
       out.logging.level = 'warn';
     }
   }

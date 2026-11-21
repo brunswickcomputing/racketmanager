@@ -13,7 +13,7 @@ export const LOADING_MODAL = '#loadingModal';
 export const AJAX_TIMEOUT = 30000; // 30 seconds
 
 // Global flag to disable legacy JS by default (can be overridden via inline script before legacy loads)
-if (typeof window.RACKETMANAGER_DISABLE_LEGACY === 'undefined') {
+if (window.RACKETMANAGER_DISABLE_LEGACY === undefined) {
     window.RACKETMANAGER_DISABLE_LEGACY = true;
 }
 

@@ -15,7 +15,7 @@ export function dragStart(ev) {
         ev.dataTransfer.setData('text/plain', ev.target.id);
     }
     setTimeout(() => {
-        if (ev.target && ev.target.classList) {
+        if (ev.target?.classList) {
             ev.target.classList.add('hide');
         }
     }, 0);
@@ -27,7 +27,7 @@ export function dragStart(ev) {
  * @param {DragEvent} ev
  */
 export function dragEnd(ev) {
-    if (ev.target && ev.target.classList) {
+    if (ev.target?.classList) {
         ev.target.classList.remove('hide');
     }
 }
@@ -35,7 +35,7 @@ export function dragEnd(ev) {
 /**
  * Check if the box already contains a finals match element.
  *
- * @param {HTMLElement} box
+ * @param {EventTarget|dragEnter} box
  * @returns {boolean}
  */
 function hasFinalsMatch(box) {
@@ -53,7 +53,7 @@ export function dragEnter(ev) {
     if (hasFinalsMatch(box)) {
         return;
     }
-    if (ev.target && ev.target.classList) {
+    if (ev.target?.classList) {
         ev.target.classList.add('drag-over');
     }
 }
@@ -74,7 +74,7 @@ export function dragOver(ev) {
  * @param {DragEvent} ev
  */
 export function dragLeave(ev) {
-    if (ev.target && ev.target.classList) {
+    if (ev.target?.classList) {
         ev.target.classList.remove('drag-over');
     }
 }

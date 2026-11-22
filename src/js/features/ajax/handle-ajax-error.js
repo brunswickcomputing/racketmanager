@@ -6,6 +6,22 @@
 import { logger, recordEvent } from '../../utils/logger.js';
 
 /**
+ * Safely resolve a jQuery target from a selector-like input.
+ * For id selectors, uses getElementById to avoid jQuery parsing the input as HTML.
+ *
+ * @param {string} selector
+ * @returns {JQuery}
+ */
+function getSafeJQueryTarget(selector) {
+    if (typeof selector === 'string' && selector.startsWith('#')) {
+        const id = selector.slice(1);
+        const element = document.getElementById(id);
+        return element ? jQuery(element) : jQuery();
+    }
+    return jQuery(selector);
+}
+
+/**
  * Safely extract a message from a jQuery AJAX error response.
  * Prefers server-provided JSON payloads, falls back to statusText.
  * Mirrors legacy getMessageFromResponse behaviour for 500s but works for any status.
@@ -86,8 +102,8 @@ export function handleAjaxError(response, alertTextField, alertField) {
         });
     } catch (e) { console.error(e); }
 
-    jQuery(alertTextField).html(message);
-    jQuery(alertField).addClass('alert--danger');
+    getSafeJQueryTarget(alertTextField).html(message);
+    getSafeJQueryTarget(alertField).addClass('alert--danger');
 }
 
 /**

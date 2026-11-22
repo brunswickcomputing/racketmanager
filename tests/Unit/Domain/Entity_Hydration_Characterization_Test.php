@@ -130,7 +130,8 @@ final class Entity_Hydration_Characterization_Test extends TestCase {
     public function test_season_characterization(): void {
         $empty = new Season();
         $this->assertNull( $empty->get_id() );
-        $this->assertFalse( isset( $empty->name ) );
+        $this->assertNull( $empty->id );
+        $this->assertSame( '', $empty->name );
 
         $raw = (object) [
             'id'   => '2026',

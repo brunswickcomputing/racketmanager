@@ -12,6 +12,7 @@ namespace Racketmanager\Presentation\Presenters {
 namespace Racketmanager\Tests\Unit\Presentation\Presenters {
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Domain\DTO\Result\Results_Checker_Data;
 use Racketmanager\Domain\Result\Results_Checker;
 use Racketmanager\Presentation\Presenters\Results_Checker_Presenter;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
@@ -52,14 +53,16 @@ class Results_Checker_Presenter_Test extends TestCase {
     }
 
     public function test_present_maps_all_fields_correctly(): void {
-        $checker = new Results_Checker();
-        $checker->id = 123;
-        $checker->description = 'Test Description';
-        $checker->status = Results_Checker_Status::APPROVED->value;
-        $checker->updated_date = '2026-04-10 12:00:00';
-        $checker->match_id = 456;
-        $checker->team_id = 789;
-        $checker->player_id = 101;
+        $checker = new Results_Checker( new Results_Checker_Data(
+            id: 123,
+            league_id: 1,
+            match_id: 456,
+            team_id: 789,
+            player_id: 101,
+            description: 'Test Description',
+            status: Results_Checker_Status::APPROVED->value,
+            updated_date: '2026-04-10 12:00:00'
+        ) );
 
         $match = new \Racketmanager\Domain\Fixture\Fixture();
         $match->set_date( '2026-04-01' );
@@ -161,8 +164,7 @@ class Results_Checker_Presenter_Test extends TestCase {
             ['20', $away_team],
         ]);
 
-        $checker = new Results_Checker();
-        $checker->match_id = 100;
+        $checker = new Results_Checker( new Results_Checker_Data( match_id: 100 ) );
         $this->fixture_repository->method('find_by_id')->willReturn($match);
 
         $details = new Fixture_Details_DTO(
@@ -199,8 +201,7 @@ class Results_Checker_Presenter_Test extends TestCase {
 
         $this->league_repository->method('find_by_id')->willReturn($league);
         
-        $checker = new Results_Checker();
-        $checker->match_id = 100;
+        $checker = new Results_Checker( new Results_Checker_Data( match_id: 100 ) );
         $this->fixture_repository->method('find_by_id')->willReturn($match);
 
         $details = new Fixture_Details_DTO(
@@ -223,16 +224,14 @@ class Results_Checker_Presenter_Test extends TestCase {
     }
 
     public function test_show_status_is_false_for_outstanding_filter(): void {
-        $checker = new Results_Checker();
-        $checker->match_id = 456;
+        $checker = new Results_Checker( new Results_Checker_Data( match_id: 456 ) );
         $this->fixture_repository->method( 'find_by_id' )->willReturn( new \Racketmanager\Domain\Fixture\Fixture() );
         $view_model = $this->presenter->present( $checker, 'outstanding' );
         $this->assertFalse( $view_model->show_status );
     }
 
     public function test_present_handles_missing_match_date(): void {
-        $checker = new Results_Checker();
-        $checker->match_id = 456;
+        $checker = new Results_Checker( new Results_Checker_Data( match_id: 456 ) );
         $this->fixture_repository->method( 'find_by_id' )->willReturn( new \Racketmanager\Domain\Fixture\Fixture() );
         // date is null/unset
 

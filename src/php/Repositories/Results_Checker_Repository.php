@@ -62,13 +62,15 @@ class Results_Checker_Repository implements Results_Checker_Repository_Interface
         if ( empty( $entity->id ) ) {
             $inserted = $this->wpdb->insert( $this->table_name, $data, $format );
             if ( $inserted ) {
-                $entity->id = (int) $this->wpdb->insert_id;
+                $entity->set_id( (int) $this->wpdb->insert_id );
                 return $entity->id;
             }
             return false;
         } else {
-            $data['updated_date'] = current_time( 'mysql' );
-            $format[] = '%s'; // updated_date
+            $updated_date         = current_time( 'mysql' );
+            $data['updated_date'] = $updated_date;
+            $format[]             = '%s'; // updated_date.
+            $entity->set_updated_date( $updated_date );
 
             return $this->wpdb->update(
                 $this->table_name,

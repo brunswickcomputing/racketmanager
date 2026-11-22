@@ -65,6 +65,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
     use Racketmanager\Domain\Club\Club;
     use Racketmanager\Domain\Competition\Competition_Type;
     use Racketmanager\Domain\Competition\Event;
+    use Racketmanager\Domain\DTO\Result\Results_Checker_Data;
     use Racketmanager\Domain\Result\Results_Checker;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
@@ -769,9 +770,10 @@ class Notification_Service_Test extends TestCase {
     }
 
     public function test_send_result_error_notification_enhanced(): void {
-        $checker = new Results_Checker();
-        $checker->description = 'Penalty for late result';
-        $checker->league_id   = 456;
+        $checker = new Results_Checker( new Results_Checker_Data(
+            league_id: 456,
+            description: 'Penalty for late result'
+        ) );
 
         $fixture = $this->create_test_fixture( [ 'fixture_title' => 'Home v Away', 'home_team' => '100' ] );
 
@@ -824,9 +826,10 @@ class Notification_Service_Test extends TestCase {
     }
 
     public function test_send_result_error_notification(): void {
-        $checker = $this->createMock( Results_Checker::class );
-        $checker->description = 'Test error description';
-        $checker->league_id   = 456;
+        $checker = new Results_Checker( new Results_Checker_Data(
+            league_id: 456,
+            description: 'Test error description'
+        ) );
 
         $fixture = $this->create_test_fixture( [
             'fixture_title' => 'Home v Away',

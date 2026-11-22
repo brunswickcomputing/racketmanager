@@ -21,10 +21,10 @@ class Results_Checker_Manager implements Results_Checker_Manager_Interface {
     private ?Notification_Service $notification_service = null;
 
     /**
-     * @param Results_Checker_Repository_Interface $repository        Repository.
-     * @param Fixture_Result_Manager              $result_manager    Result manager.
-     * @param League_Repository_Interface         $league_repository League repository.
-     * @param Fixture_Repository_Interface        $fixture_repository Fixture repository.
+     * @param Results_Checker_Repository_Interface $repository         Repository.
+     * @param Fixture_Result_Manager               $result_manager     Result manager.
+     * @param League_Repository_Interface          $league_repository  League repository.
+     * @param Fixture_Repository_Interface         $fixture_repository Fixture repository.
      */
     public function __construct(
         private readonly Results_Checker_Repository_Interface $repository,
@@ -48,8 +48,7 @@ class Results_Checker_Manager implements Results_Checker_Manager_Interface {
      * @param Results_Checker $checker Entity.
      */
     public function approve( Results_Checker $checker ): void {
-        $checker->status = Results_Checker_Status::APPROVED->value;
-        $checker->updated_user = get_current_user_id();
+        $checker->approve( get_current_user_id() );
         $this->repository->save( $checker );
     }
 
@@ -59,7 +58,7 @@ class Results_Checker_Manager implements Results_Checker_Manager_Interface {
      * @param Results_Checker $checker Entity.
      */
     public function handle( Results_Checker $checker ): void {
-        if ( empty( $checker->player_id ) ) {
+        if ( $checker->is_match_error() ) {
             $this->handle_match_error( $checker );
         } else {
             $this->handle_player_error( $checker );
@@ -77,8 +76,9 @@ class Results_Checker_Manager implements Results_Checker_Manager_Interface {
             return;
         }
 
-        $penalty = (float) ( $league->point_rules['result_late'] ?? $league->point_rules['late_result'] ?? 0 );
-        $match   = $this->fixture_repository->find_by_id( $checker->match_id );
+        $point_rules = $league->get_point_rule();
+        $penalty     = (float) ( $point_rules['result_late'] ?? $point_rules['late_result'] ?? 0 );
+        $match       = $this->fixture_repository->find_by_id( $checker->match_id );
         if ( ! $match instanceof Fixture ) {
             return;
         }
@@ -92,15 +92,14 @@ class Results_Checker_Manager implements Results_Checker_Manager_Interface {
                 winner_id: $match->get_winner_id(),
                 loser_id: $match->get_loser_id(),
                 status: $match->get_status(),
-                custom: $match->get_custom()
+                custom: $match->get_custom() ?: []
             );
             $this->result_manager->update_result( $match, $result, $match->get_confirmed() );
 
             $this->notification_service?->send_result_error_notification( $checker, $match, $penalty );
         }
 
-        $checker->status       = Results_Checker_Status::HANDLED->value;
-        $checker->updated_user = get_current_user_id();
+        $checker->handle( get_current_user_id() );
         $this->repository->save( $checker );
     }
 
@@ -115,8 +114,9 @@ class Results_Checker_Manager implements Results_Checker_Manager_Interface {
             return;
         }
 
-        $penalty = (float) ( $league->point_rules['player_error'] ?? 0 );
-        $match   = $this->fixture_repository->find_by_id( $checker->match_id );
+        $point_rules = $league->get_point_rule();
+        $penalty     = (float) ( $point_rules['player_error'] ?? 0 );
+        $match       = $this->fixture_repository->find_by_id( $checker->match_id );
         if ( ! $match instanceof Fixture ) {
             return;
         }
@@ -147,16 +147,14 @@ class Results_Checker_Manager implements Results_Checker_Manager_Interface {
                 winner_id: $match->get_winner_id(),
                 loser_id: $match->get_loser_id(),
                 status: $match->get_status(),
-                custom: $match->get_custom()
+                custom: $match->get_custom() ?: []
             );
             $this->result_manager->update_result( $match, $result, $match->get_confirmed() );
 
             $this->notification_service?->send_result_error_notification( $checker, $match, $penalty );
         }
 
-        $checker->status       = Results_Checker_Status::HANDLED->value;
-        $checker->updated_user = get_current_user_id();
+        $checker->handle( get_current_user_id() );
         $this->repository->save( $checker );
     }
-
 }

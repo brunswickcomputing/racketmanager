@@ -2,7 +2,7 @@ import { perfMarksEnabled, telemetryEnabled } from '../../config/app-config.js';
 import { recordEvent } from '../../utils/logger.js';
 
 /**
- * Initialize lightweight telemetry for Phase 0.
+ * Initialise lightweight telemetry for Phase 0.
  * - Adds optional jQuery AJAX performance marks and basic event recording.
  * - No network transmission by default; logs stay local via logger.
  */
@@ -16,7 +16,7 @@ export function initializeTelemetry() {
       if (perfMarksEnabled()) {
         try { performance.mark('rm:ajax:start'); } catch (e) { console.error(e); }
       }
-      recordEvent('ajax_send', { url: settings && settings.url });
+      recordEvent('ajax_send', { url: settings?.url });
     })
     .on('ajaxComplete.rmTelemetry', function (_e, _jqXHR, settings) {
       if (perfMarksEnabled()) {
@@ -25,6 +25,6 @@ export function initializeTelemetry() {
           performance.measure('rm:ajax:duration', 'rm:ajax:start', 'rm:ajax:end');
         } catch (e) { console.error(e); }
       }
-      recordEvent('ajax_complete', { url: settings && settings.url });
+      recordEvent('ajax_complete', { url: settings?.url });
     });
 }

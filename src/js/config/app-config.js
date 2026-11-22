@@ -15,7 +15,7 @@ const DEFAULT_CONFIG = {
 };
 
 function normalize(config) {
-  const out = { ...DEFAULT_CONFIG, ...(config || {}) };
+  const out = { ...DEFAULT_CONFIG, ...config };
   out.flags = { ...DEFAULT_CONFIG.flags, ...(config?.flags) };
   out.logging = { ...DEFAULT_CONFIG.logging, ...(config?.logging) };
 

@@ -1,5 +1,5 @@
 // payment-checkout.js
-// Stripe checkout initializer wired into the main app entry (src/js/index.js)
+// Stripe checkout initialiser wired into the main app entry (src/js/index.js)
 
 import { showMessage, setLoading } from './stripe-helpers.js';
 import { createPaymentRequest } from './stripe-api.js';
@@ -18,8 +18,8 @@ export function initializeTournamentCheckout() {
     return; // nothing to do on this page
   }
 
-  // Initialize Stripe once
-  if (!stripe && publishableKeyEl && publishableKeyEl.value) {
+  // Initialise Stripe once
+  if (!stripe && publishableKeyEl?.value) {
     try {
       stripe = Stripe(publishableKeyEl.value);
     } catch (e) {

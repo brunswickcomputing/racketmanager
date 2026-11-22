@@ -98,11 +98,11 @@ export function setClubRole(link) {
 
 // Initialize user autocomplete for the Club Role modal
 function initUserAutocomplete(context = document) {
-  const selector = `${context} #userName`;
+  const $target = jQuery('#userName', context);
   // Avoid duplicate init by destroying existing instance if any
-  try { jQuery(selector).filter('.ui-autocomplete-input').each(function(){ jQuery(this).autocomplete('destroy'); }); } catch (e) { console.error(e); }
+  try { $target.filter('.ui-autocomplete-input').each(function(){ jQuery(this).autocomplete('destroy'); }); } catch (e) { console.error(e); }
 
-  safeAutocomplete(selector, {
+  safeAutocomplete($target, {
     minLength: 2,
     source: function(request, response) {
       const club = jQuery('#clubId').val();

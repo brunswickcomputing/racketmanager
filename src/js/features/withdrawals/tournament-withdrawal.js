@@ -1,14 +1,14 @@
 /**
  * Tournament Withdrawal (Phase 6)
- * Modularizes legacy Racketmanager.withdrawTournament and Racketmanager.confirmTournamentWithdraw
- * - Uses centralized AJAX utilities and error handling
+ * Modularise legacy Racketmanager.withdrawTournament and Racketmanager.confirmTournamentWithdraw
+ * - Uses centralised AJAX utilities and error handling
  * - Provides delegated handlers (no globals/back-compat)
  */
 
 import { getAjaxUrl, getAjaxNonce } from '../../config/ajax-config.js';
 import { handleAjaxError } from '../ajax/handle-ajax-error.js';
 import { updateTotalPrice } from '../pricing/pricing.js';
-import { checkToggle } from '../modals/has-modal-checkboxes.js';
+import { checkToggle } from '../modals';
 
 const LIST_CONTAINER = '#liEventDetails';
 const WITHDRAW_MODAL = '#partnerModal'; // Reuse existing modal container per legacy
@@ -59,7 +59,7 @@ export function openWithdrawalModal(event) {
 }
 
 /**
- * Confirm tournament withdrawal. Mirrors legacy behavior.
+ * Confirm tournament withdrawal. Mirrors legacy behaviour.
  */
 export function confirmTournamentWithdraw() {
   const modal = WITHDRAW_MODAL;
@@ -86,8 +86,8 @@ export function confirmTournamentWithdraw() {
     success: function (response) {
       // Uncheck each entered event and trigger UI updates
       const eventsEntered = jQuery('input:checked.form-check--event');
-      for (let i = 0; i < eventsEntered.length; i++) {
-        const ev = eventsEntered[i];
+      for (const element of eventsEntered) {
+          const ev = element;
         ev.checked = false;
         try { checkToggle(ev, null); } catch (e) { console.error(e); }
       }
@@ -111,7 +111,7 @@ export function confirmTournamentWithdraw() {
 }
 
 /**
- * Initialize delegated handlers for tournament withdrawal
+ * Initialise delegated handlers for tournament withdrawal
  */
 export function initializeTournamentWithdrawal() {
   jQuery(document)

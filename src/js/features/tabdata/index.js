@@ -4,8 +4,8 @@
 
 import {
     initializeTabData,
-    tabData,
-    tabDataLink,
+
+
     attachTabDataToGlobal
 } from './tab-data.js';
 
@@ -15,4 +15,6 @@ export function initializeTabDataFeature() {
 }
 
 // Re-export for direct use
-export { tabData, tabDataLink };
+
+
+export {tabData, tabDataLink} from './tab-data.js';

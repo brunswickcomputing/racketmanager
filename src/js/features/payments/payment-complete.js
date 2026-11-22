@@ -26,7 +26,7 @@ export function initializeStripePaymentComplete() {
   // Only run on the payment complete page (has #paymentAlert and Stripe publishable key input)
   const alertBox = document.getElementById('paymentAlert');
   const publishableKeyEl = document.getElementById('api_publishable_key');
-  if (!alertBox || !publishableKeyEl || !publishableKeyEl.value) return;
+  if (!alertBox || !publishableKeyEl?.value) return;
 
   // Ensure Stripe.js is available
   if (typeof Stripe !== 'function') {

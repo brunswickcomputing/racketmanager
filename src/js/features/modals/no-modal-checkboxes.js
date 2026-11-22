@@ -3,8 +3,6 @@
  * Handles aria-controls attribute for accessibility
  */
 
-import { handleCheckboxConditional } from '../../utils/dom-utils.js';
-
 /**
  * Initialize checkboxes that show/hide content without modals
  */

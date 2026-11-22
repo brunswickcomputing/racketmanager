@@ -101,6 +101,40 @@ describe('features/printing/print-scorecard', () => {
         spyAjax.mockRestore();
     });
 
+    test('falls back to statusText on AJAX failure when responseJSON is absent', () => {
+        document.body.innerHTML = `
+            <div id="feedback-50"></div>
+        `;
+
+        const spyAjax = jest.spyOn(jQuery, 'ajax').mockImplementation((opts) => {
+            opts.error({ statusText: 'Not Found' });
+        });
+
+        printScoreCard(null, 50);
+
+        expect(document.getElementById('feedback-50').textContent).toBe('Not Found');
+        expect(document.getElementById('feedback-50').className).toContain('message-error');
+
+        spyAjax.mockRestore();
+    });
+
+    test('falls back to default error message on AJAX failure when both responseJSON and statusText are absent', () => {
+        document.body.innerHTML = `
+            <div id="feedback-50"></div>
+        `;
+
+        const spyAjax = jest.spyOn(jQuery, 'ajax').mockImplementation((opts) => {
+            opts.error({});
+        });
+
+        printScoreCard(null, 50);
+
+        expect(document.getElementById('feedback-50').textContent).toBe('Request failed');
+        expect(document.getElementById('feedback-50').className).toContain('message-error');
+
+        spyAjax.mockRestore();
+    });
+
     test('defensively ignores restricted stylesheet property access when building head', () => {
         document.body.innerHTML = `
             <div id="feedback-50"></div>
@@ -146,12 +180,11 @@ describe('features/printing/print-scorecard', () => {
         }
     });
 
-    test('falls back to document.write when setting innerHTML throws', () => {
+    test('falls back to documentElement.innerHTML when setting head innerHTML throws', () => {
         document.body.innerHTML = `
             <div id="feedback-50"></div>
         `;
 
-        let writtenContent = '';
         const mockWindow = {
             document: {
                 head: {
@@ -160,11 +193,7 @@ describe('features/printing/print-scorecard', () => {
                     }
                 },
                 body: { innerHTML: '' },
-                open: jest.fn(),
-                write: jest.fn((content) => {
-                    writtenContent += content;
-                }),
-                close: jest.fn()
+                documentElement: { innerHTML: '' }
             }
         };
         const spyOpen = jest.spyOn(globalThis, 'open').mockReturnValue(mockWindow);
@@ -174,10 +203,35 @@ describe('features/printing/print-scorecard', () => {
 
         printScoreCard(null, 50);
 
-        expect(mockWindow.document.open).toHaveBeenCalled();
-        expect(mockWindow.document.write).toHaveBeenCalled();
-        expect(mockWindow.document.close).toHaveBeenCalled();
-        expect(writtenContent).toContain('Fallback Content');
+        expect(mockWindow.document.documentElement.innerHTML).toContain('Fallback Content');
+
+        spyOpen.mockRestore();
+        spyAjax.mockRestore();
+    });
+
+    test('falls back to body.innerHTML when documentElement is missing and head innerHTML throws', () => {
+        document.body.innerHTML = `
+            <div id="feedback-50"></div>
+        `;
+
+        const mockWindow = {
+            document: {
+                head: {
+                    set innerHTML(_) {
+                        throw new Error('Disallowed innerHTML');
+                    }
+                },
+                body: { innerHTML: '' }
+            }
+        };
+        const spyOpen = jest.spyOn(globalThis, 'open').mockReturnValue(mockWindow);
+        const spyAjax = jest.spyOn(jQuery, 'ajax').mockImplementation((opts) => {
+            opts.success({ data: '<div>Fallback Body Content</div>' });
+        });
+
+        printScoreCard(null, 50);
+
+        expect(mockWindow.document.body.innerHTML).toContain('Fallback Body Content');
 
         spyOpen.mockRestore();
         spyAjax.mockRestore();

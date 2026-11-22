@@ -13,7 +13,7 @@ const PO_RESPONSE_TEXT_ID = '#POUpdateResponseText';
 
 /**
  * Submit purchase order form via AJAX
- * Mirrors legacy behavior for minimal change risk
+ * Mirrors legacy behaviour for minimal change risk
  *
  * @param {Event} e
  * @param {HTMLButtonElement|HTMLAnchorElement} link - element inside a form (uses link.form)
@@ -23,7 +23,7 @@ export function setPurchaseOrder(e, link) {
         e.preventDefault();
     }
 
-    if (!link || !link.form || !link.form.id) {
+    if (!link?.form?.id) {
         console.error('setPurchaseOrder: invalid link/form');
         return false;
     }
@@ -75,7 +75,7 @@ export function setPurchaseOrder(e, link) {
 
 
 /**
- * Initialize delegated handler for setting purchase order (no legacy globals)
+ * Initialise delegated handler for setting purchase order (no legacy globals)
  */
 export function initializeSetPurchaseOrder() {
     // Delegate clicks on elements with data-action="set-purchase-order"

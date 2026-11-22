@@ -92,7 +92,7 @@ function renderSuccessUI({ message, homePoints, awayPoints, winner, sets }) {
  * @param {HTMLElement} link
  */
 export function updateMatchResults(link) {
-  if (!link || !link.form || !link.form.id) return;
+  if (!link?.form?.id) return;
 
   const $btn = jQuery(link);
   if ($btn.data('busy') === true) return; // reentrancy guard
@@ -121,7 +121,7 @@ export function updateMatchResults(link) {
     type: 'POST',
     data: $form,
     success: function (response) {
-      const payload = (response && response.data !== undefined) ? response.data : null;
+      const payload = (response?.data !== undefined) ? response.data : null;
       const parsed = parsePayload(payload);
       renderSuccessUI(parsed);
     },
@@ -140,7 +140,7 @@ export function updateMatchResults(link) {
 }
 
 /**
- * Initialize delegated handlers for Update Match Results buttons
+ * Initialise delegated handlers for Update Match Results buttons
  */
 export function initializeUpdateMatchResults() {
   jQuery(document)

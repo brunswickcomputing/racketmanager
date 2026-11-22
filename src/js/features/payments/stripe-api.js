@@ -129,7 +129,7 @@ function fallbackJQueryPayment(tournamentEntry, invoiceId, tournamentId, playerI
       type: 'POST',
       data: postData,
       success: function (response) {
-        if (response && response.success) {
+        if (response?.success) {
           resolve(response.data);
         } else {
           reject(new Error(response?.data || 'Unable to create payment.'));
@@ -160,6 +160,7 @@ async function createPaymentRequestPromise(tournamentEntry, invoiceId, tournamen
 
   const formData = buildPaymentFormData(tournamentEntry, invoiceId, tournamentId, playerId);
 
+  let fetchError;
   try {
     const res = await fetch(ajaxUrl, {
       method: 'POST',
@@ -175,10 +176,12 @@ async function createPaymentRequestPromise(tournamentEntry, invoiceId, tournamen
     }
 
     const message = typeof json?.data === 'string' ? json.data : (json?.data?.message || 'Unable to create payment.');
-    throw new Error(message);
+    fetchError = new Error(message);
   } catch (err) {
-    return await fallbackJQueryPayment(tournamentEntry, invoiceId, tournamentId, playerId, err);
+    fetchError = err;
   }
+
+  return fallbackJQueryPayment(tournamentEntry, invoiceId, tournamentId, playerId, fetchError);
 }
 
 /**
@@ -186,7 +189,7 @@ async function createPaymentRequestPromise(tournamentEntry, invoiceId, tournamen
  *
  * Backward compatibility with legacy racketmanager.legacy.js:
  * - When a callback function is provided as the fifth argument, this mirrors the
- *   legacy behavior and invokes the callback with the output string on completion.
+ *   legacy behaviour and invokes the callback with the output string on completion.
  *   It does not throw; it passes either the client secret (success) or an error message (failure).
  * - When no callback is provided, it returns a Promise that resolves to the client secret
  *   or rejects with an Error on failure (modern usage in modules).

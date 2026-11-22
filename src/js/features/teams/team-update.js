@@ -1,5 +1,5 @@
 /**
- * Teams - Team Update (Phase 10 cleanup)
+ * Teams - Team Update (Phase 10 clean-up)
  * Modularized replacement for legacy Racketmanager.updateTeam
  */
 
@@ -11,7 +11,7 @@ import { handleAjaxError } from '../ajax/handle-ajax-error.js';
  * @param {HTMLElement} link - the clicked button inside the form
  */
 export function updateTeam(link) {
-  if (!link || !link.form || !link.form.id) return;
+  if (!link?.form?.id) return;
 
   const formId = `#${link.form.id}`;
   let $form = jQuery(formId).serialize();
@@ -76,7 +76,7 @@ export function updateTeam(link) {
 }
 
 /**
- * Initialize delegated handler for updating team
+ * Initialise delegated handler for updating team
  */
 export function initializeTeamUpdate() {
   jQuery(document)

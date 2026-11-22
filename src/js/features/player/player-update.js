@@ -14,7 +14,7 @@ import { handleAjaxError } from '../ajax/handle-ajax-error.js';
 export function updatePlayer(e, link) {
     if (e && typeof e.preventDefault === 'function') e.preventDefault();
 
-    if (!link || !link.form || !link.form.id) {
+    if (!link?.form?.id) {
         console.error('updatePlayer: invalid link/form');
         return false;
     }
@@ -59,7 +59,7 @@ export function updatePlayer(e, link) {
 }
 
 /**
- * Initialize feature: bind click to #updatePlayerSubmit and provide a global fallback for templates.
+ * Initialise feature: bind click to #updatePlayerSubmit and provide a global fallback for templates.
  */
 export function initializePlayerUpdate() {
     // Delegated binding (prevents duplicate bindings and works with dynamic content)

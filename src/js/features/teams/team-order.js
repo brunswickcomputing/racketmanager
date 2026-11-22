@@ -1,7 +1,7 @@
 /**
  * Teams - Team Ordering Feature (Phase 7)
  * Modularized implementation of legacy Racketmanager.showTeamOrderPlayers and Racketmanager.validateTeamOrder
- * using delegated event handlers and centralized utilities.
+ * using delegated event handlers and centralised utilities.
  */
 
 import { getAjaxUrl, getAjaxNonce } from '../../config/ajax-config.js';
@@ -62,7 +62,7 @@ export function showTeamOrderPlayers(event) {
  * @param {string} setTeam - optional flag indicating set operation
  */
 export function validateTeamOrder(link, setTeam = '') {
-  if (!link || !link.form || !link.form.id) return;
+  if (!link?.form?.id) return;
 
   jQuery(TEAM_ORDER_CONTAINER).addClass('is-loading');
   jQuery(TEAM_ORDER_RUBBERS).hide();
@@ -87,11 +87,11 @@ export function validateTeamOrder(link, setTeam = '') {
     async: false,
     data: form,
     success: function (response) {
-      const data = response && response.data ? response.data : {};
+      const data = response?.data ? response.data : {};
       const updatedRubbers = data.rubbers || {};
       let rubberNo = 1;
       for (let r in updatedRubbers) {
-        if (!Object.prototype.hasOwnProperty.call(updatedRubbers, r)) continue;
+        if (!Object.hasOwn(updatedRubbers, r)) continue;
         const rubber = updatedRubbers[r];
         const status = rubber['status'];
         const statusClass = rubber['status_class'];
@@ -121,7 +121,7 @@ export function validateTeamOrder(link, setTeam = '') {
 }
 
 /**
- * Initialize the Team Order feature with delegated handlers
+ * Initialise the Team Order feature with delegated handlers
  */
 export function initializeTeamOrder() {
   // Selections change triggers load

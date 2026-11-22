@@ -10,7 +10,7 @@ const FORM_ID = '#playerRequestFrm';
 const ALERT_FIELD = '#playerAddResponse';
 const ALERT_TEXT = '#playerAddResponseText';
 
-export function clubPlayerRequest(link) {
+export function clubPlayerRequest() {
   // link is the clicked button (optional); use static form id
   const formEl = document.querySelector(FORM_ID);
   if (!formEl) return;
@@ -31,7 +31,7 @@ export function clubPlayerRequest(link) {
     async: false,
     data: $form,
     success: function (response) {
-      const data = response && response.data ? response.data : {};
+      const data = response?.data ? response.data : {};
       // Server returns HTML via show_alert in many cases; support string as well
       const msg = typeof data === 'string' ? data : (data.msg || '');
       const status = data.status || 'success';
@@ -53,7 +53,7 @@ export function initializeClubPlayerRequest() {
     .on('click.racketmanager.clubPlayerRequest', '[data-action="club-player-request"], #clubPlayerUpdateSubmit', function (e) {
       if (e && typeof e.preventDefault === 'function') e.preventDefault();
       // Ignore if legacy inline onclick exists (should be removed, but guard)
-      if (this.getAttribute && this.getAttribute('onclick')) return;
-      return clubPlayerRequest(this);
+      if (this.getAttribute?.('onclick')) return;
+      return clubPlayerRequest();
     });
 }

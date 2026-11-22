@@ -14,7 +14,7 @@ import { handleAjaxError } from '../ajax/handle-ajax-error.js';
 export function updateClub(e, link) {
     if (e && typeof e.preventDefault === 'function') e.preventDefault();
 
-    if (!link || !link.form || !link.form.id) {
+    if (!link?.form?.id) {
         console.error('updateClub: invalid link/form');
         return false;
     }
@@ -59,7 +59,7 @@ export function updateClub(e, link) {
 }
 
 /**
- * Initialize feature: bind click to #updateClubSubmit using delegated event.
+ * Initialise feature: bind click to #updateClubSubmit using delegated event.
  */
 export function initializeClubUpdate() {
     // Delegated binding (survives dynamic content changes)

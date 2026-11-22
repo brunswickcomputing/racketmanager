@@ -252,7 +252,7 @@ export function getPrintStylesheet() {
  * @param {Window} printWindow - Window to add stylesheet to
  */
 export function addPrintStylesheet(printWindow) {
-    if (!printWindow || !printWindow.document) return;
+    if (!printWindow?.document) return;
 
     const link = printWindow.document.createElement('link');
     link.rel = 'stylesheet';

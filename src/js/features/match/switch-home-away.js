@@ -17,7 +17,7 @@ const ALERT_FIXTURE_SWITCH_TEXT = '#alertSwitchFixtureResponse';
  * @param {HTMLElement} link - clicked button inside the form
  */
 export function switchHomeAway(link) {
-  if (!link || !link.form || !link.form.id) return;
+  if (!link?.form?.id) return;
 
   const formId = `#${link.form.id}`;
   let $form = jQuery(formId).serialize();
@@ -37,7 +37,7 @@ export function switchHomeAway(link) {
     type: 'POST',
     data: $form,
     success: function (response) {
-      const data = response && response.data ? response.data : {};
+      const data = response?.data ? response.data : {};
       const message = data.msg || '';
       const modal = `#${data.modal}`;
       const matchId = data.match_id || data.matach_id; // tolerate legacy typo
@@ -68,7 +68,7 @@ export function switchHomeAway(link) {
 }
 
 /**
- * Initialize delegated handler for switch home/away
+ * Initialise delegated handler for switch home/away
  */
 export function initializeSwitchHomeAway() {
   jQuery(document)

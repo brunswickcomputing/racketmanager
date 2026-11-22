@@ -984,14 +984,7 @@
         "src/php/Domain/Tournament/Tournament.php|Tournament::$time_increment": 1,
         "src/php/Domain/Tournament/Tournament.php|Tournament::$type": 1,
         "src/php/Domain/Tournament/Tournament.php|Tournament::$venue": 1,
-        "src/php/Domain/Tournament/Tournament.php|Tournament::$venue_name": 1,
-        "src/php/Domain/Tournament/Tournament_Entry.php|Tournament_Entry::$club": 1,
-        "src/php/Domain/Tournament/Tournament_Entry.php|Tournament_Entry::$club_id": 1,
-        "src/php/Domain/Tournament/Tournament_Entry.php|Tournament_Entry::$fee": 1,
-        "src/php/Domain/Tournament/Tournament_Entry.php|Tournament_Entry::$id": 1,
-        "src/php/Domain/Tournament/Tournament_Entry.php|Tournament_Entry::$player_id": 1,
-        "src/php/Domain/Tournament/Tournament_Entry.php|Tournament_Entry::$status": 1,
-        "src/php/Domain/Tournament/Tournament_Entry.php|Tournament_Entry::$tournament_id": 1
+        "src/php/Domain/Tournament/Tournament.php|Tournament::$venue_name": 1
     },
     "domain.no_util_static": {
         "src/php/Domain/Club/Club_Role.php|Racketmanager\\Util\\Util_Lookup::get_club_role()": 1,

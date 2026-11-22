@@ -113,10 +113,12 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
     }
 
     private function render_and_capture_warnings( callable $render_callback, array &$warnings ): string {
-        set_error_handler( function ( $errno, $errstr, $errfile, $errline ) use ( &$warnings ) {
-            $warnings[] = "$errstr on $errfile:$errline";
-            return true;
-        } );
+        set_error_handler( //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler
+            function ( $errno, $errstr, $errfile, $errline ) use ( &$warnings ) {
+                $warnings[] = "$errstr on $errfile:$errline";
+                return true;
+            }
+        );
 
         try {
             return (string) $render_callback();
@@ -129,10 +131,12 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         unset( $GLOBALS['racketmanager'] );
 
         $option_gateway = $this->createStub( Option_Gateway_Interface::class );
-        $option_gateway->method( 'get_option' )->willReturnCallback( fn( string $key, mixed $default = null ) => match ( $key ) {
+        $option_gateway->method( 'get_option' )->willReturnCallback(
+            fn( string $key, mixed $default = null ) => match ( $key ) { //phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.defaultFound
             'users_can_register' => 1,
             default              => $default,
-        } );
+            }
+        );
 
         $settings_service = $this->createStub( Settings_Service::class );
         $settings_service->method( 'get_category' )->willReturn( [] );
@@ -160,10 +164,12 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         unset( $GLOBALS['racketmanager'] );
 
         $option_gateway = $this->createStub( Option_Gateway_Interface::class );
-        $option_gateway->method( 'get_option' )->willReturnCallback( fn( string $key, mixed $default = null ) => match ( $key ) {
+        $option_gateway->method( 'get_option' )->willReturnCallback(
+            fn( string $key, mixed $default = null ) => match ( $key ) { //phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.defaultFound
             'users_can_register' => 0,
             default              => $default,
-        } );
+            }
+        );
 
         $settings_service = $this->createStub( Settings_Service::class );
         $settings_service->method( 'get_category' )->willReturn( [] );
@@ -207,7 +213,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $player = Player_Test_Factory::create( id: 42, display_name: 'Test Player' );
 
         $entry = new Tournament_Entry();
-        $entry->id = 10;
+        $entry->set_id( 10 );
 
         $charge = Charge::from_object( (object) [ 'id' => 1 ] );
 
@@ -215,9 +221,11 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $player_service->method( 'get_player' )->willReturn( $player );
         $comp_entry_service->method( 'get_tournament_entry_by_tournament_and_player' )->willReturn( $entry );
         $finance_service->method( 'get_charge' )->willReturn( $charge );
-        $finance_service->method( 'get_invoices_by_criteria' )->willReturn( [
-            (object) [ 'id' => 101, 'amount' => 25.00 ],
-        ] );
+        $finance_service->method( 'get_invoices_by_criteria' )->willReturn(
+            [
+                (object) [ 'id' => 101, 'amount' => 25.00 ],
+            ]
+        );
 
         $query = new Get_Competition_Payment_Query(
             competition_type: 'tournament',
@@ -276,7 +284,7 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
 
         $event2            = new stdClass();
         $event2->id = 102;
-        $event2->name = "Ladies Doubles";
+        $event2->name = 'Ladies Doubles';
         $event2->num_teams = 8;
 
         $tournament_service->method( 'get_tournament' )->willReturn( $tournament );
@@ -408,9 +416,11 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $player_item->index       = 'Nadal, Rafael';
         $player_item->club        = (object) [ 'shortcode' => 'LTC' ];
 
-        $tournament_service->method( 'get_players_for_tournament' )->willReturn( [
-            'N' => [ $player_item ],
-        ] );
+        $tournament_service->method( 'get_players_for_tournament' )->willReturn(
+            [
+                'N' => [ $player_item ],
+            ]
+        );
 
         $list_query  = new Get_Tournament_Players_Query( tournament_id: 15 );
         $list_result = $handler->handle( $list_query );
@@ -532,17 +542,21 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             ]
         );
 
-        $club = Club::from_object( (object) [
-            'id'        => 5,
-            'name'      => 'Leigh Tennis Club',
-            'shortcode' => 'LTC',
-        ] );
+        $club = Club::from_object(
+            (object) [
+                'id'        => 5,
+                'name'      => 'Leigh Tennis Club',
+                'shortcode' => 'LTC',
+            ]
+        );
 
-        $comp_service->method( 'get_by_id' )->willReturnCallback( fn( $id ) => match ( (string) $id ) {
+        $comp_service->method( 'get_by_id' )->willReturnCallback(
+            fn( $id ) => match ( (string) $id ) {
             '1', 'Premier Cup'    => $competition,
             '2', 'Premier League' => $league_competition,
             default               => null,
-        } );
+            }
+        );
         $club_service->method( 'get_club_by_shortcode' )->willReturn( $club );
         $club_entry_selection->method( 'available_clubs' )->willReturn( true );
         $team_service->method( 'get_teams_for_club' )->willReturn( [] );
@@ -615,8 +629,8 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
 
         $player = Player_Test_Factory::create( id: 55, display_name: 'Payment Player' );
 
-        $entry     = new Tournament_Entry();
-        $entry->id = 22;
+        $entry = new Tournament_Entry();
+        $entry->set_id( 22 );
 
         $tournament_service->method( 'get_tournament_by_name' )->willReturn( $tournament );
         $player_service->method( 'get_player' )->willReturn( $player );
@@ -694,20 +708,22 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             ]
         );
 
-        $tournament = Tournament::from_object( (object) [
-            'id'             => 1,
-            'competition_id' => 8,
-            'name'           => 'Summer Open',
-            'season'         => '2026',
-            'date_open'      => $date_open,
-            'date_start'     => $date_start,
-            'date_end'       => $date_end,
-            'date_closing'   => $date_closing,
-            'fees'           => (object) [
-                'competition' => 5,
-                'event'       => 10,
-            ],
-        ] );
+        $tournament = Tournament::from_object(
+            (object) [
+                'id'             => 1,
+                'competition_id' => 8,
+                'name'           => 'Summer Open',
+                'season'         => '2026',
+                'date_open'      => $date_open,
+                'date_start'     => $date_start,
+                'date_end'       => $date_end,
+                'date_closing'   => $date_closing,
+                'fees'           => (object) [
+                    'competition' => 5,
+                    'event'       => 10,
+                ],
+            ]
+        );
 
         $player = Player_Test_Factory::create(
             id: 42,
@@ -718,10 +734,12 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         );
 
         $tournament_service->method( 'get_tournament_by_name' )->willReturn( $tournament );
-        $tournament_service->method( 'get_fees' )->willReturn( (object) [
-            'competition' => 5,
-            'event'       => 10,
-        ] );
+        $tournament_service->method( 'get_fees' )->willReturn(
+            (object) [
+                'competition' => 5,
+                'event'       => 10,
+            ]
+        );
         $tournament_service->method( 'get_events_for_tournament' )->willReturn( [] );
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
         $player_service->method( 'get_player' )->willReturn( $player );
@@ -979,7 +997,8 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             $player_service,
             $this->createStub( Player_Query_Service::class ),
             $this->createStub( Player_Stats_Service::class ),
-            $this->competition_season_service() );
+            $this->competition_season_service()
+        );
         $vm      = $this->adapter()->present_players( $handler->handle( new Get_Competition_Players_Query( competition_id: 5 ) ) );
 
         $this->assertSame( 'players', $vm->template );
@@ -1312,7 +1331,8 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             $player_service,
             $player_query_service,
             $player_stats_service,
-            $this->competition_season_service() );
+            $this->competition_season_service()
+        );
         $event_handler       = new Get_Event_Players_Handler(
             $service,
             $player_service,
@@ -1541,7 +1561,8 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             $player_service,
             $query_service,
             $stats_service,
-            $this->competition_season_service() );
+            $this->competition_season_service()
+        );
 
         // 1. List with integer season
         $list_vm = $this->adapter()->present_players( $handler->handle( new Get_Competition_Players_Query( competition_id: 5 ) ) );

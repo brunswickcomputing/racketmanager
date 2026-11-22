@@ -67,4 +67,40 @@ class Results_Report_Test extends TestCase {
         $this->assertIsString( $report->result_object );
         $this->assertNotFalse( json_decode( $report->result_object ) );
     }
+
+    public function test_getters_and_setters(): void {
+        $report = new Results_Report();
+        $report->set_id( 55 );
+        $report->set_match_id( 200 );
+
+        $this->assertSame( 55, $report->get_id() );
+        $this->assertSame( 200, $report->get_match_id() );
+        $this->assertTrue( $report->is_for_match( 200 ) );
+        $this->assertFalse( $report->is_for_match( 201 ) );
+    }
+
+    public function test_set_data_syncs_result_object(): void {
+        $report = new Results_Report();
+        $this->assertFalse( $report->has_data() );
+        $this->assertFalse( $report->has_report() );
+
+        $payload = (object) [ 'home' => 3, 'away' => 1 ];
+        $report->set_data( $payload );
+
+        $this->assertTrue( $report->has_data() );
+        $this->assertTrue( $report->has_report() );
+        $this->assertSame( '{"home":3,"away":1}', $report->get_result_object() );
+        $this->assertEquals( $payload, $report->get_data() );
+    }
+
+    public function test_set_result_object_syncs_data(): void {
+        $report = new Results_Report();
+        $json   = '{"referee":"Smith","confirmed":true}';
+        $report->set_result_object( $json );
+
+        $this->assertSame( $json, $report->get_result_object() );
+        $this->assertIsObject( $report->get_data() );
+        $this->assertSame( 'Smith', $report->get_data()->referee );
+        $this->assertTrue( $report->get_data()->confirmed );
+    }
 }

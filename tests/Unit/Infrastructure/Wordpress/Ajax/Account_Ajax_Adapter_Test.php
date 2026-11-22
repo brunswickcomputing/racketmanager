@@ -252,7 +252,7 @@ class Account_Ajax_Adapter_Test extends TestCase {
             static function ( int|string $id ) {
                 if ( 12 === (int) $id ) {
                     $message = new Message();
-                    $message->id = 12;
+                    $message->set_id( 12 );
                     return $message;
                 }
                 return null;

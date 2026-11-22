@@ -10,6 +10,7 @@ use Racketmanager\Application\Message\Queries\Get_Message_Query;
 use Racketmanager\Application\Message\Queries\Get_Messages_Handler;
 use Racketmanager\Application\Message\Queries\Get_Messages_Query;
 use Racketmanager\Domain\Communication\Message;
+use Racketmanager\Domain\Communication\Message_Factory;
 use Racketmanager\Domain\Player\User;
 use Racketmanager\Domain\Player\User_Factory;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Message_Shortcode_Adapter;
@@ -157,13 +158,11 @@ class Message_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_message_handler_unauthorized(): void {
-        $message = $this->getMockBuilder( Message::class )
-            ->disableOriginalConstructor()
-            ->getMock();
-        $message->id     = 42;
-        $message->userid = 999;
-        $message->status = '1';
-        $message->expects( $this->never() )->method( 'set_status' );
+        $message = Message_Factory::from_array( [
+            'id'     => 42,
+            'userid' => 999,
+            'status' => '1',
+        ] );
 
         $message_repository = $this->createMock( Message_Repository_Interface::class );
         $message_repository->expects( $this->once() )
@@ -184,15 +183,11 @@ class Message_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_message_handler_success(): void {
-        $message = $this->getMockBuilder( Message::class )
-            ->disableOriginalConstructor()
-            ->getMock();
-        $message->id     = 42;
-        $message->userid = 101;
-        $message->status = '1';
-        $message->expects( $this->once() )
-            ->method( 'set_status' )
-            ->with( '0' );
+        $message = Message_Factory::from_array( [
+            'id'     => 42,
+            'userid' => 101,
+            'status' => '1',
+        ] );
 
         $message_repository = $this->createMock( Message_Repository_Interface::class );
         $message_repository->expects( $this->once() )
@@ -216,18 +211,19 @@ class Message_Shortcode_Handlers_Test extends TestCase {
         $this->assertFalse( $result->is_error() );
         $this->assertSame( 'custom', $result->template );
         $this->assertSame( $message, $result->message );
+        $this->assertSame( '0', $message->status );
     }
 
     public function test_message_handler_renders_real_template_with_message_details(): void {
-        $message = $this->createStub( Message::class );
-        $message->id             = 42;
-        $message->userid         = 101;
-        $message->status         = '0';
-        $message->from_name      = 'Tennis Admin';
-        $message->from_email     = 'admin@example.com';
-        $message->subject        = 'Court booking update';
-        $message->date           = '2026-10-12 09:30:00';
-        $message->message_object = '<p>New court booking details</p>';
+        $message = Message_Factory::from_array( [
+            'id'             => 42,
+            'userid'         => 101,
+            'status'         => '0',
+            'sender'         => 'Tennis Admin <admin@example.com>',
+            'subject'        => 'Court booking update',
+            'date'           => '2026-10-12 09:30:00',
+            'message_object' => '<p>New court booking details</p>',
+        ] );
 
         $message_repository = $this->createStub( Message_Repository_Interface::class );
         $message_repository->method( 'find' )->willReturn( $message );

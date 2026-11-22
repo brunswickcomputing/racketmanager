@@ -11,6 +11,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Domain\Communication;
 
 use Racketmanager\Domain\DTO\Communication\Results_Report_Hydration_DTO;
+use Racketmanager\Domain\Value_Objects\Json_Encoder;
 
 /**
  * Class to implement the results report object
@@ -21,25 +22,25 @@ class Results_Report {
      *
      * @var int
      */
-    public int $id = 0;
+    public private(set) int $id = 0;
     /**
-     * Season
+     * Match ID
      *
      * @var int
      */
-    public int $match_id;
+    public private(set) int $match_id;
     /**
      * Results report object stored in database as string
      *
      * @var string|false
      */
-    public string|false $result_object;
+    public private(set) string|false $result_object;
     /**
      * Results report object
      *
-     * @var object
+     * @var mixed
      */
-    public mixed $data;
+    public private(set) mixed $data;
 
     /**
      * Construct class instance
@@ -84,5 +85,108 @@ class Results_Report {
      */
     public static function from_array( array $data ): self {
         return Results_Report_Factory::from_array( $data );
+    }
+
+    /**
+     * Get entity ID.
+     *
+     * @return int
+     */
+    public function get_id(): int {
+        return $this->id;
+    }
+
+    /**
+     * Set entity ID.
+     *
+     * @param int $id Entity ID.
+     */
+    public function set_id( int $id ): void {
+        $this->id = $id;
+    }
+
+    /**
+     * Get match ID.
+     *
+     * @return int|null
+     */
+    public function get_match_id(): ?int {
+        return $this->match_id ?? null;
+    }
+
+    /**
+     * Set match ID.
+     *
+     * @param int $match_id Match ID.
+     */
+    public function set_match_id( int $match_id ): void {
+        $this->match_id = $match_id;
+    }
+
+    /**
+     * Get result object string.
+     *
+     * @return string|false|null
+     */
+    public function get_result_object(): string|false|null {
+        return $this->result_object ?? null;
+    }
+
+    /**
+     * Set result object string and sync decoded data.
+     *
+     * @param string|false $result_object Result object JSON string or false.
+     */
+    public function set_result_object( string|false $result_object ): void {
+        $this->result_object = $result_object;
+        $this->data          = is_string( $result_object ) ? json_decode( $result_object ) : null;
+    }
+
+    /**
+     * Get decoded report data.
+     *
+     * @return mixed
+     */
+    public function get_data(): mixed {
+        return $this->data ?? null;
+    }
+
+    /**
+     * Set report data and sync encoded result object.
+     *
+     * @param mixed $data Decoded data payload.
+     */
+    public function set_data( mixed $data ): void {
+        $this->data          = $data;
+        $this->result_object = null !== $data ? Json_Encoder::encode( $data ) : false;
+    }
+
+    /**
+     * Check whether report has non-empty decoded data.
+     *
+     * @return bool
+     */
+    public function has_data(): bool {
+        return isset( $this->data ) && ! empty( $this->data );
+    }
+
+    /**
+     * Check whether report has non-empty result object string.
+     *
+     * @return bool
+     */
+    public function has_report(): bool {
+        return isset( $this->result_object ) && ! empty( $this->result_object );
+    }
+
+    /**
+     * Check whether report belongs to a given match.
+     *
+     * @param int $match_id Match ID.
+     *
+     * @return bool
+     */
+    public function is_for_match( int $match_id ): bool {
+        return isset( $this->match_id ) && $this->match_id === $match_id;
     }
 }

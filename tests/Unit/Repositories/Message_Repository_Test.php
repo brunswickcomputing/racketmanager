@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Unit\Repositories;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Communication\Message;
+use Racketmanager\Domain\Communication\Message_Factory;
 use Racketmanager\Repositories\Message_Repository;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use wpdb;
@@ -38,8 +39,7 @@ class Message_Repository_Test extends TestCase {
     }
 
     public function test_find_returns_message_from_cache(): void {
-        $message = $this->createStub( Message::class );
-        $message->id = 42;
+        $message = Message_Factory::from_array( [ 'id' => 42 ] );
         $GLOBALS['wp_stubs_cache_enabled'] = true;
         $GLOBALS['wp_stubs_cache']['message']['42'] = $message;
 
@@ -80,13 +80,14 @@ class Message_Repository_Test extends TestCase {
     }
 
     public function test_save_inserts_new_message(): void {
-        $message = new Message();
-        $message->userid = 10;
-        $message->date = '2026-01-01';
-        $message->status = '1';
-        $message->subject = 'New';
-        $message->sender = 'sender@test.local';
-        $message->message_object = 'body';
+        $message = Message_Factory::from_array( [
+            'userid'         => 10,
+            'date'           => '2026-01-01',
+            'status'         => '1',
+            'subject'        => 'New',
+            'sender'         => 'sender@test.local',
+            'message_object' => 'body',
+        ] );
 
         $this->wpdb->insert_id = 99;
         $this->wpdb->expects( $this->once() )
@@ -106,14 +107,15 @@ class Message_Repository_Test extends TestCase {
     }
 
     public function test_save_updates_existing_message(): void {
-        $message = new Message();
-        $message->id = 99;
-        $message->userid = 10;
-        $message->date = '2026-01-01';
-        $message->status = '0';
-        $message->subject = 'Updated';
-        $message->sender = 'sender@test.local';
-        $message->message_object = 'body';
+        $message = Message_Factory::from_array( [
+            'id'             => 99,
+            'userid'         => 10,
+            'date'           => '2026-01-01',
+            'status'         => '0',
+            'subject'        => 'Updated',
+            'sender'         => 'sender@test.local',
+            'message_object' => 'body',
+        ] );
 
         $this->wpdb->expects( $this->once() )
             ->method( 'update' )
@@ -202,10 +204,8 @@ class Message_Repository_Test extends TestCase {
             ->method( 'get_results' )
             ->willReturn( [ (object) [ 'id' => 7 ], (object) [ 'id' => 8 ] ] );
 
-        $message_seven = new Message();
-        $message_seven->id = 7;
-        $message_eight = new Message();
-        $message_eight->id = 8;
+        $message_seven = Message_Factory::from_array( [ 'id' => 7 ] );
+        $message_eight = Message_Factory::from_array( [ 'id' => 8 ] );
         $GLOBALS['wp_stubs_cache']['message']['7'] = $message_seven;
         $GLOBALS['wp_stubs_cache']['message']['8'] = $message_eight;
 

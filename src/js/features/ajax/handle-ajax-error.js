@@ -1,6 +1,6 @@
 /**
  * AJAX Error Handler - Modularized
- * Provides a centralized error handling function compatible with legacy usage.
+ * Provides a centralised error handling function compatible with legacy usage.
  */
 
 import { logger, recordEvent } from '../../utils/logger.js';

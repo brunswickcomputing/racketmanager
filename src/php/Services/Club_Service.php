@@ -10,7 +10,6 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services;
 
-use Exception;
 use Racketmanager\Application\Club\Ports\Club_Service_Interface;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Club\Club_Factory;
@@ -27,9 +26,7 @@ use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\Role_Assignment_Not_Found_Exception;
 use Racketmanager\Repositories\Club_Repository;
-use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Player_Repository;
-use Racketmanager\Repositories\Registration_Repository;
 use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Util\Util_Lookup;
 use Racketmanager\Util\Util_Messages;
@@ -50,6 +47,13 @@ class Club_Service implements Club_Service_Interface {
     /**
      * Constructor
      *
+     * @param Club_Repository                   $club_repository         Club repository.
+     * @param Registration_Repository_Interface $club_player_repository  Club player repository.
+     * @param Club_Role_Repository_Interface    $club_role_repository    Club role repository.
+     * @param Player_Repository                 $player_repository       Player repository.
+     * @param Team_Repository                   $team_repository         Team repository.
+     * @param Player_Service                    $player_service          Player service.
+     * @param Option_Service                    $option_service          Option service.
      */
     public function __construct(
         Club_Repository $club_repository,
@@ -70,11 +74,11 @@ class Club_Service implements Club_Service_Interface {
     }
 
     /**
-     * Add a new club
+     * Adds a club by converting the supplied object to a Club instance and saving it.
      *
-     * @param object $club
+     * @param object $club Club data object to convert and save.
      *
-     * @return Club
+     * @return Club Saved club instance.
      */
     public function add_club( object $club ): Club {
         $club = Club_Factory::from_object( $club );
@@ -84,12 +88,12 @@ class Club_Service implements Club_Service_Interface {
     }
 
     /**
-     * Update club details
+     * Updates an existing club with the provided details when changes are detected.
      *
-     * @param int $id
-     * @param object $club_updated
+     * @param int    $id Club ID to update.
+     * @param object $club_updated Updated club data to compare against the existing club.
      *
-     * @return Club|bool
+     * @return Club|bool Updated club object when changes are saved, false if the club is not found or no updates are required.
      */
     public function update_club( int $id, object $club_updated ): Club|bool {
         $club = $this->club_repository->find_by_id( $id );
@@ -140,11 +144,11 @@ class Club_Service implements Club_Service_Interface {
     }
 
     /**
-     * Function to update club team name where the club shortcode has changed
+     * Updates the titles of all teams associated with a club to use the new club shortcode.
      *
-     * @param int $club_id
-     * @param string $old_shortcode
-     * @param string $shortcode
+     * @param int    $club_id Club ID whose team titles should be updated.
+     * @param string $old_shortcode Existing club shortcode currently used in team titles.
+     * @param string $shortcode New club shortcode to apply to team titles.
      *
      * @return void
      */
@@ -159,51 +163,58 @@ class Club_Service implements Club_Service_Interface {
     }
 
     /**
-     * Get club by ID
+     * Retrieves a club by its ID.
      *
-     * @param mixed $club_id
+     * @param mixed $club_id Club ID to retrieve.
      *
-     * @return Club
+     * @return Club Club matching the specified ID.
+     *
+     * @throws Club_Not_Found_Exception If no club is found for the specified ID.
      */
     public function get_club( mixed $club_id ): Club {
         $club = $this->club_repository->find_by_id( $club_id );
         if ( ! $club ) {
-            throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $club_id ) );
+            throw new Club_Not_Found_Exception( esc_html( Util_Messages::club_not_found( $club_id ) ) );
         }
 
         return $club;
     }
 
     /**
-     * Get club by shortcode
+     * Retrieves a club by its shortcode.
      *
-     * @param mixed $club_id
+     * @param mixed $club_id Club shortcode used to locate the club.
      *
-     * @return Club
+     * @return Club Club matching the specified shortcode.
+     *
+     * @throws Club_Not_Found_Exception If no club is found for the specified shortcode.
      */
     public function get_club_by_shortcode( mixed $club_id ): Club {
         $club = $this->club_repository->find_by_id( $club_id, 'shortcode' );
         if ( ! $club ) {
-            throw new Club_Not_Found_Exception( Util_Messages::club_shortcode_not_found( $club_id ) );
+            throw new Club_Not_Found_Exception( esc_html( Util_Messages::club_shortcode_not_found( $club_id ) ) );
         }
         return $club;
     }
 
     /**
-     * Remove a club
+     * Removes the specified club and its related player and role records.
      *
-     * @param int $club_id
+     * @param int $club_id Club ID to remove.
      *
      * @return void
-     * @throws Exception
+     *
+     * @throws Club_Not_Found_Exception If the club does not exist.
+     * @throws Club_Has_Teams_Exception If the club still has teams assigned.
      */
     public function remove_club( int $club_id ): void {
         $club = $this->club_repository->find_by_id( $club_id );
         if ( ! $club ) {
-            throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $club_id ) );
+            throw new Club_Not_Found_Exception( esc_html( Util_Messages::club_not_found( $club_id ) ) );
         }
         if ( $this->team_repository->has_teams( $club_id ) ) {
-            throw new Club_Has_Teams_Exception( sprintf( __( 'Unable to delete %s - still has teams', 'racketmanager' ), $club->get_name() ) );
+            // Translators: %s is the name of the club.
+            throw new Club_Has_Teams_Exception( esc_html( sprintf( __( 'Unable to delete %s - still has teams', 'racketmanager' ), $club->get_shortcode() ) ) );
         }
         $this->club_player_repository->delete_for_club( $club_id );
         $this->club_role_repository->delete_for_club( $club_id );
@@ -211,22 +222,22 @@ class Club_Service implements Club_Service_Interface {
     }
 
     /**
-     * Get clubs
+     * Retrieves clubs matching the specified query arguments.
      *
-     * @param array $args
+     * @param array $args Optional arguments used to filter, sort, or limit the returned clubs.
      *
-     * @return array|int
+     * @return array|int Array of matching clubs, or an integer result depending on the repository query arguments.
      */
     public function get_clubs( array $args = array() ): array|int {
         return $this->club_repository->find_all( $args );
     }
 
     /**
-     * Get clubs with details
+     * Retrieves clubs with their associated roles and match secretary details.
      *
-     * @param array $args
+     * @param array $args Optional arguments used to filter or query clubs.
      *
-     * @return array
+     * @return array List of club details data transfer objects.
      */
     public function get_clubs_with_details( array $args = array() ): array {
         $clubs              = $this->club_repository->find_all( $args );
@@ -245,19 +256,24 @@ class Club_Service implements Club_Service_Interface {
     }
 
     /**
-     * Function to set a club role for a user
+     * Assigns a club role to a user, reassigning limited roles when an existing assignment is found.
      *
-     * @param int $club_id
-     * @param int|null $role_id
-     * @param int|null $user_id
+     * @param int      $club_id Club ID to assign the role for.
+     * @param int|null $role_id Role ID to assign, or null if no role is specified.
+     * @param int|null $user_id User ID to assign to the role, or null to leave the role unassigned.
      *
-     * @return bool|Club_Role
+     * @return bool|Club_Role Club role assignment on success, or false if the role details cannot be found.
      */
     public function set_club_role( int $club_id, ?int $role_id, ?int $user_id ): bool|Club_Role {
         $role_details = Util_Lookup::get_club_role( (string) $role_id );
         if ( $role_details ) {
             if ( 1 === $role_details->limit ) {
-                $club_role = $this->club_role_repository->search( array( 'club' => $club_id, 'role' => $role_id ) );
+                $club_role = $this->club_role_repository->search(
+                    array(
+                        'club' => $club_id,
+                        'role' => $role_id,
+                    )
+                );
                 if ( $club_role ) {
                     $club_role = $this->reassign_role_user( $club_role[0]->id, $user_id );
                 } else {
@@ -274,48 +290,51 @@ class Club_Service implements Club_Service_Interface {
     }
 
     /**
-     * Function to reassign a club role to a user
+     * Reassigns a club role to the specified user.
      *
-     * @param mixed $club_role_id
-     * @param mixed $user_id
+     * @param mixed $club_role_id Club role ID to reassign.
+     * @param mixed $user_id User ID to assign to the club role.
      *
-     * @return Club_Role|null
+     * @return Club_Role|null Updated club role, or null if the club role was not found.
      */
     public function reassign_role_user( mixed $club_role_id, mixed $user_id ): ?Club_Role {
-        $club_role = $this->club_role_repository->find( $club_role_id );
-        // Update the state and save it
-        $club_role->set_user_id( $user_id );
+        $club_role = $this->club_role_repository->find( (int) $club_role_id );
+        if ( ! $club_role ) {
+            return null;
+        }
+        // Update the state and save it.
+        $club_role->reassign_user( (int) $user_id );
         $this->club_role_repository->save( $club_role );
 
         return $club_role;
     }
 
     /**
-     * Function to add a role for a club
+     * Adds a role assignment for a user within a club and persists it.
      *
-     * @param int $club_id
-     * @param int $role_id
-     * @param int $user_id
+     * @param int $club_id Club ID to assign the role to.
+     * @param int $role_id Role ID to assign.
+     * @param int $user_id User ID receiving the role assignment.
      *
-     * @return Club_Role
+     * @return Club_Role Newly created and persisted club role assignment.
      */
     public function add_club_role( int $club_id, int $role_id, int $user_id ): Club_Role {
         $club_role          = new stdClass();
         $club_role->club_id = $club_id;
         $club_role->role_id = $role_id;
         $club_role->user_id = $user_id;
-        // Create the new entity locally
+        // Create the new entity locally.
         $new_role = Club_Role_Factory::from_object( $club_role );
-        // Persist it via repository
+        // Persist it via repository.
         $this->club_role_repository->save( $new_role );
 
         return $new_role;
     }
 
     /**
-     * Function to remove a club role
+     * Removes a club role if it exists.
      *
-     * @param int $club_role_id
+     * @param int $club_role_id Club role ID to remove.
      *
      * @return void
      */
@@ -327,44 +346,49 @@ class Club_Service implements Club_Service_Interface {
     }
 
     /**
-     * Get roles for a club
+     * Retrieves the roles associated with the specified club.
      *
-     * @param int|null $club_id
+     * @param int|null $club_id Club ID to retrieve roles for, or null to retrieve roles not limited to a specific club.
      *
-     * @return array
+     * @return array Roles associated with the club.
      */
     public function get_roles_for_club( ?int $club_id ): array {
         return $this->club_role_repository->get_roles_for_club( $club_id );
     }
 
     /**
-     * Get a club role by ID
+     * Retrieves a club role by its ID.
      *
-     * @param int|null $role_id
+     * @param int|null $role_id Role ID to retrieve.
      *
-     * @return Club_Role|null
+     * @return Club_Role|null Club role matching the supplied ID.
+     * @throws Role_Assignment_Not_Found_Exception If the role cannot be found.
      */
     public function get_role( ?int $role_id ): ?Club_Role {
         if ( empty( $role_id ) ) {
-            throw new Role_Assignment_Not_Found_Exception( __('No role ID provided', 'racketmanager' ) );
+            throw new Role_Assignment_Not_Found_Exception( esc_html__( 'No role ID provided', 'racketmanager' ) );
         }
-        $role =  $this->club_role_repository->find( $role_id );
+        $role = $this->club_role_repository->find( $role_id );
         if ( empty( $role ) ) {
-            throw new Role_Assignment_Not_Found_Exception( __('Role ID %s not found', 'racketmanager' ), $role_id );
+            // Translators: %s is the role ID.
+            throw new Role_Assignment_Not_Found_Exception( esc_html( sprintf( __( 'Role ID %s not found', 'racketmanager' ), $role_id ) ) );
         }
         return $role;
     }
+
     /**
-     * Get club details
+     * Retrieves detailed information for a club, including its roles and match secretary details when available.
      *
-     * @param int $club_id
+     * @param int $club_id Club ID to retrieve details for.
      *
-     * @return Club_Details_DTO
+     * @return Club_Details_DTO Club details data transfer object.
+     *
+     * @throws Club_Not_Found_Exception If the club cannot be found.
      */
     public function get_club_details( int $club_id ): Club_Details_DTO {
         $club = $this->club_repository->find_by_id( $club_id );
         if ( ! $club ) {
-            throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $club_id ) );
+            throw new Club_Not_Found_Exception( esc_html( Util_Messages::club_not_found( $club_id ) ) );
         }
         $roles = $this->club_role_repository->get_roles_for_club( $club_id );
         try {
@@ -379,25 +403,32 @@ class Club_Service implements Club_Service_Interface {
      *
      * @param int $user_id The WordPress User id.
      * @param int $club_id The Club id.
+     *
      * @return bool True if the user holds the specific role, false otherwise.
      */
     public function is_user_match_secretary( int $user_id, int $club_id ): bool {
-        // Ensure user and club exist (optional but good practice)
+        // Ensure user and club exist (optional but good practice).
         if ( ! $this->club_repository->find_by_id( $club_id ) ) {
             return false;
         }
-        $role_assignment = $this->club_role_repository->search( array( 'club' => $club_id, 'role' => \Racketmanager\Domain\Enums\Club_Role::MATCH_SECRETARY->value, 'user' => $user_id ) );
+        $role_assignment = $this->club_role_repository->search(
+            array(
+                'club' => $club_id,
+                'role' => \Racketmanager\Domain\Enums\Club_Role::MATCH_SECRETARY->value,
+                'user' => $user_id,
+            )
+        );
 
-        // If a role object is returned, the assignment exists
-        return $role_assignment !== null;
+        // If a role object is returned, the assignment exists.
+        return null !== $role_assignment;
     }
 
     /**
-     * Can user update as match secretary or admin user?
+     * Determines whether the current logged-in user can update the specified club.
      *
-     * @param int $club_id
+     * @param int $club_id Club ID to check update permissions for.
      *
-     * @return bool
+     * @return bool True if the current user can update the club, false otherwise.
      */
     public function can_user_update( int $club_id ): bool {
         $user_can_update = false;
@@ -416,9 +447,9 @@ class Club_Service implements Club_Service_Interface {
     }
 
     /**
-     * Can the user update as captain (includes match secretary or admin user)?
+     * Can user update as captain, match secretary, or admin user?
      *
-     * @param int $club_id
+     * @param int $club_id Club ID.
      *
      * @return bool
      */
@@ -433,11 +464,11 @@ class Club_Service implements Club_Service_Interface {
     }
 
     /**
-     * Can the user update players?
+     * Can user update player rosters as an administrator, match secretary, or permitted captain?
      *
-     * @param int $club_id
+     * @param int $club_id Club ID.
      *
-     * @return bool
+     * @return bool True if the current user can update players, false otherwise.
      */
     public function can_user_update_players( int $club_id ): bool {
         $user_can_update = false;
@@ -461,15 +492,15 @@ class Club_Service implements Club_Service_Interface {
     }
 
     /**
-     * Check if a player is a captain
+     * Check if a player is a captain.
      *
-     * @param int $club_id
-     * @param int $player player id.
+     * @param int $club_id The ID of the club.
+     * @param int $player The ID of the player.
      *
      * @return bool
      */
     public function is_player_captain( int $club_id, int $player ): bool {
-        // Ensure user and club exist (optional but good practice)
+        // Ensure user and club exist (optional but good practice).
         if ( ! $this->club_repository->find_by_id( $club_id ) ) {
             return false;
         }
@@ -477,7 +508,7 @@ class Club_Service implements Club_Service_Interface {
             return false;
         }
 
-        // If a player object is returned, the assignment exists
+        // If a player object is returned, the assignment exists.
         return $this->team_repository->find_captain( $club_id, $player );
     }
 
@@ -485,16 +516,18 @@ class Club_Service implements Club_Service_Interface {
      * Creates a new team with an automatically generated name based on club shortcode and sequence number.
      *
      * @param int|null $club_id The ID of the parent club.
-     * @param string $type The type of team (e.g. 'Boys', 'Girls', 'Ladies', 'Mens', 'Mixed').
+     * @param string   $type The type of team (e.g. 'Boys', 'Girls', 'Ladies', 'Mens', 'Mixed').
      *
      * @return Team The newly created Team object.
+     * @throws Club_Not_Found_Exception When the club is not found.
+     * @throws Invalid_Argument_Exception When the team type is invalid.
      */
     public function create_team( ?int $club_id, string $type ): Team {
         $club = $this->club_repository->find_by_id( $club_id );
         if ( ! $club ) {
-            throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $club_id ) );
+            throw new Club_Not_Found_Exception( esc_html( Util_Messages::club_not_found( $club_id ) ) );
         }
-        $type_name = match( substr( $type, 0, 1 ) ) {
+        $type_name = match ( substr( $type, 0, 1 ) ) {
             'B' => __( 'Boys', 'racketmanager' ),
             'G' => __( 'Girls', 'racketmanager' ),
             'W' => __( 'Ladies', 'racketmanager' ),
@@ -504,7 +537,7 @@ class Club_Service implements Club_Service_Interface {
         };
 
         if ( empty( $type_name ) ) {
-            throw new Invalid_Argument_Exception( Util_Messages::invalid_team_type() );
+            throw new Invalid_Argument_Exception( esc_html( Util_Messages::invalid_team_type() ) );
         }
 
         // 1. Get the next available sequence number
@@ -520,10 +553,9 @@ class Club_Service implements Club_Service_Interface {
         $team->club_id = $club->get_id();
         $team->type    = $type;
         $team          = Team_Factory::from_object( $team );
-        // We assume a save method exists in TeamRepository from a previous step
+        // We assume a save method exists in TeamRepository from a previous step.
         $this->team_repository->save( $team );
 
         return $team;
     }
-
 }

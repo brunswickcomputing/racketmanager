@@ -11,8 +11,8 @@ use Racketmanager\Services\Validator\Validator_Club;
 
 final class Validator_Club_Test extends TestCase {
     public function test_club_role_validates_successfully_with_injected_repository(): void {
-        $role     = new Club_Role();
-        $role->id = 15;
+        $role = new Club_Role();
+        $role->set_id( 15 );
 
         $repo = $this->createStub( Club_Role_Repository_Interface::class );
         $repo->method( 'find' )->willReturn( $role );

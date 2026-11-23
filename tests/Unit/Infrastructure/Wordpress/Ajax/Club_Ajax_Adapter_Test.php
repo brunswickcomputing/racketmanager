@@ -156,9 +156,9 @@ class Club_Ajax_Adapter_Test extends TestCase {
                 12,
                 $this->callback(
                     static function ( $updated ) {
-                        return $updated->contactno === '012345'
-                            && $updated->address === '1 Court Road'
-                            && $updated->match_secretary->id === 44;
+                        return '012345' === $updated->contactno
+                            && '1 Court Road' === $updated->address
+                            && 44 === $updated->match_secretary->id;
                     }
                 )
             )
@@ -342,8 +342,8 @@ class Club_Ajax_Adapter_Test extends TestCase {
         $request = $this->role_post();
         $this->stub_role_user( false );
         $role = new Club_Role();
-        $role->id = 9;
-        $role->user = (object) array( 'id' => 99 );
+        $role->set_id( 9 );
+        $role->set_user( (object) array( 'id' => 99 ) );
         $this->club_role_repository->method( 'find' )->willReturn( $role );
         $this->club_service = $this->createMock( Club_Service::class );
         $this->club_service->expects( $this->once() )->method( 'reassign_role_user' )->with( 9, 5 )->willReturn( $this->createStub( Club_Role::class ) );
@@ -359,8 +359,8 @@ class Club_Ajax_Adapter_Test extends TestCase {
         $request = $this->role_post();
         $this->stub_role_user( true );
         $role = new Club_Role();
-        $role->id = 9;
-        $role->user = (object) array( 'id' => 5 );
+        $role->set_id( 9 );
+        $role->set_user( (object) array( 'id' => 5 ) );
         $this->club_role_repository->method( 'find' )->willReturn( $role );
         $this->club_service = $this->createMock( Club_Service::class );
         $this->club_service->expects( $this->never() )->method( 'reassign_role_user' );
@@ -375,8 +375,8 @@ class Club_Ajax_Adapter_Test extends TestCase {
         $request = $this->role_post();
         $this->stub_role_user( false );
         $role = new Club_Role();
-        $role->id = 9;
-        $role->user = (object) array( 'id' => 5 );
+        $role->set_id( 9 );
+        $role->set_user( (object) array( 'id' => 5 ) );
         $this->club_role_repository->method( 'find' )->willReturn( $role );
         $this->club_service = $this->createMock( Club_Service::class );
         $this->club_service->expects( $this->never() )->method( 'reassign_role_user' );

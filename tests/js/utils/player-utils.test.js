@@ -1,4 +1,4 @@
-import { getPlayerDetails, setPlayerDetails, hasAutocomplete } from '../../../src/js/utils/player-utils.js';
+import { getPlayerDetails, setPlayerDetails } from '../../../src/js/utils/player-utils.js';
 
 describe('player-utils', () => {
     let originalAjax;
@@ -191,15 +191,4 @@ describe('player-utils', () => {
         });
     });
 
-    describe('hasAutocomplete', () => {
-        test('returns true when element has ui-autocomplete-input class', () => {
-            const $el = jQuery('#autocomplete-input');
-            expect(hasAutocomplete($el)).toBe(true);
-        });
-
-        test('returns false when element does not have ui-autocomplete-input class', () => {
-            const $el = jQuery('#plain-input');
-            expect(hasAutocomplete($el)).toBe(false);
-        });
-    });
 });

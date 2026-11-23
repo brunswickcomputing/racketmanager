@@ -33,10 +33,6 @@ function normalize(config) {
 const GLOBAL_CFG = (typeof globalThis !== 'undefined' && globalThis.RACKETMANAGER_CONFIG) || {};
 export const AppConfig = normalize(GLOBAL_CFG);
 
-export function isDev() {
-  return AppConfig.env === 'development';
-}
-
 export function telemetryEnabled() {
   return !!AppConfig.flags.enableTelemetry;
 }

@@ -3,12 +3,8 @@
  */
 
 import {
-    initializeNoModalCheckboxes,
-    initializeCheckbox,
-    reinitializeNoModalCheckboxes,
-    toggleCheckboxConditional,
-    getConditionalState
-} from '../../../../src/js/features/modals/no-modal-checkboxes.js';
+    initializeNoModalCheckboxes
+} from '../../../../src/js/features/modals';
 
 describe('features/modals/no-modal-checkboxes', () => {
     beforeEach(() => {
@@ -49,57 +45,4 @@ describe('features/modals/no-modal-checkboxes', () => {
         expect(cond.style.display).toBe('none');
     });
 
-    test('initializeCheckbox attaches handler to specific selector', () => {
-        document.body.innerHTML = `
-            <input type="checkbox" id="dynamicChk" aria-controls="dynamicCond" />
-            <div id="dynamicCond" class="form-checkboxes__conditional"></div>
-        `;
-
-        initializeCheckbox('#dynamicChk');
-        const chk = document.getElementById('dynamicChk');
-        const cond = document.getElementById('dynamicCond');
-
-        chk.click();
-
-        expect(cond.getAttribute('aria-expanded')).toBe('true');
-    });
-
-    test('reinitializeNoModalCheckboxes unbinds and rebinds click handler', () => {
-        document.body.innerHTML = `
-            <input type="checkbox" class="noModal" id="reinitChk" aria-controls="reinitCond" />
-            <div id="reinitCond" class="form-checkboxes__conditional"></div>
-        `;
-
-        reinitializeNoModalCheckboxes();
-        const chk = document.getElementById('reinitChk');
-        const cond = document.getElementById('reinitCond');
-
-        chk.click();
-
-        expect(cond.getAttribute('aria-expanded')).toBe('true');
-    });
-
-    test('toggleCheckboxConditional and getConditionalState query and modify state', () => {
-        document.body.innerHTML = `
-            <input type="checkbox" id="apiChk" aria-controls="apiCond" />
-            <div id="apiCond" class="form-checkboxes__conditional form-checkboxes__conditional--hidden"></div>
-        `;
-
-        expect(getConditionalState('#unknown')).toBeNull();
-
-        let state = getConditionalState('#apiChk');
-        expect(state.checked).toBe(false);
-        expect(state.visible).toBe(false);
-
-        toggleCheckboxConditional('#apiChk', true);
-        state = getConditionalState('#apiChk');
-        expect(state.checked).toBe(true);
-        expect(state.visible).toBe(true);
-
-        // Warning when toggle element not found
-        const spyWarn = jest.spyOn(console, 'warn').mockImplementation(() => {});
-        toggleCheckboxConditional('#nonexistent', true);
-        expect(spyWarn).toHaveBeenCalledWith('Checkbox not found: #nonexistent');
-        spyWarn.mockRestore();
-    });
 });

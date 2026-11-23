@@ -18,7 +18,7 @@ describe('app-config', () => {
     test('uses production defaults when RACKETMANAGER_CONFIG is not defined', async () => {
         delete globalThis.RACKETMANAGER_CONFIG;
 
-        const { AppConfig, isDev, telemetryEnabled, perfMarksEnabled } = await import(
+        const { AppConfig, telemetryEnabled, perfMarksEnabled } = await import(
             '../../../src/js/config/app-config.js'
         );
 
@@ -26,7 +26,6 @@ describe('app-config', () => {
         expect(AppConfig.flags.enableTelemetry).toBe(false);
         expect(AppConfig.flags.enablePerfMarks).toBe(false);
         expect(AppConfig.logging.level).toBe('warn');
-        expect(isDev()).toBe(false);
         expect(telemetryEnabled()).toBe(false);
         expect(perfMarksEnabled()).toBe(false);
     });
@@ -43,7 +42,7 @@ describe('app-config', () => {
             }
         };
 
-        const { AppConfig, isDev, telemetryEnabled, perfMarksEnabled } = await import(
+        const { AppConfig, telemetryEnabled, perfMarksEnabled } = await import(
             '../../../src/js/config/app-config.js'
         );
 
@@ -51,7 +50,6 @@ describe('app-config', () => {
         expect(AppConfig.flags.enableTelemetry).toBe(false);
         expect(AppConfig.flags.enablePerfMarks).toBe(true);
         expect(AppConfig.logging.level).toBe('error');
-        expect(isDev()).toBe(false);
         expect(telemetryEnabled()).toBe(false);
         expect(perfMarksEnabled()).toBe(false);
     });
@@ -68,7 +66,7 @@ describe('app-config', () => {
             }
         };
 
-        const { AppConfig, isDev, telemetryEnabled, perfMarksEnabled } = await import(
+        const { AppConfig, telemetryEnabled, perfMarksEnabled } = await import(
             '../../../src/js/config/app-config.js'
         );
 
@@ -76,7 +74,6 @@ describe('app-config', () => {
         expect(AppConfig.flags.enableTelemetry).toBe(true);
         expect(AppConfig.flags.enablePerfMarks).toBe(true);
         expect(AppConfig.logging.level).toBe('debug');
-        expect(isDev()).toBe(true);
         expect(telemetryEnabled()).toBe(true);
         expect(perfMarksEnabled()).toBe(true);
     });
@@ -90,11 +87,10 @@ describe('app-config', () => {
             }
         };
 
-        const { AppConfig, isDev, telemetryEnabled, perfMarksEnabled } = await import(
+        const {telemetryEnabled, perfMarksEnabled } = await import(
             '../../../src/js/config/app-config.js'
         );
 
-        expect(isDev()).toBe(true);
         expect(telemetryEnabled()).toBe(false);
         expect(perfMarksEnabled()).toBe(false);
     });

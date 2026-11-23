@@ -1,14 +1,7 @@
 /**
- * Score card printing functionality (modularized legacy Racketmanager.printScoreCard)
+ * Scorecard printing functionality (modularised legacy Racketmanager.printScoreCard)
  */
 import { getAjaxUrl, getAjaxNonce } from '../../config/ajax-config.js';
-
-/**
- * Initialize print score card handlers (delegated bindings are handled in print-match-card.js)
- */
-export function initializePrintScoreCard() {
-    // No direct bindings here; handlers are wired in initializeMatchCardPrint
-}
 
 /**
  * Build <head> with current document stylesheets (parity with legacy)
@@ -144,18 +137,5 @@ export function printScoreCard(e, matchId) {
         error: function (response) {
             handlePrintError(response, notifyField);
         },
-    });
-}
-
-/**
- * Export for global Racketmanager object (backward compatibility)
- */
-export function attachToGlobal() {
-    // Ensure Racketmanager object exists without overwriting
-    window.Racketmanager = window.Racketmanager || {};
-
-    // Add/update functions (this won't remove existing ones)
-    Object.assign(window.Racketmanager, {
-        printScoreCard: printScoreCard
     });
 }

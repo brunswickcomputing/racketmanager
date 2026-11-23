@@ -49,7 +49,3 @@ export function matchHeader(matchId, editMode = false) {
     }
   });
 }
-
-export function initializeMatchHeader() {
-  // No delegated bindings required at present.
-}

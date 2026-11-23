@@ -3,24 +3,6 @@
  */
 
 /**
- * Show an element
- *
- * @param {string} selector - jQuery selector
- */
-export function showElement(selector) {
-    jQuery(selector).show();
-}
-
-/**
- * Hide an element
- *
- * @param {string} selector - jQuery selector
- */
-export function hideElement(selector) {
-    jQuery(selector).hide();
-}
-
-/**
  * Handle checkbox conditional visibility
  *
  * @param {HTMLElement} target - Checkbox element

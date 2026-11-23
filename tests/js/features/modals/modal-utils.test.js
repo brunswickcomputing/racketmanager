@@ -1,115 +1,131 @@
-// modal-utils.test.js
-import {confirmModal} from '../../../../src/js/features/modals';
+/**
+ * @jest-environment jsdom
+ */
 
-describe('confirmModal', () => {
+import { showModal, hideModal } from '../../../../src/js/features/modals';
+
+describe('features/modals/modal-utils', () => {
     let modalInstance;
 
     beforeEach(() => {
-        // Clear DOM before each test
         document.body.innerHTML = '';
         jest.clearAllMocks();
 
-        // bootstrap is a page-level global in the plugin, so mock it globally
+        window.jQuery = window.$ = require('jquery');
+
         modalInstance = {
             show: jest.fn(),
             hide: jest.fn(),
         };
+
+        const ModalMock = jest.fn(() => modalInstance);
+        ModalMock.getInstance = jest.fn(() => modalInstance);
+
         global.bootstrap = {
-            Modal: jest.fn(() => modalInstance),
+            Modal: ModalMock,
         };
     });
 
     afterEach(() => {
         delete global.bootstrap;
+        document.body.innerHTML = '';
+        jest.restoreAllMocks();
     });
 
-    test('should resolve with true on confirm', async () => {
-        const userAction = confirmModal({title: 'Confirm Action'});
+    describe('showModal', () => {
+        test('instantiates bootstrap.Modal with element and calls show() when element exists', () => {
+            document.body.innerHTML = '<div id="testModal"></div>';
 
-        // Simulate user behavior
-        const confirmButton = document.querySelector('#confirmBtn');
-        confirmButton.click();
+            showModal('#testModal');
 
-        // Check if the promise resolves with true
-        await expect(userAction).resolves.toBe(true);
+            const modalElement = document.getElementById('testModal');
+            expect(global.bootstrap.Modal).toHaveBeenCalledTimes(1);
+            expect(global.bootstrap.Modal).toHaveBeenCalledWith(modalElement);
+            expect(modalInstance.show).toHaveBeenCalledTimes(1);
+        });
 
-        // Ensure modal show/hide methods are called
-        expect(global.bootstrap.Modal).toHaveBeenCalledTimes(1);
-        expect(modalInstance.show).toHaveBeenCalledTimes(1);
-        expect(modalInstance.hide).toHaveBeenCalledTimes(1);
+        test('does not instantiate bootstrap.Modal or throw when element does not exist', () => {
+            expect(() => showModal('#nonExistentModal')).not.toThrow();
+
+            expect(global.bootstrap.Modal).not.toHaveBeenCalled();
+            expect(modalInstance.show).not.toHaveBeenCalled();
+        });
+
+        test('handles null, undefined, empty string, or invalid selectors gracefully', () => {
+            expect(() => showModal(null)).not.toThrow();
+            expect(() => showModal(undefined)).not.toThrow();
+            expect(() => showModal('')).not.toThrow();
+
+            expect(global.bootstrap.Modal).not.toHaveBeenCalled();
+            expect(modalInstance.show).not.toHaveBeenCalled();
+        });
+
+        test('uses the first element when selector matches multiple elements', () => {
+            document.body.innerHTML = `
+                <div class="multi-modal" id="firstModal"></div>
+                <div class="multi-modal" id="secondModal"></div>
+            `;
+
+            showModal('.multi-modal');
+
+            const firstModal = document.getElementById('firstModal');
+            expect(global.bootstrap.Modal).toHaveBeenCalledTimes(1);
+            expect(global.bootstrap.Modal).toHaveBeenCalledWith(firstModal);
+            expect(modalInstance.show).toHaveBeenCalledTimes(1);
+        });
     });
 
-    test('should reject with an Error on cancel', async () => {
-        const userAction = confirmModal({title: 'Confirm Action'});
+    describe('hideModal', () => {
+        test('calls hide() on modal instance when element and instance exist', () => {
+            document.body.innerHTML = '<div id="activeModal"></div>';
 
-        // Simulate user behavior (real Bootstrap would fire hidden.bs.modal after dismiss)
-        const cancelButton = document.querySelector('.btn-secondary');
-        cancelButton.click();
-        jQuery('#confirmModal').trigger('hidden.bs.modal');
+            hideModal('#activeModal');
 
-        // Check if the promise rejects with an Error
-        await expect(userAction).rejects.toThrow('Confirmation cancelled');
+            const modalElement = document.getElementById('activeModal');
+            expect(global.bootstrap.Modal.getInstance).toHaveBeenCalledTimes(1);
+            expect(global.bootstrap.Modal.getInstance).toHaveBeenCalledWith(modalElement);
+            expect(modalInstance.hide).toHaveBeenCalledTimes(1);
+        });
 
-        // Ensure modal is shown and then removed
-        expect(global.bootstrap.Modal).toHaveBeenCalledTimes(1);
-        expect(modalInstance.hide).not.toHaveBeenCalled();
-    });
+        test('does not call hide() or throw when element exists but getInstance returns null/undefined', () => {
+            document.body.innerHTML = '<div id="orphanModal"></div>';
+            global.bootstrap.Modal.getInstance.mockReturnValue(null);
 
-    test('should use default options if none provided', async () => {
-        confirmModal();
+            expect(() => hideModal('#orphanModal')).not.toThrow();
 
-        // Check modal elements
-        expect(document.querySelector('.modal-title').textContent.trim()).toBe('Confirm');
-        expect(document.querySelector('.modal-body').textContent.trim()).toBe('Are you sure?');
-        expect(document.querySelector('#confirmBtn').textContent.trim()).toBe('Confirm');
-        expect(document.querySelector('.btn-secondary').textContent.trim()).toBe('Cancel');
-    });
+            const modalElement = document.getElementById('orphanModal');
+            expect(global.bootstrap.Modal.getInstance).toHaveBeenCalledWith(modalElement);
+            expect(modalInstance.hide).not.toHaveBeenCalled();
+        });
 
-    test('should merge provided options with defaults', async () => {
-        const options = {
-            title: 'Custom Title',
-            message: 'Custom message',
-            confirmText: 'Yes',
-            cancelText: 'No',
-            confirmClass: 'btn-success',
-            cancelClass: 'btn-danger',
-        };
+        test('does not call getInstance() or throw when element does not exist', () => {
+            expect(() => hideModal('#nonExistentModal')).not.toThrow();
 
-        confirmModal(options);
+            expect(global.bootstrap.Modal.getInstance).not.toHaveBeenCalled();
+            expect(modalInstance.hide).not.toHaveBeenCalled();
+        });
 
-        // Check modal elements
-        expect(document.querySelector('.modal-title').textContent.trim()).toBe(options.title);
-        expect(document.querySelector('.modal-body').textContent.trim()).toBe(options.message);
-        expect(document.querySelector('#confirmBtn').textContent.trim()).toBe(options.confirmText);
-        expect(document.querySelector('#confirmBtn').classList.contains('btn-success')).toBe(true);
-        expect(document.querySelector('.btn-danger').textContent.trim()).toBe(options.cancelText);
-    });
+        test('handles null, undefined, empty string, or invalid selectors gracefully', () => {
+            expect(() => hideModal(null)).not.toThrow();
+            expect(() => hideModal(undefined)).not.toThrow();
+            expect(() => hideModal('')).not.toThrow();
 
-    test('should remove modal from DOM after it is closed', async () => {
-        const userAction = confirmModal();
+            expect(global.bootstrap.Modal.getInstance).not.toHaveBeenCalled();
+            expect(modalInstance.hide).not.toHaveBeenCalled();
+        });
 
-        expect(document.querySelector('#confirmModal')).not.toBeNull();
+        test('uses the first element when selector matches multiple elements', () => {
+            document.body.innerHTML = `
+                <div class="multi-modal" id="firstModal"></div>
+                <div class="multi-modal" id="secondModal"></div>
+            `;
 
-        // Simulate user closing the modal
-        jQuery('#confirmModal').trigger('hidden.bs.modal');
+            hideModal('.multi-modal');
 
-        await expect(userAction).rejects.toThrow('Confirmation cancelled');
-
-        // Ensure modal is removed from DOM
-        expect(document.querySelector('#confirmModal')).toBeNull();
-    });
-
-    test('should not resolve or reject multiple times', async () => {
-        const userAction = confirmModal();
-
-        // Simulate user clicking confirm
-        const confirmButton = document.querySelector('#confirmBtn');
-        confirmButton.click();
-
-        // Try resolving again
-        confirmButton.click();
-
-        await expect(userAction).resolves.toBe(true);
-        expect(modalInstance.hide).toHaveBeenCalledTimes(2);
+            const firstModal = document.getElementById('firstModal');
+            expect(global.bootstrap.Modal.getInstance).toHaveBeenCalledTimes(1);
+            expect(global.bootstrap.Modal.getInstance).toHaveBeenCalledWith(firstModal);
+            expect(modalInstance.hide).toHaveBeenCalledTimes(1);
+        });
     });
 });

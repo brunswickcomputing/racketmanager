@@ -85,13 +85,3 @@ export function setPlayerDetails(ui, player, playerId, contactno, contactemail, 
         jQuery(btm).val(ui.item.btm);
     }
 }
-
-/**
- * Check if element already has autocomplete initialized
- *
- * @param {jQuery} $element - jQuery element
- * @returns {boolean}
- */
-export function hasAutocomplete($element) {
-    return $element.hasClass('ui-autocomplete-input');
-}

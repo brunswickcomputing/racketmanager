@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { printScoreCard, attachToGlobal, initializePrintScoreCard } from '../../../../src/js/features/printing/print-scorecard.js';
+import { printScoreCard } from '../../../../src/js/features/printing/print-scorecard.js';
 
 describe('features/printing/print-scorecard', () => {
     beforeEach(() => {
@@ -18,15 +18,6 @@ describe('features/printing/print-scorecard', () => {
     afterEach(() => {
         jest.restoreAllMocks();
         delete window.Racketmanager;
-    });
-
-    test('attachToGlobal attaches printScoreCard to window.Racketmanager', () => {
-        attachToGlobal();
-        expect(window.Racketmanager.printScoreCard).toBe(printScoreCard);
-    });
-
-    test('initializePrintScoreCard runs without error', () => {
-        expect(() => initializePrintScoreCard()).not.toThrow();
     });
 
     test('opens popup window and writes content on success', () => {

@@ -1571,6 +1571,17 @@ namespace {
         }
     }
 
+    if ( ! function_exists( 'get_users' ) ) {
+        function get_users( $args = [] ) {
+            if ( isset( $GLOBALS['wp_stubs_get_users'] ) ) {
+                return is_callable( $GLOBALS['wp_stubs_get_users'] )
+                    ? ( $GLOBALS['wp_stubs_get_users'] )( $args )
+                    : (array) $GLOBALS['wp_stubs_get_users'];
+            }
+            return [];
+        }
+    }
+
     if ( ! function_exists( 'add_shortcode' ) ) {
         function add_shortcode( string $tag, $callback ): void {
             $GLOBALS['shortcode_tags'][ $tag ] = $callback;
@@ -2001,10 +2012,17 @@ namespace {
             public string $display_name = "";
             public array $roles = array();
             public array $caps = array();
+            public ?object $data = null;
 
             public function __construct( $id = 0, $name = "" ) {
                 $this->ID         = (int) $id;
                 $this->user_login = (string) $name;
+                $this->data       = (object) array(
+                    "ID"           => (int) $id,
+                    "user_login"   => (string) $name,
+                    "user_email"   => "",
+                    "display_name" => "",
+                );
             }
 
             public function has_cap( $cap ): bool {

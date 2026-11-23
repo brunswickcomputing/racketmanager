@@ -8,8 +8,6 @@
 namespace Racketmanager;
 
 use Racketmanager\Presentation\Presenters\Player_Presenter;
-use Racketmanager\Presentation\View_Models\Club_Link_View_Model;
-use Racketmanager\Presentation\View_Models\Club_Membership_View_Model;
 use Racketmanager\Presentation\View_Models\Player_View_Model;
 
 /** @var Player_View_Model|null $vm */
@@ -36,7 +34,7 @@ if ( null === $active_vm && isset( $player ) && is_object( $player ) ) {
 }
 
 $is_page_header   = $active_vm?->is_page_header ?? ( ! empty( $is_page_header ) );
-$header_level     = (int) ( $active_vm?->header_level ?? ( $header_level ?? ( $is_page_header ? 1 : 3 ) ) );
+$header_level     = $active_vm?->header_level ?? ( $header_level ?? ( $is_page_header ? 1 : 3 ) );
 $player_initials  = $active_vm?->initials ?? '';
 $wtn_badges       = $active_vm?->wtn_badges ?? [];
 $win_loss_summary = $active_vm?->win_loss_summary ?? null;

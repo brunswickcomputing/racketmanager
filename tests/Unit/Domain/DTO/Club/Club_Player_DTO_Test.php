@@ -12,19 +12,24 @@ use Racketmanager\Tests\Helpers\Player_Test_Factory;
 class Club_Player_DTO_Test extends TestCase {
 
 	public function test_construct_with_null_display_name(): void {
-		$player = Player_Test_Factory::create_sparse( [
-			'id'           => 10,
-			'display_name' => null,
-			'firstname'    => null,
-			'surname'      => null,
-		] );
+		$player = Player_Test_Factory::create_sparse(
+            [
+                'id'           => 10,
+                'display_name' => null,
+                'firstname'    => null,
+                'surname'      => null,
+            ]
+        );
 
 		$club = Club_Test_Factory::create( shortcode: 'TST' );
 
-		$registration = new Club_Player();
-		$registration->id = 1;
-		$registration->player_id = 10;
-		$registration->club_id = 2;
+		$registration = Club_Player::from_array(
+			[
+				'id'        => 1,
+				'player_id' => 10,
+				'club_id'   => 2,
+			]
+		);
 
 		$club_player_dto = new Club_Player_DTO(
 			$player,
@@ -44,19 +49,24 @@ class Club_Player_DTO_Test extends TestCase {
 	}
 
 	public function test_construct_with_valid_display_name(): void {
-		$player = Player_Test_Factory::create_sparse( [
-			'id'           => 20,
-			'display_name' => 'John Doe',
-			'firstname'    => 'John',
-			'surname'      => 'Doe',
-		] );
+		$player = Player_Test_Factory::create_sparse(
+            [
+                'id'           => 20,
+                'display_name' => 'John Doe',
+                'firstname'    => 'John',
+                'surname'      => 'Doe',
+            ]
+        );
 
 		$club = Club_Test_Factory::create( shortcode: 'ABC' );
 
-		$registration = new Club_Player();
-		$registration->id = 5;
-		$registration->player_id = 20;
-		$registration->club_id = 3;
+		$registration = Club_Player::from_array(
+			[
+				'id'        => 5,
+				'player_id' => 20,
+				'club_id'   => 3,
+			]
+		);
 
 		$club_player_dto = new Club_Player_DTO(
 			$player,

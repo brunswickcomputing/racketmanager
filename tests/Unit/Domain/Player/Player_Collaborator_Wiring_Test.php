@@ -109,7 +109,7 @@ final class Player_Collaborator_Wiring_Test extends TestCase {
 	public function test_player_repository_has_no_collaborator_wiring(): void {
 		$GLOBALS['wp_stubs_cache_enabled'] = true;
 		$GLOBALS['wp_stubs_cache_mode']    = 'clone';
-		$this->assertSame( 1, ( new \ReflectionMethod( Player_Repository::class, '__construct' ) )->getNumberOfParameters() );
+		$this->assertSame( 0, ( new \ReflectionMethod( Player_Repository::class, '__construct' ) )->getNumberOfRequiredParameters() );
 		$repo = new Player_Repository();
 
 		$cached_player = Player_Test_Factory::create(

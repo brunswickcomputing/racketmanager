@@ -13,18 +13,20 @@ final class Club_Player_Factory_Test extends TestCase {
 
     public function test_create_from_dto_copies_every_field_including_private_status(): void {
         $player      = (object) [ 'id' => 10 ];
-        $club_player = Club_Player_Factory::create_from_dto( new Club_Player_Hydration_DTO(
-            id: 3,
-            player_id: 10,
-            club_id: 5,
-            created_date: '2026-01-01 00:00:00',
-            created_user: 2,
-            requested_date: '2026-01-01',
-            requested_user: 2,
-            player: $player,
-            system_record: true,
-            status: 'active',
-        ) );
+        $club_player = Club_Player_Factory::create_from_dto(
+            new Club_Player_Hydration_DTO(
+                id: 3,
+                player_id: 10,
+                club_id: 5,
+                created_date: '2026-01-01 00:00:00',
+                created_user: 2,
+                requested_date: '2026-01-01',
+                requested_user: 2,
+                player: $player,
+                system_record: true,
+                status: 'active',
+            )
+        );
 
         $this->assertInstanceOf( Club_Player::class, $club_player );
         $this->assertSame( 3, $club_player->get_id() );
@@ -41,17 +43,19 @@ final class Club_Player_Factory_Test extends TestCase {
     }
 
     public function test_from_object_casts_string_db_row_like_the_legacy_constructor(): void {
-        $club_player = Club_Player_Factory::from_object( (object) [
-            'id'             => '3',
-            'player_id'      => '10',
-            'system_record'  => '',
-            'club_id'        => '5',
-            'removed_date'   => null,
-            'removed_user'   => '',
-            'requested_date' => null,
-            'requested_user' => null,
-            'status'         => 'pending',
-        ] );
+        $club_player = Club_Player_Factory::from_object(
+            (object) [
+                'id'             => '3',
+                'player_id'      => '10',
+                'system_record'  => '',
+                'club_id'        => '5',
+                'removed_date'   => null,
+                'removed_user'   => '',
+                'requested_date' => null,
+                'requested_user' => null,
+                'status'         => 'pending',
+            ]
+        );
 
         $this->assertSame( 3, $club_player->id );
         $this->assertSame( 10, $club_player->player_id );

@@ -81,10 +81,13 @@ final class Entry_Tournament_Template_Test extends TestCase {
     private function create_club_player_dto( int $club_id, string $name, string $shortcode = '', int $player_id = 42 ): Club_Player_DTO {
         $player = Player_Test_Factory::create_sparse( [ 'id' => $player_id ] );
         $club   = Club_Test_Factory::create( id: $club_id, name: $name, shortcode: $shortcode ?: strtolower( $name ) );
-        $reg    = new Club_Player();
-        $reg->id        = 1;
-        $reg->player_id = $player_id;
-        $reg->club_id   = $club_id;
+        $reg = Club_Player::from_array(
+            [
+                'id'        => 1,
+                'player_id' => $player_id,
+                'club_id'   => $club_id,
+            ]
+        );
         return new Club_Player_DTO( $player, $club, $reg );
     }
 

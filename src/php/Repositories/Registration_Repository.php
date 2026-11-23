@@ -49,12 +49,12 @@ class Registration_Repository implements Registration_Repository_Interface {
                 array(
                     'player_id'      => $club_player->get_player_id(),
                     'club_id'        => $club_player->get_club_id(),
-                    'requested_date' => $club_player->requested_date,
-                    'requested_user' => $club_player->requested_user,
-                    'created_date'   => $club_player->created_date,
-                    'created_user'   => $club_player->created_user,
-                    'removed_date'   => $club_player->removed_date,
-                    'removed_user'   => $club_player->removed_user,
+                    'requested_date' => $club_player->get_requested_date(),
+                    'requested_user' => $club_player->get_requested_user(),
+                    'created_date'   => $club_player->get_created_date(),
+                    'created_user'   => $club_player->get_created_user(),
+                    'removed_date'   => $club_player->get_removed_date(),
+                    'removed_user'   => $club_player->get_removed_user(),
                     'system_record'  => $club_player->system_record,
                     'status'         => $club_player->get_status(),
                 ),
@@ -83,12 +83,12 @@ class Registration_Repository implements Registration_Repository_Interface {
                 array(
                     'player_id'      => $club_player->get_player_id(),
                     'club_id'        => $club_player->get_club_id(),
-                    'requested_date' => $club_player->requested_date,
-                    'requested_user' => $club_player->requested_user,
-                    'created_date'   => $club_player->created_date,
-                    'created_user'   => $club_player->created_user,
-                    'removed_date'   => $club_player->removed_date,
-                    'removed_user'   => $club_player->removed_user,
+                    'requested_date' => $club_player->get_requested_date(),
+                    'requested_user' => $club_player->get_requested_user(),
+                    'created_date'   => $club_player->get_created_date(),
+                    'created_user'   => $club_player->get_created_user(),
+                    'removed_date'   => $club_player->get_removed_date(),
+                    'removed_user'   => $club_player->get_removed_user(),
                     'system_record'  => $club_player->system_record,
                     'status'         => $club_player->get_status(),
                 ), // Data to update.
@@ -125,9 +125,9 @@ class Registration_Repository implements Registration_Repository_Interface {
      */
     public function find_by_id( $id ): ?Club_Player {
         $row = $this->wpdb->get_row(
-            $this->wpdb->prepare(
-                "SELECT `id`, `player_id`, `system_record`, `club_id`, `removed_date`, `removed_user`, `created_date`, `created_user`, `requested_date`, `requested_user`, `status` FROM $this->table_name WHERE id = %d",
-                $id
+            $this->wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+                "SELECT `id`, `player_id`, `system_record`, `club_id`, `removed_date`, `removed_user`, `created_date`, `created_user`, `requested_date`, `requested_user`, `status` FROM $this->table_name WHERE id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                $id // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
             )
         );
         return $row ? Club_Player_Factory::from_object( $row ) : null;
@@ -148,11 +148,12 @@ class Registration_Repository implements Registration_Repository_Interface {
         } elseif ( 'removed' === $status ) {
             $search = ' AND `removed_date` IS NOT NULL';
         }
-        $query   = $this->wpdb->prepare(
-            "SELECT `id` FROM $this->table_name WHERE player_id = %d $search",
-            $player_id
+        $results = $this->wpdb->get_results(
+            $this->wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+                "SELECT `id` FROM $this->table_name WHERE player_id = %d $search", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                $player_id // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+            )
         );
-        $results = $this->wpdb->get_results( $query );
         return array_map(
             function ( $row ) {
                 return Club_Player_Factory::from_object( $row );
@@ -171,10 +172,10 @@ class Registration_Repository implements Registration_Repository_Interface {
      */
     public function find_by_club_and_player( int $club_id, int $player_id ): ?Club_Player {
         $row = $this->wpdb->get_row(
-            $this->wpdb->prepare(
-                "SELECT * FROM $this->table_name WHERE club_id = %d AND player_id = %d AND `removed_date` IS NULL",
-                $club_id,
-                $player_id
+            $this->wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+                "SELECT * FROM $this->table_name WHERE club_id = %d AND player_id = %d AND `removed_date` IS NULL", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                $club_id, // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+                $player_id // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
             )
         );
         return $row ? Club_Player_Factory::from_object( $row ) : null;
@@ -192,9 +193,9 @@ class Registration_Repository implements Registration_Repository_Interface {
         $row = wp_cache_get( $key, 'club_players' );
         if ( ! $row ) {
             $row = $this->wpdb->get_row(
-                $this->wpdb->prepare(
-                    "SELECT * FROM $this->table_name WHERE id = %d",
-                    $club_player_id
+                $this->wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+                    "SELECT * FROM $this->table_name WHERE id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                    $club_player_id // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
                 )
             );
             wp_cache_set( $key, $row, 'club_players' );
@@ -247,9 +248,9 @@ class Registration_Repository implements Registration_Repository_Interface {
             $params[] = $club_id;
         }
         $query = $this->wpdb->prepare(
-            $sql,
+            $sql, // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
             $params
         );
-        return $this->wpdb->get_col( $query );
+        return $this->wpdb->get_col( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
     }
 }

@@ -249,7 +249,7 @@ class Club_Presenter_Test extends TestCase {
             overrides: [ 'wtn' => [ 'S' => '9.4', 'D' => '10.1' ] ]
         );
         $registration = new Club_Player();
-        $registration->id     = 101;
+        $registration->set_id( 101 );
         $dto                  = new Club_Player_DTO( $player, $club, $registration );
 
         $presented = $this->presenter->present_roster_player( $dto, $club, use_wtn: true );

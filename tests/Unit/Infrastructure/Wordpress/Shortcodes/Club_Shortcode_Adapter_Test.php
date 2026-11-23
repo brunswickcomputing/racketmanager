@@ -1060,10 +1060,13 @@ class Club_Shortcode_Adapter_Test extends TestCase {
             ]
         );
 
-        $registration            = new Club_Player();
-        $registration->id        = $registration_id;
-        $registration->player_id = $player_id;
-        $registration->club_id   = 10;
+        $registration = Club_Player::from_array(
+            [
+                'id'        => $registration_id,
+                'player_id' => $player_id,
+                'club_id'   => 10,
+            ]
+        );
 
         return new Club_Player_DTO( $player, $this->club(), $registration );
     }

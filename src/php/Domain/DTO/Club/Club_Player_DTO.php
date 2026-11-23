@@ -18,23 +18,23 @@ use Racketmanager\Domain\Player\Player;
  * Class to implement the Club Player Data Transfer Object
  */
 class Club_Player_DTO {
-    public ?int $user_id = null;
-    public ?string $display_name = null;
-    public ?string $email = null;
-    public ?string $gender = null;
-    public ?string $btm = null;
-    public ?int $club_id = null;
-    public ?string $club_name = null;
-    public ?string $club_display_name = null;
-    public ?string $registration_date = null;
-    public ?string $approval_date = null;
-    public ?string $removal_date = null;
-    public ?int $approved_by_user_id = null;
+    public ?int $user_id               = null;
+    public ?string $display_name       = null;
+    public ?string $email              = null;
+    public ?string $gender             = null;
+    public ?string $btm                = null;
+    public ?int $club_id               = null;
+    public ?string $club_name          = null;
+    public ?string $club_display_name  = null;
+    public ?string $registration_date  = null;
+    public ?string $approval_date      = null;
+    public ?string $removal_date       = null;
+    public ?int $approved_by_user_id   = null;
     public ?int $registered_by_user_id = null;
-    public ?int $removed_by_user_id = null;
-    public ?int $registration_id = null;
-    public array $wtn = array();
-    public mixed $age = null;
+    public ?int $removed_by_user_id    = null;
+    public ?int $registration_id       = null;
+    public array $wtn                  = array();
+    public mixed $age                  = null;
     /**
      * @var mixed|string
      */
@@ -42,18 +42,18 @@ class Club_Player_DTO {
     /**
      * @var mixed|string
      */
-    public mixed $surname = null;
-    public ?string $link = null;
+    public mixed $surname      = null;
+    public ?string $link       = null;
     public ?int $year_of_birth = null;
     /**
      * @var mixed|string
      */
-    public mixed $contactno = null;
-    public ?int $id = null;
+    public mixed $contactno          = null;
+    public ?int $id                  = null;
     public mixed $registered_by_user = null;
-    public mixed $approved_by_user = null;
-    public mixed $removed_by_user = null;
-    public ?bool $system_record = null;
+    public mixed $approved_by_user   = null;
+    public mixed $removed_by_user    = null;
+    public ?bool $system_record      = null;
     /**
      * Error description variable
      *
@@ -68,14 +68,16 @@ class Club_Player_DTO {
     public ?string $class = null;
 
     /**
-     * Club_Player_DTO constructor.
+     * Initialises the player registration details from the given player, club, and registration records.
      *
-     * @param Player $player
-     * @param Club $club
-     * @param Club_Player $registration
-     * @param mixed $registered_by
-     * @param mixed $approved_by
-     * @param mixed $removed_by
+     * @param Player      $player Player record used to populate player details.
+     * @param Club        $club Club record used to populate club display details.
+     * @param Club_Player $registration Club player registration record used to populate registration details.
+     * @param mixed       $registered_by Optional user or value representing who registered the player.
+     * @param mixed       $approved_by Optional user or value representing who approved the registration.
+     * @param mixed       $removed_by Optional user or value representing who removed the registration.
+     *
+     * @return void
      */
     public function __construct( Player $player, Club $club, Club_Player $registration, mixed $registered_by = null, mixed $approved_by = null, mixed $removed_by = null ) {
         $this->registration_id       = $registration->id ?? null;
@@ -101,10 +103,9 @@ class Club_Player_DTO {
         $this->email                 = $player->email ?? null;
         $this->gender                = $player->gender ?? null;
         $this->btm                   = ! empty( $player->btm ) ? (string) $player->btm : null;
-        $this->wtn                   = is_array( $player->wtn ) ? $player->wtn : array();
+        $this->wtn                   = $player->wtn;
         $this->age                   = $player->age ?? null;
         $this->club_name             = $club->shortcode ?? $club->name ?? '';
         $this->club_display_name     = $club->name ?? $club->shortcode ?? '';
     }
-
 }

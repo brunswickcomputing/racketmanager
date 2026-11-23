@@ -20,72 +20,90 @@ use Racketmanager\Exceptions\Invalid_Status_Exception;
 class Club_Player {
     /** MySQL datetime format used for the approval / removal timestamps (matches `current_time( 'mysql' )`). */
     private const string DATE_FORMAT = 'Y-m-d H:i:s';
+
+    /** Status constants */
+    public const string STATUS_ACTIVE   = 'active';
+    public const string STATUS_APPROVED = 'approved';
+    public const string STATUS_PENDING  = 'pending';
+    public const string STATUS_REMOVED  = 'removed';
+
     /**
      * Id
      *
-     * @var ?int
+     * @var int|null
      */
-    public ?int $id = null;
+    public private(set) ?int $id = null;
+
     /**
      * Player id
      *
-     * @var int
+     * @var int|null
      */
-    public int $player_id;
+    public private(set) ?int $player_id = null;
+
     /**
      * Club id
      *
-     * @var int
+     * @var int|null
      */
-    public int $club_id;
+    public private(set) ?int $club_id = null;
+
     /**
      * Removed date
      *
      * @var string|null
      */
     public private(set) ?string $removed_date = null;
+
     /**
      * Removed user
      *
      * @var int|null
      */
     public private(set) ?int $removed_user = null;
+
     /**
      * Created date
      *
-     * @var ?string
+     * @var string|null
      */
     public private(set) ?string $created_date = null;
+
     /**
      * Created user
      *
      * @var int|null
      */
     public private(set) ?int $created_user = null;
+
     /**
      * Requested date
      *
      * @var string|null
      */
     public private(set) ?string $requested_date = null;
+
     /**
      * Requested user
      *
      * @var int|null
      */
     public private(set) ?int $requested_user = null;
+
     /**
      * Player
      *
-     * @var object
+     * @var object|null
      */
-    public object $player;
+    public private(set) ?object $player = null;
+
     /**
      * System record
      *
-     * @var boolean|null
+     * @var bool|null
      */
     public private(set) ?bool $system_record = null;
+
     /**
      * Status
      *
@@ -99,7 +117,7 @@ class Club_Player {
      * @param Club_Player_Hydration_DTO|null $dto hydration DTO.
      */
     public function __construct( ?Club_Player_Hydration_DTO $dto = null ) {
-        if ( ! is_null( $dto ) ) {
+        if ( null !== $dto ) {
             // Nullable properties receive null, non-nullable ones keep their default when the column is absent.
             foreach ( get_object_vars( $dto ) as $key => $value ) {
                 Typed_Property_Hydrator::assign( $this, $key, $value );
@@ -128,6 +146,88 @@ class Club_Player {
     }
 
     /**
+     * Approve registration
+     *
+     * @param int               $user_id approving user.
+     * @param DateTimeImmutable $now     approval time (site-local, see Clock_Interface).
+     *
+     * @return void
+     * @throws Invalid_Status_Exception Registration is not pending approval.
+     */
+    public function approve( int $user_id, DateTimeImmutable $now ): void {
+        if ( self::STATUS_PENDING !== $this->status ) {
+            throw new Invalid_Status_Exception( 'Registration is not pending approval' );
+        }
+        $this->status       = self::STATUS_APPROVED;
+        $this->created_date = $this->format_date( $now );
+        $this->created_user = $user_id;
+    }
+
+    /**
+     * Remove registration
+     *
+     * @param int               $user_id removing user.
+     * @param DateTimeImmutable $now     removal time (site-local, see Clock_Interface).
+     *
+     * @return void
+     * @throws Invalid_Status_Exception Registration is already removed.
+     */
+    public function remove( int $user_id, DateTimeImmutable $now ): void {
+        if ( self::STATUS_REMOVED === $this->status ) {
+            throw new Invalid_Status_Exception( 'Registration is already removed' );
+        }
+        $this->status       = self::STATUS_REMOVED;
+        $this->removed_date = $this->format_date( $now );
+        $this->removed_user = $user_id;
+    }
+
+    /**
+     * Format timestamp according to domain date format.
+     *
+     * @param DateTimeImmutable $date Date to format.
+     * @return string
+     */
+    private function format_date( DateTimeImmutable $date ): string {
+        return $date->format( self::DATE_FORMAT );
+    }
+
+    /**
+     * Check if registration is active.
+     *
+     * @return bool
+     */
+    public function is_active(): bool {
+        return self::STATUS_ACTIVE === $this->status || self::STATUS_APPROVED === $this->status;
+    }
+
+    /**
+     * Check if registration is pending.
+     *
+     * @return bool
+     */
+    public function is_pending(): bool {
+        return self::STATUS_PENDING === $this->status;
+    }
+
+    /**
+     * Check if registration is removed.
+     *
+     * @return bool
+     */
+    public function is_removed(): bool {
+        return self::STATUS_REMOVED === $this->status;
+    }
+
+    /**
+     * Check if registration is a system record.
+     *
+     * @return bool
+     */
+    public function is_system_record(): bool {
+        return true === $this->system_record;
+    }
+
+    /**
      * Get id
      *
      * @return int|null
@@ -139,12 +239,12 @@ class Club_Player {
     /**
      * Set the id
      *
-     * @param int $insert_id Id for player.
+     * @param int|null $id Id for player.
      *
      * @return void
      */
-    public function set_id( int $insert_id ): void {
-        $this->id = $insert_id;
+    public function set_id( ?int $id ): void {
+        $this->id = $id;
     }
 
     /**
@@ -166,6 +266,15 @@ class Club_Player {
     }
 
     /**
+     * Get player
+     *
+     * @return object|null
+     */
+    public function get_player(): ?object {
+        return $this->player;
+    }
+
+    /**
      * Get status
      *
      * @return string|null
@@ -174,61 +283,66 @@ class Club_Player {
         return $this->status;
     }
 
-     /**
-      * Set the removal date
-      *
-      * @param string $date removal date.
-      *
-      * @return void
-      */
-    public function set_removal_date( string $date ): void {
-        $this->removed_date = $date;
+    /**
+     * Get system record
+     *
+     * @return bool|null
+     */
+    public function get_system_record(): ?bool {
+        return $this->system_record;
     }
 
     /**
-     * Set removal user id
+     * Get created date
      *
-     * @param int $userid removal user id.
-     *
-     * @return void
+     * @return string|null
      */
-    public function set_removal_user( int $userid ): void {
-        $this->removed_user = $userid;
+    public function get_created_date(): ?string {
+        return $this->created_date;
     }
 
     /**
-     * Approve registration
+     * Get created user
      *
-     * @param int               $user_id approving user.
-     * @param DateTimeImmutable $now     approval time (site-local, see Clock_Interface).
-     *
-     * @return void
-     * @throws Invalid_Status_Exception Registration is not pending approval.
+     * @return int|null
      */
-    public function approve( int $user_id, DateTimeImmutable $now ): void {
-        if ( 'pending' !== $this->status ) {
-            throw new Invalid_Status_Exception( 'Registration is not pending approval' );
-        }
-        $this->status       = 'approved';
-        $this->created_date = $now->format( self::DATE_FORMAT );
-        $this->created_user = $user_id;
+    public function get_created_user(): ?int {
+        return $this->created_user;
     }
 
     /**
-     * Remove registration
+     * Get requested date
      *
-     * @param int               $user_id removing user.
-     * @param DateTimeImmutable $now     removal time (site-local, see Clock_Interface).
-     *
-     * @return void
-     * @throws Invalid_Status_Exception Registration is already removed.
+     * @return string|null
      */
-    public function remove( int $user_id, DateTimeImmutable $now ): void {
-        if ( 'removed' === $this->status ) {
-            throw new Invalid_Status_Exception( 'Registration is already removed' );
-        }
-        $this->status       = 'removed';
-        $this->removed_date = $now->format( self::DATE_FORMAT );
-        $this->removed_user = $user_id;
+    public function get_requested_date(): ?string {
+        return $this->requested_date;
+    }
+
+    /**
+     * Get requested user
+     *
+     * @return int|null
+     */
+    public function get_requested_user(): ?int {
+        return $this->requested_user;
+    }
+
+    /**
+     * Get removed date
+     *
+     * @return string|null
+     */
+    public function get_removed_date(): ?string {
+        return $this->removed_date;
+    }
+
+    /**
+     * Get removed user
+     *
+     * @return int|null
+     */
+    public function get_removed_user(): ?int {
+        return $this->removed_user;
     }
 }

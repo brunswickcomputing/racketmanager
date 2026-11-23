@@ -100,6 +100,10 @@ trait Manages_Wordpress_Globals {
         'wp_stubs_password_reset_key_return',
         'wp_stubs_last_reset_password',
         'wp_stubs_translate_callback',
+        'wp_stubs_userdata',
+        'wp_stubs_users',
+        'wp_stubs_users_not_found',
+        'wp_stubs_get_users',
     ];
 
     protected function backup_globals(): void {

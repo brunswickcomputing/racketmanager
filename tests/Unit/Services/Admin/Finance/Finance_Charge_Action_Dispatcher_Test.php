@@ -9,7 +9,6 @@ use Racketmanager\Application\Finance\Commands\Generate_Charge_Invoices_Command;
 use Racketmanager\Application\Finance\Commands\Generate_Charge_Invoices_Handler;
 use Racketmanager\Domain\Finance\Charge;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
-use Racketmanager\Exceptions\Charge_Not_Deleted_Exception;
 use Racketmanager\Exceptions\Charge_Not_Found_Exception;
 use Racketmanager\Exceptions\Charge_Not_Updated_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
@@ -17,6 +16,8 @@ use Racketmanager\Exceptions\Invoice_Not_Created_Exception;
 use Racketmanager\Services\Admin\Finance\Finance_Charge_Action_Dispatcher;
 use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Finance_Service;
+use ReflectionMethod;
+use stdClass;
 use WP_Error;
 
 require_once __DIR__ . '/../../../../wp-stubs.php';
@@ -26,18 +27,17 @@ final class Finance_Charge_Action_Dispatcher_Test extends TestCase {
 
     private Finance_Service $finance_service;
     private Action_Guard_Interface $guard;
-    private Generate_Charge_Invoices_Handler $generate_charge_invoices_handler;
     private Finance_Charge_Action_Dispatcher $dispatcher;
 
     protected function setUp(): void {
         parent::setUp();
         $this->finance_service                  = $this->createMock( Finance_Service::class );
         $this->guard                            = $this->createMock( Action_Guard_Interface::class );
-        $this->generate_charge_invoices_handler = new Generate_Charge_Invoices_Handler( $this->finance_service );
+        $generate_charge_invoices_handler = new Generate_Charge_Invoices_Handler( $this->finance_service );
         $this->dispatcher                       = new Finance_Charge_Action_Dispatcher(
             $this->finance_service,
             $this->guard,
-            $this->generate_charge_invoices_handler
+            $generate_charge_invoices_handler
         );
     }
 
@@ -127,7 +127,7 @@ final class Finance_Charge_Action_Dispatcher_Test extends TestCase {
         $this->finance_service->expects( self::exactly( 2 ) )
             ->method( 'remove_charge' )
             ->willReturnCallback(
-                function( int $id ) {
+                function ( int $id ) {
                     if ( 1 === $id ) {
                         return true;
                     }
@@ -245,9 +245,13 @@ final class Finance_Charge_Action_Dispatcher_Test extends TestCase {
         $handler = $this->createMock( Generate_Charge_Invoices_Handler::class );
         $handler->expects( self::once() )
             ->method( 'handle' )
-            ->with( self::callback( function ( Generate_Charge_Invoices_Command $cmd ): bool {
-                return 42 === $cmd->charge_id && true === $cmd->send_email;
-            } ) )
+            ->with(
+                self::callback(
+                    function ( Generate_Charge_Invoices_Command $cmd ): bool {
+                        return 42 === $cmd->charge_id && true === $cmd->send_email;
+                    }
+                )
+            )
             ->willReturn( true );
 
         $dispatcher = new Finance_Charge_Action_Dispatcher(
@@ -274,9 +278,13 @@ final class Finance_Charge_Action_Dispatcher_Test extends TestCase {
         $handler = $this->createMock( Generate_Charge_Invoices_Handler::class );
         $handler->expects( self::once() )
             ->method( 'handle' )
-            ->with( self::callback( function ( Generate_Charge_Invoices_Command $cmd ): bool {
-                return 42 === $cmd->charge_id && false === $cmd->send_email;
-            } ) )
+            ->with(
+                self::callback(
+                    function ( Generate_Charge_Invoices_Command $cmd ): bool {
+                        return 42 === $cmd->charge_id && false === $cmd->send_email;
+                    }
+                )
+            )
             ->willReturn( true );
 
         $dispatcher = new Finance_Charge_Action_Dispatcher(
@@ -428,7 +436,7 @@ final class Finance_Charge_Action_Dispatcher_Test extends TestCase {
 
         $this->finance_service->expects( self::once() )
             ->method( 'amend_charge' )
-            ->with( self::isInstanceOf( \stdClass::class ), 12 )
+            ->with( self::isInstanceOf( stdClass::class ), 12 )
             ->willReturn( $charge );
 
         $result = $this->dispatcher->handle(
@@ -524,7 +532,7 @@ final class Finance_Charge_Action_Dispatcher_Test extends TestCase {
     }
 
     public function test_constructor_requires_generate_charge_invoices_handler(): void {
-        $ctor = new \ReflectionMethod( Finance_Charge_Action_Dispatcher::class, '__construct' );
+        $ctor = new ReflectionMethod( Finance_Charge_Action_Dispatcher::class, '__construct' );
         $params = [];
         foreach ( $ctor->getParameters() as $param ) {
             $params[ $param->getName() ] = $param;

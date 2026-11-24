@@ -23,7 +23,6 @@ use Racketmanager\Presentation\Presenters\Invoice_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Competition_Service;
-use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Season_Service;
 use Racketmanager\Application\Ports\View_Renderer_Interface;
@@ -36,7 +35,6 @@ final class Admin_Finances_Delivery_Test extends TestCase {
     use Creates_Admin_Delivery_Container;
     use Manages_Wordpress_Globals;
 
-    private Simple_Container $container;
     private Admin_Redirector_Interface $redirector;
     private View_Renderer_Interface $renderer;
     private Admin_Flash_Message_Store $flash_store;
@@ -60,7 +58,7 @@ final class Admin_Finances_Delivery_Test extends TestCase {
         $this->competition_service = $this->createMock( Competition_Service::class );
         $this->season_service      = $this->createMock( Season_Service::class );
 
-        $this->container = $this->create_admin_delivery_container(
+        $container = $this->create_admin_delivery_container(
             services: array(
                 'finance_service'     => $this->finance_service,
                 'competition_service' => $this->competition_service,
@@ -74,10 +72,10 @@ final class Admin_Finances_Delivery_Test extends TestCase {
         );
 
         $racketmanager            = $this->createStub( RacketManager::class );
-        $racketmanager->container = $this->container;
+        $racketmanager->container = $container;
         $GLOBALS['racketmanager'] = $racketmanager;
 
-        $this->screen = $this->container->get( 'admin_finances_screen' );
+        $this->screen = $container->get( 'admin_finances_screen' );
     }
 
     protected function tearDown(): void {

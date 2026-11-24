@@ -82,11 +82,13 @@ final class Admin_Templates_Render_Test extends TestCase {
         $config->age_group = 'open';
         $competition->set_config( $config );
 
-        $errors = new Error_Bag( array(
-            'name' => 'Competition name is required',
-            'grade' => 'Invalid grade selected',
-            'scoring' => 'Scoring format required',
-        ) );
+        $errors = new Error_Bag(
+            array(
+                'name' => 'Competition name is required',
+                'grade' => 'Invalid grade selected',
+                'scoring' => 'Scoring format required',
+            )
+        );
 
         $vm = new Tournament_Competition_Config_Page_View_Model(
             competition: $competition,
@@ -136,10 +138,12 @@ final class Admin_Templates_Render_Test extends TestCase {
             'primary_league' => null,
         );
 
-        $errors = new Error_Bag( array(
-            'name' => 'Event name is required',
-            'scoring' => 'Invalid scoring format',
-        ) );
+        $errors = new Error_Bag(
+            array(
+                'name' => 'Event name is required',
+                'scoring' => 'Invalid scoring format',
+            )
+        );
 
         $vm = new Tournament_Event_Config_Page_View_Model(
             competition: $competition,
@@ -189,10 +193,12 @@ final class Admin_Templates_Render_Test extends TestCase {
             'fee_lead_time' => 14,
         );
 
-        $errors = new Error_Bag( array(
-            'date_start' => 'Start date is required',
-            'date_end' => 'End date is required',
-        ) );
+        $errors = new Error_Bag(
+            array(
+                'date_start' => 'Start date is required',
+                'date_end' => 'End date is required',
+            )
+        );
 
         $vm = new Season_Modify_Page_View_Model(
             competition: $competition,
@@ -228,10 +234,12 @@ final class Admin_Templates_Render_Test extends TestCase {
         $competition = (object) array( 'id' => 2, 'name' => 'Summer League' );
         $season      = (object) array( 'name' => '2026' );
 
-        $errors = new Error_Bag( array(
-            'feeClub' => 'Fee is invalid',
-            'date'    => 'Date is required',
-        ) );
+        $errors = new Error_Bag(
+            array(
+                'feeClub' => 'Fee is invalid',
+                'date'    => 'Date is required',
+            )
+        );
 
         $vm = new Finances_Charge_Page_View_Model(
             charge: $charge,
@@ -257,16 +265,16 @@ final class Admin_Templates_Render_Test extends TestCase {
 
     public function test_render_finance_invoice_template_with_errors_and_values(): void {
         $invoice = new \Racketmanager\Domain\Finance\Invoice();
-        $invoice->id             = 55;
-        $invoice->charge_id      = 5;
-        $invoice->billable_id    = 12;
-        $invoice->billable_type  = 'club';
-        $invoice->invoice_number = 5005;
-        $invoice->date           = '2026-06-01';
-        $invoice->date_due       = '2026-07-01';
-        $invoice->status         = 'sent';
-        $invoice->amount         = '150';
-        $invoice->details        = new stdClass();
+        $invoice->set_id( 55 );
+        $invoice->set_charge_id( 5 );
+        $invoice->set_billable_id( 12 );
+        $invoice->set_billable_type( 'club' );
+        $invoice->set_invoice_number( 5005 );
+        $invoice->set_date( '2026-06-01' );
+        $invoice->set_date_due( '2026-07-01' );
+        $invoice->set_status( 'sent' );
+        $invoice->set_amount( '150' );
+        $invoice->set_details( new stdClass() );
         $invoice->set_purchase_order( 'PO-5555' );
 
         $raw_charge = new stdClass();
@@ -283,9 +291,11 @@ final class Admin_Templates_Render_Test extends TestCase {
 
         $invoice_dto = new \Racketmanager\Domain\DTO\Finance\Invoice_Full_Details_DTO( $invoice, 'Test Club', 'Test Address', null, $charge_dto );
 
-        $errors = new Error_Bag( array(
-            'status' => 'Status error occurred',
-        ) );
+        $errors = new Error_Bag(
+            array(
+                'status' => 'Status error occurred',
+            )
+        );
 
         $presenter = new Invoice_Presenter();
         $vm = $presenter->present_admin_invoice_page(
@@ -313,12 +323,14 @@ final class Admin_Templates_Render_Test extends TestCase {
         $player->btm          = '123456';
         $player->email        = 'john@example.com';
         $player->contactno    = '0123456789';
-        $player->year_of_birth= 1990;
+        $player->year_of_birth = 1990;
         $player->locked       = '';
 
-        $errors = new Error_Bag( array(
-            'firstname' => 'First name invalid',
-        ) );
+        $errors = new Error_Bag(
+            array(
+                'firstname' => 'First name invalid',
+            )
+        );
 
         $vm = new Player_Page_View_Model(
             player: $player,
@@ -354,9 +366,11 @@ final class Admin_Templates_Render_Test extends TestCase {
             ),
         );
 
-        $errors = new Error_Bag( array(
-            'surname' => 'Surname required',
-        ) );
+        $errors = new Error_Bag(
+            array(
+                'surname' => 'Surname required',
+            )
+        );
 
         $vm = new Players_Page_View_Model(
             players: $players,
@@ -407,7 +421,7 @@ final class Admin_Templates_Render_Test extends TestCase {
                 'display_name'      => 'Jane Doe',
                 'gender'            => 'F',
                 'btm'               => '987654',
-                'registered_by_user'=> 'Admin User',
+                'registered_by_user' => 'Admin User',
                 'registration_date' => '2026-02-01',
                 'approved_by_user'  => null,
                 'approval_date'     => null,
@@ -436,10 +450,12 @@ final class Admin_Templates_Render_Test extends TestCase {
     }
 
     private function render_and_capture_warnings( callable $render_callback, array &$warnings ): string {
-        set_error_handler( function ( $errno, $errstr, $errfile, $errline ) use ( &$warnings ) {
-            $warnings[] = "$errstr on $errfile:$errline";
-            return true;
-        } );
+        set_error_handler(
+            function ( $errno, $errstr, $errfile, $errline ) use ( &$warnings ) {
+                $warnings[] = "$errstr on $errfile:$errline";
+                return true;
+            }
+        );
 
         try {
             return (string) $render_callback();

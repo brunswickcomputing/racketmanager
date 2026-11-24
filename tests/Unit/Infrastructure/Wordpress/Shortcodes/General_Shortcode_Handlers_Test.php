@@ -80,12 +80,14 @@ class General_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_get_players_handler_with_search_and_favourites(): void {
-        $player = new Players_List_DTO( [
-            'id'           => 42,
-            'firstname'    => 'John',
-            'surname'      => 'Smith',
-            'display_name' => 'John Smith',
-        ] );
+        $player = new Players_List_DTO(
+            [
+                'id'           => 42,
+                'firstname'    => 'John',
+                'surname'      => 'Smith',
+                'display_name' => 'John Smith',
+            ]
+        );
 
         $player_repository = $this->createMock( Player_Repository_Interface::class );
         $player_repository->expects( $this->once() )
@@ -180,18 +182,20 @@ class General_Shortcode_Handlers_Test extends TestCase {
 
     public function test_players_list_template_renders_search_results(): void {
         $GLOBALS['wp_stubs_is_user_logged_in'] = false;
-        $GLOBALS['racketmanager'] = new class {
+        $GLOBALS['racketmanager'] = new class() {
             public function is_user_favourite( string $type, int $id ): bool {
                 return false;
             }
         };
 
-        $player = new Players_List_DTO( [
-            'ID'           => 42,
-            'firstname'    => 'Jane',
-            'surname'      => 'Smith',
-            'display_name' => 'Jane Smith',
-        ] );
+        $player = new Players_List_DTO(
+            [
+                'ID'           => 42,
+                'firstname'    => 'Jane',
+                'surname'      => 'Smith',
+                'display_name' => 'Jane Smith',
+            ]
+        );
 
         $player_repository = $this->createMock( Player_Repository_Interface::class );
         $player_repository->expects( $this->once() )
@@ -388,10 +392,12 @@ class General_Shortcode_Handlers_Test extends TestCase {
         )->template_vars();
 
         $warnings = [];
-        set_error_handler( static function ( int $severity, string $message ) use ( &$warnings ): bool {
-            $warnings[] = $message;
-            return true;
-        } );
+        set_error_handler(
+            static function ( int $severity, string $message ) use ( &$warnings ): bool {
+                $warnings[] = $message;
+                return true;
+            }
+        );
         try {
             $html = $this->template_renderer->render( 'player', $vars );
         } finally {
@@ -521,14 +527,16 @@ class General_Shortcode_Handlers_Test extends TestCase {
 
         $option_gateway = $this->createStub( Option_Gateway_Interface::class );
         $option_gateway->method( 'get_option' )
-            ->willReturnCallback( function ( $key, $default = null ) {
-                return match ( $key ) {
-                    'blogname'    => 'Leigh &amp; Westcliff Tennis',
-                    'siteurl'     => 'https://leighleague.org',
-                    'date_format' => 'd-m-Y',
-                    default       => $default,
-                };
-            } );
+            ->willReturnCallback(
+                function ( $key, $default = null ) {
+                    return match ( $key ) {
+                          'blogname'    => 'Leigh &amp; Westcliff Tennis',
+                          'siteurl'     => 'https://leighleague.org',
+                          'date_format' => 'd-m-Y',
+                          default       => $default,
+                    };
+                }
+            );
 
         $handler = new Get_Invoice_Handler( $finance_service, $settings_service, $option_gateway );
         $query   = new Get_Invoice_Query( id: 10 );
@@ -598,14 +606,16 @@ class General_Shortcode_Handlers_Test extends TestCase {
 
         $option_gateway = $this->createStub( Option_Gateway_Interface::class );
         $option_gateway->method( 'get_option' )
-            ->willReturnCallback( function ( $key, $default = null ) {
-                return match ( $key ) {
-                    'blogname'    => 'Leigh & Westcliff Tennis Club',
-                    'siteurl'     => 'https://leighleague.org',
-                    'date_format' => 'd-m-Y',
-                    default       => $default,
-                };
-            } );
+            ->willReturnCallback(
+                function ( $key, $default = null ) {
+                    return match ( $key ) {
+                          'blogname'    => 'Leigh & Westcliff Tennis Club',
+                          'siteurl'     => 'https://leighleague.org',
+                          'date_format' => 'd-m-Y',
+                          default       => $default,
+                    };
+                }
+            );
 
         $handler = new Get_Invoice_Handler( $finance_service, $settings_service, $option_gateway );
         $query   = new Get_Invoice_Query( id: 20 );
@@ -640,8 +650,8 @@ class General_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_get_purchase_order_handler_success(): void {
-        $invoice     = $this->createStub( Invoice::class );
-        $invoice->id = 5;
+        $invoice = new Invoice();
+        $invoice->set_id( 5 );
 
         $finance_service = $this->createStub( Finance_Service::class );
         $finance_service->method( 'get_invoice' )
@@ -692,12 +702,14 @@ class General_Shortcode_Handlers_Test extends TestCase {
         $club_active->name         = 'Current Club Display';
         $club_active->shortcode    = 'Current Club';
 
-        $reg_active = Club_Player::from_object( (object) [
-            'id'           => 10,
-            'player_id'    => 42,
-            'club_id'      => 1,
-            'created_date' => '2026-01-10 10:00:00',
-        ] );
+        $reg_active = Club_Player::from_object(
+            (object) [
+                'id'           => 10,
+                'player_id'    => 42,
+                'club_id'      => 1,
+                'created_date' => '2026-01-10 10:00:00',
+            ]
+        );
         $dto_active = new Club_Player_DTO( $player_entity, $club_active, $reg_active );
 
         $club_removed            = new Club();
@@ -705,19 +717,23 @@ class General_Shortcode_Handlers_Test extends TestCase {
         $club_removed->name      = 'Old Club Display';
         $club_removed->shortcode = 'Old Club';
 
-        $reg_removed = Club_Player::from_object( (object) [
-            'id'           => 11,
-            'player_id'    => 42,
-            'club_id'      => 2,
-            'created_date' => '2025-01-10 10:00:00',
-            'removed_date' => '2025-12-01 12:00:00',
-        ] );
+        $reg_removed = Club_Player::from_object(
+            (object) [
+                'id'           => 11,
+                'player_id'    => 42,
+                'club_id'      => 2,
+                'created_date' => '2025-01-10 10:00:00',
+                'removed_date' => '2025-12-01 12:00:00',
+            ]
+        );
         $dto_removed = new Club_Player_DTO( $player_entity, $club_removed, $reg_removed );
 
         $reg_service = $this->createStub( Registration_Service::class );
-        $reg_service->method( 'get_clubs_for_player' )->willReturnCallback( function ( $id, $type = null ) use ( $dto_active, $dto_removed ) {
-            return 'removed' === $type ? [ $dto_removed ] : [ $dto_active ];
-        } );
+        $reg_service->method( 'get_clubs_for_player' )->willReturnCallback(
+            function ( $id, $type = null ) use ( $dto_active, $dto_removed ) {
+                return 'removed' === $type ? [ $dto_removed ] : [ $dto_active ];
+            }
+        );
 
         $handler = new Get_Memberships_Handler( $player_service, $reg_service );
         $query   = new Get_Memberships_Query( is_logged_in: true, user_id: 42, template: 'compact' );
@@ -780,12 +796,14 @@ class General_Shortcode_Handlers_Test extends TestCase {
         $club_active->name      = 'Current Club Display';
         $club_active->shortcode = 'Current Club';
 
-        $reg_active = Club_Player::from_object( (object) [
-            'id'           => 10,
-            'player_id'    => 42,
-            'club_id'      => 1,
-            'created_date' => '2026-01-10 10:00:00',
-        ] );
+        $reg_active = Club_Player::from_object(
+            (object) [
+                'id'           => 10,
+                'player_id'    => 42,
+                'club_id'      => 1,
+                'created_date' => '2026-01-10 10:00:00',
+            ]
+        );
         $dto_active = new Club_Player_DTO( $player_entity, $club_active, $reg_active );
 
         $vm = $presenter->present_club_membership( $dto_active );
@@ -798,15 +816,19 @@ class General_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_get_player_search_handler_success(): void {
-        $player1 = new Players_List_DTO( (object) [
-            'id'           => 1,
-            'display_name' => 'Roger Federer',
-        ] );
+        $player1 = new Players_List_DTO(
+            (object) [
+                'id'           => 1,
+                'display_name' => 'Roger Federer',
+            ]
+        );
 
-        $player2 = new Players_List_DTO( (object) [
-            'id'           => 2,
-            'display_name' => 'Roger Rasheed',
-        ] );
+        $player2 = new Players_List_DTO(
+            (object) [
+                'id'           => 2,
+                'display_name' => 'Roger Rasheed',
+            ]
+        );
 
         $player_repo = $this->createMock( Player_Repository_Interface::class );
         $player_repo->expects( $this->once() )
@@ -896,10 +918,13 @@ class General_Shortcode_Handlers_Test extends TestCase {
     public function test_real_template_alert_rendering(): void {
         $result = ( new Get_Alert_Handler() )->handle( new Get_Alert_Query( msg: 'Notice message', type: 'info' ) );
 
-        $output = $this->template_renderer->render( 'alert', [
-            'msg'   => $result->msg,
-            'class' => $result->type,
-        ] );
+        $output = $this->template_renderer->render(
+            'alert',
+            [
+                'msg'   => $result->msg,
+                'class' => $result->type,
+            ]
+        );
 
         $this->assertStringContainsString( 'Notice message', $output );
         $this->assertStringContainsString( 'alert--info', $output );

@@ -69,8 +69,18 @@ class Finance_Service implements Finance_Service_Interface {
     private Option_Service $option_service;
 
     /**
-     * Constructor
+     * Constructor.
      *
+     * @param RacketManager                   $plugin_instance       Plugin instance.
+     * @param Charge_Repository_Interface     $charge_repository     Charge repository.
+     * @param Invoice_Repository_Interface    $invoice_repository    Invoice repository.
+     * @param Club_Repository_Interface       $club_repository       Club repository.
+     * @param Tournament_Repository_Interface $tournament_repository Tournament repository.
+     * @param Competition_Service             $competition_service   Competition service.
+     * @param Player_Service                  $player_service        Player service.
+     * @param Payment_Gateway_Interface       $payment_gateway       Payment gateway.
+     * @param Mailer_Interface                $mailer                Mailer instance.
+     * @param Option_Service                  $option_service        Option service.
      */
     public function __construct(
         RacketManager $plugin_instance,
@@ -96,40 +106,80 @@ class Finance_Service implements Finance_Service_Interface {
         $this->option_service        = $option_service;
     }
 
+    /**
+     * Get charge by ID.
+     *
+     * @param int|string|null $charge_id Charge ID.
+     * @return Charge
+     * @throws Charge_Not_Found_Exception If charge is not found.
+     */
     public function get_charge( int|string|null $charge_id ): Charge {
         $charge = $this->charge_repository->find_by_id( $charge_id );
         if ( ! $charge ) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new Charge_Not_Found_Exception( Util_Messages::charge_not_found( $charge_id ) );
         }
 
         return $charge;
     }
 
-    public function get_charge_with_details( $charge_id ): Charge_Details_DTO {
+    /**
+     * Get charge with details by ID.
+     *
+     * @param int|string|null $charge_id Charge ID.
+     *
+     * @return Charge_Details_DTO
+     * @throws Charge_Not_Found_Exception If charge is not found.
+     */
+    public function get_charge_with_details( int|string|null $charge_id ): Charge_Details_DTO {
         $charge = $this->charge_repository->find_by_id_with_details( $charge_id );
         if ( ! $charge ) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new Charge_Not_Found_Exception( Util_Messages::charge_not_found( $charge_id ) );
         }
 
         return $charge;
     }
 
+    /**
+     * Get charges matching criteria.
+     *
+     * @param array<string, mixed> $criteria Search criteria.
+     * @return array
+     */
     public function get_charges_by_criteria( array $criteria ): array {
         return $this->charge_repository->find_by( $criteria );
     }
 
-    public function remove_charge( $charge_id ): int {
+    /**
+     * Remove charge by ID.
+     *
+     * @param int|string $charge_id Charge ID.
+     *
+     * @return bool
+     * @throws Charge_Not_Found_Exception If charge is not found.
+     * @throws Charge_Not_Deleted_Exception If charge cannot be deleted.
+     */
+    public function remove_charge( int|string $charge_id ): bool {
         $charge = $this->charge_repository->find_by_id( $charge_id );
         if ( ! $charge ) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new Charge_Not_Found_Exception( Util_Messages::charge_not_found( $charge_id ) );
         }
         if ( $this->invoice_repository->has_invoices( $charge_id ) ) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new Charge_Not_Deleted_Exception( Util_Messages::charge_has_invoices( $charge_id ) );
         }
 
         return $this->charge_repository->delete( $charge_id );
     }
 
+    /**
+     * Add a charge.
+     *
+     * @param stdClass $new_charge New charge details.
+     * @return Charge|int|WP_Error
+     */
     public function add_charge( stdClass $new_charge ): Charge|int|WP_Error {
         $validator = $this->validate_charge( $new_charge );
         if ( is_wp_error( $validator ) ) {
@@ -144,6 +194,13 @@ class Finance_Service implements Finance_Service_Interface {
         }
     }
 
+    /**
+     * Validate charge details.
+     *
+     * @param stdClass $charge    Charge data.
+     * @param int|null $charge_id Optional charge ID for comparison.
+     * @return bool|WP_Error
+     */
     private function validate_charge( stdClass $charge, ?int $charge_id = null ): bool|WP_Error {
         $validator = new Validator_Finance( competition_service: $this->competition_service );
         if ( $charge_id ) {
@@ -170,9 +227,19 @@ class Finance_Service implements Finance_Service_Interface {
         return true;
     }
 
+    /**
+     * Amend an existing charge.
+     *
+     * @param stdClass $updated_charge Updated charge details.
+     * @param int      $charge_id      Charge ID.
+     * @return Charge|int|WP_Error
+     * @throws Charge_Not_Found_Exception If charge is not found.
+     * @throws Charge_Not_Updated_Exception If charge cannot be updated.
+     */
     public function amend_charge( stdClass $updated_charge, int $charge_id ): Charge|int|WP_Error {
         $charge = $this->charge_repository->find_by_id( $updated_charge->id );
         if ( ! $charge ) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new Charge_Not_Found_Exception( Util_Messages::charge_not_found( $updated_charge->id ) );
         }
         $validator = $this->validate_charge( $updated_charge, $charge_id );
@@ -189,13 +256,24 @@ class Finance_Service implements Finance_Service_Interface {
         if ( $updates ) {
             return $charge;
         } else {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new Charge_Not_Updated_Exception( Util_Messages::no_updates() );
         }
     }
 
+    /**
+     * Send invoices for a charge.
+     *
+     * @param int|null $charge_id Charge ID.
+     * @param bool     $clear     Whether to clear scheduled events.
+     * @return bool
+     * @throws Charge_Not_Found_Exception If charge is not found.
+     * @throws Invoice_Not_Created_Exception If invoice cannot be created.
+     */
     public function send_invoices_for_charge( ?int $charge_id, bool $clear = false ): bool {
         $charge = $this->charge_repository->find_by_id( $charge_id );
         if ( ! $charge ) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new Charge_Not_Found_Exception( Util_Messages::charge_not_found( $charge_id ) );
         }
         if ( $clear ) {
@@ -209,6 +287,7 @@ class Finance_Service implements Finance_Service_Interface {
             try {
                 $invoice = $this->add_club_invoice( $charge, $entry );
             } catch ( Invoice_Not_Created_Exception $e ) {
+                // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
                 throw new Invoice_Not_Created_Exception( $e->getMessage() );
             }
             try {
@@ -253,9 +332,17 @@ class Finance_Service implements Finance_Service_Interface {
         return $count;
     }
 
+    /**
+     * Get charges for clubs by charge ID.
+     *
+     * @param int $charge_id Charge ID.
+     * @return array
+     * @throws Charge_Not_Found_Exception If charge is not found.
+     */
     public function get_charges_for_clubs( int $charge_id ): array {
         $charge = $this->charge_repository->find_by_id( $charge_id );
         if ( ! $charge ) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new Charge_Not_Found_Exception( Util_Messages::charge_not_found( $charge_id ) );
         }
         $club_entries = array();
@@ -271,10 +358,10 @@ class Finance_Service implements Finance_Service_Interface {
     }
 
     /**
-     * Get club entries for charges
+     * Get club entries for charges.
      *
-     * @param Charge $charge
-     * @param Club $club club.
+     * @param Charge $charge Charge entity.
+     * @param Club   $club   Club entity.
      *
      * @return false|object
      */
@@ -291,24 +378,24 @@ class Finance_Service implements Finance_Service_Interface {
                 $club_event        = new stdClass();
                 $club_event->type  = $event->type;
                 $club_event->count = $num_teams;
-                $club_event->fee   = $event_fee_money ? $event_fee_money->multiply( $num_teams )->get_amount() : (float) ( $charge->fee_event * $num_teams );
+                $club_event->fee   = $event_fee_money ? $event_fee_money->multiply( $num_teams )->get_amount() : (float) ( $charge->get_fee_event() * $num_teams );
                 $club_events[]     = $club_event;
             }
             $club_teams += $num_teams;
         }
         if ( $club_teams > 0 ) {
-            $currency                    = $this->get_currency();
-            $comp_fee_money              = $charge->get_competition_fee_money( $currency );
-            $event_fee_money             = $charge->get_event_fee_money( $currency );
-            $events_total_money          = $event_fee_money ? $event_fee_money->multiply( $club_teams ) : Money::zero( $currency );
-            $comp_total_money            = $comp_fee_money ?? Money::zero( $currency );
-            $total_money                 = $comp_total_money->add( $events_total_money );
+            $currency           = $this->get_currency();
+            $comp_fee_money     = $charge->get_competition_fee_money( $currency );
+            $event_fee_money    = $charge->get_event_fee_money( $currency );
+            $events_total_money = $event_fee_money ? $event_fee_money->multiply( $club_teams ) : Money::zero( $currency );
+            $comp_total_money   = $comp_fee_money ?? Money::zero( $currency );
+            $total_money        = $comp_total_money->add( $events_total_money );
 
             $club_entry                  = new stdClass();
             $club_entry->id              = $club->id;
             $club_entry->name            = $club->name;
             $club_entry->num_teams       = $club_teams;
-            $club_entry->fee_competition = $charge->fee_competition;
+            $club_entry->fee_competition = $charge->get_fee_competition();
             $club_entry->fee_events      = $events_total_money->get_amount();
             $club_entry->fee             = $total_money->get_amount();
             $club_entry->events          = $club_events;
@@ -319,9 +406,21 @@ class Finance_Service implements Finance_Service_Interface {
         }
     }
 
+    /**
+     * Add an invoice.
+     *
+     * @param string                                  $type         Billable type ('club' or 'player').
+     * @param int                                     $charge_id    Charge ID.
+     * @param string                                  $invoice_date Invoice date string.
+     * @param stdClass|Tournament_Invoice_Details_DTO $entry        Entry details.
+     * @param string|Invoice_Status                   $status       Invoice status.
+     * @return Invoice|bool
+     * @throws Invoice_Not_Created_Exception If billing details are missing.
+     */
     public function add_invoice( string $type, int $charge_id, string $invoice_date, stdClass|Tournament_Invoice_Details_DTO $entry, string|Invoice_Status $status = Invoice_Status::DRAFT ): Invoice|bool {
         $billing = $this->racketmanager->get_options( 'billing' );
         if ( ! $billing ) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new Invoice_Not_Created_Exception( Util_Messages::no_billing_details() );
         }
         try {
@@ -363,6 +462,13 @@ class Finance_Service implements Finance_Service_Interface {
         }
     }
 
+    /**
+     * Add player invoice for tournament.
+     *
+     * @param Tournament                     $tournament Tournament entity.
+     * @param Tournament_Invoice_Details_DTO $entry      Tournament invoice details.
+     * @return Invoice|bool
+     */
     public function add_player_invoice_for_tournament( Tournament $tournament, Tournament_Invoice_Details_DTO $entry ): Invoice|bool {
         $date      = gmdate( 'Y-m-d' );
         $charge_id = $tournament->get_competition_id() . '_' . $tournament->get_season();
@@ -374,14 +480,32 @@ class Finance_Service implements Finance_Service_Interface {
         return $this->add_invoice( 'player', $charge->get_id(), $date, $entry, Invoice_Status::FINAL );
     }
 
-    public function add_club_invoice( Charge $charge, stdclass $entry ): Invoice|bool {
+    /**
+     * Add club invoice.
+     *
+     * @param Charge   $charge Charge entity.
+     * @param stdClass $entry  Club entry details.
+     * @return Invoice|bool
+     */
+    public function add_club_invoice( Charge $charge, stdClass $entry ): Invoice|bool {
         $charge_id = $charge->get_id();
-        $date = $charge->get_date();
+        $date      = $charge->get_date();
         return $this->add_invoice( 'club', $charge_id, $date, $entry );
     }
-    public function send_invoice( int $invoice_id, $resend = false ): bool {
+
+    /**
+     * Send an invoice email.
+     *
+     * @param int  $invoice_id Invoice ID.
+     * @param bool $resend     Whether this is a resend.
+     *
+     * @return bool
+     * @throws Invoice_Not_Found_Exception If invoice is not found.
+     */
+    public function send_invoice( int $invoice_id, bool $resend = false ): bool {
         $invoice = $this->get_full_invoice_details( $invoice_id );
         if ( ! $invoice ) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new Invoice_Not_Found_Exception( Util_Messages::invoice_not_found( $invoice_id ) );
         }
         $email_to              = $invoice->contact->display_name . ' <' . $invoice->contact->email . '>';
@@ -418,32 +542,40 @@ class Finance_Service implements Finance_Service_Interface {
         }
     }
 
+    /**
+     * Get full invoice details DTO.
+     *
+     * @param int|null $invoice_id Invoice ID.
+     * @return Invoice_Full_Details_DTO|null
+     * @throws Invoice_Not_Found_Exception If invoice is not found.
+     */
     public function get_full_invoice_details( ?int $invoice_id ): ?Invoice_Full_Details_DTO {
         $invoice = $this->invoice_repository->find_by_id( $invoice_id );
         if ( ! $invoice ) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new Invoice_Not_Found_Exception( Util_Messages::invoice_not_found( $invoice_id ) );
         }
         $billable_name    = '';
         $billable_address = '';
         $contact          = '';
-        if ( 'club' === $invoice->billable_type ) {
+        if ( 'club' === $invoice->get_billable_type() ) {
             try {
-                $contact = $this->player_service->get_match_secretary_details( $invoice->billable_id );
+                $contact = $this->player_service->get_match_secretary_details( $invoice->get_billable_id() );
             } catch ( Role_Assignment_Not_Found_Exception ) {
                 $contact = null;
             }
             try {
-                $club             = $this->club_repository->find_by_id( $invoice->billable_id );
+                $club             = $this->club_repository->find_by_id( $invoice->get_billable_id() );
                 $billable_name    = $club->get_shortcode();
                 $billable_address = $club->get_address();
             } catch ( Club_Not_Found_Exception ) {
                 $billable_name    = null;
                 $billable_address = null;
             }
-        } elseif ( 'player' === $invoice->billable_type ) {
+        } elseif ( 'player' === $invoice->get_billable_type() ) {
             $billable_address = null;
             try {
-                $player        = $this->player_service->get_player( $invoice->billable_id );
+                $player        = $this->player_service->get_player( $invoice->get_billable_id() );
                 $billable_name = $player->get_fullname();
                 $contact       = $player;
             } catch ( Player_Not_Found_Exception ) {
@@ -451,36 +583,70 @@ class Finance_Service implements Finance_Service_Interface {
                 $contact       = null;
             }
         }
-        $charge = $this->charge_repository->find_by_id_with_details( $invoice->charge_id );
+        $charge = $this->charge_repository->find_by_id_with_details( $invoice->get_charge_id() );
 
         return new Invoice_Full_Details_DTO( $invoice, $billable_name, $billable_address, $contact, $charge );
     }
 
+    /**
+     * Get an invoice by ID.
+     *
+     * @param int|string|null $invoice_id Invoice ID.
+     * @return Invoice|null
+     * @throws Invoice_Not_Found_Exception If invoice is not found.
+     */
     public function get_invoice( int|string|null $invoice_id ): ?Invoice {
         $invoice = $this->invoice_repository->find_by_id( $invoice_id );
         if ( ! $invoice ) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new Invoice_Not_Found_Exception( Util_Messages::invoice_not_found( $invoice_id ) );
         }
 
         return $invoice;
     }
 
+    /**
+     * Get invoice by charge ID and club ID.
+     *
+     * @param int|null $charge_id Charge ID.
+     * @param int|null $club_id   Club ID.
+     * @return Invoice|null
+     * @throws Invoice_Not_Found_Exception If invoice is not found.
+     */
     public function get_invoice_by_charge_and_club( ?int $charge_id, ?int $club_id ): ?Invoice {
         $invoice = $this->invoice_repository->find_by_charge_and_billable( $charge_id, $club_id );
         if ( ! $invoice ) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new Invoice_Not_Found_Exception( Util_Messages::invoice_not_found() );
         }
 
         return $invoice;
     }
 
+    /**
+     * Get invoices matching criteria.
+     *
+     * @param array<string, mixed> $criteria Search criteria.
+     * @return array
+     */
     public function get_invoices_by_criteria( array $criteria ): array {
         return $this->invoice_repository->find_by( $criteria );
     }
 
+    /**
+     * Amend invoice status and purchase order.
+     *
+     * @param int|null    $invoice_id     Invoice ID.
+     * @param string|null $status         Invoice status.
+     * @param string|null $purchase_order Purchase order reference.
+     * @return Invoice|WP_Error
+     * @throws Invoice_Not_Found_Exception If invoice is not found.
+     * @throws Invoice_Not_Updated_Exception If invoice cannot be updated.
+     */
     public function amend_invoice( ?int $invoice_id, ?string $status, ?string $purchase_order ): Invoice|WP_Error {
         $invoice = $this->invoice_repository->find_by_id( $invoice_id );
         if ( ! $invoice ) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new Invoice_Not_Found_Exception( Util_Messages::invoice_not_found( $invoice_id ) );
         }
         $validator = $this->validate_invoice( $invoice_id, $status );
@@ -489,8 +655,8 @@ class Finance_Service implements Finance_Service_Interface {
         }
         $status_enum = Invoice_Status::try_from_value( $status );
         if ( ! $status_enum ) {
-            $invalid     = new Validator_Finance();
-            $message     = Util_Messages::invalid_parameter( (string) $status );
+            $invalid = new Validator_Finance();
+            $message = Util_Messages::invalid_parameter( (string) $status );
             $invalid->set_errors( 'status', $message, 400 );
             $invalid->err->add( 'status', $message );
             return $invalid->err;
@@ -501,10 +667,18 @@ class Finance_Service implements Finance_Service_Interface {
         if ( $updates ) {
             return $invoice;
         } else {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new Invoice_Not_Updated_Exception( Util_Messages::no_updates() );
         }
     }
 
+    /**
+     * Validate invoice for amendment.
+     *
+     * @param int         $invoice_id Invoice ID.
+     * @param string|null $status     Target status.
+     * @return bool|WP_Error
+     */
     private function validate_invoice( int $invoice_id, ?string $status ): bool|WP_Error {
         $validator = new Validator_Finance();
         if ( 'resend' === $status ) {
@@ -523,12 +697,23 @@ class Finance_Service implements Finance_Service_Interface {
         return true;
     }
 
+    /**
+     * Perform an action on an invoice.
+     *
+     * @param int|null    $invoice_id Invoice ID.
+     * @param string|null $action     Action name ('resend', 'delete', or status change).
+     * @return string
+     * @throws Invoice_Not_Found_Exception If invoice is not found.
+     * @throws Invalid_Argument_Exception If action parameter is missing.
+     */
     public function action_invoice( ?int $invoice_id, ?string $action ): string {
         $invoice = $this->invoice_repository->find_by_id( $invoice_id );
         if ( ! $invoice ) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new Invoice_Not_Found_Exception( Util_Messages::invoice_not_found( $invoice_id ) );
         }
         if ( ! $action ) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new Invalid_Argument_Exception( Util_Messages::missing_action_parameter() );
         }
         $result = match ( $action ) {
@@ -538,14 +723,18 @@ class Finance_Service implements Finance_Service_Interface {
         };
         if ( true === $result ) {
             if ( 'resend' === $action ) {
+                /* translators: %d: Invoice ID. */
                 $msg = sprintf( __( 'Invoice %d resent', 'racketmanager' ), $invoice->get_id() );
             } else {
+                /* translators: %d: Invoice ID. */
                 $msg = sprintf( __( 'Invoice %d deleted', 'racketmanager' ), $invoice->get_id() );
             }
         } elseif ( false === $result ) {
             if ( 'resend' === $action ) {
+                /* translators: %d: Invoice ID. */
                 $msg = sprintf( __( 'Invoice %d resend failed', 'racketmanager' ), $invoice->get_id() );
             } else {
+                /* translators: %d: Invoice ID. */
                 $msg = sprintf( __( 'Invoice %d not deleted', 'racketmanager' ), $invoice->get_id() );
             }
         } else {
@@ -579,24 +768,45 @@ class Finance_Service implements Finance_Service_Interface {
         return $results;
     }
 
-    public function remove_invoice( $invoice_id ): int {
+    /**
+     * Remove an invoice by ID.
+     *
+     * @param int|string $invoice_id Invoice ID.
+     *
+     * @return bool
+     * @throws Invoice_Not_Found_Exception If invoice is not found.
+     */
+    public function remove_invoice( int|string $invoice_id ): bool {
         $invoice = $this->invoice_repository->find_by_id( $invoice_id );
         if ( ! $invoice ) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new Invoice_Not_Found_Exception( Util_Messages::invoice_not_found( $invoice_id ) );
         }
 
         return $this->invoice_repository->delete( $invoice_id );
     }
 
+    /**
+     * Get current currency.
+     *
+     * @return Currency
+     */
     public function get_currency(): Currency {
         $billing = $this->racketmanager->get_options( 'billing' );
         $code    = is_array( $billing ) ? ( $billing['billingCurrency'] ?? null ) : null;
         if ( ! is_string( $code ) || '' === trim( $code ) ) {
             $code = $this->racketmanager->currency_code ?? 'GBP';
         }
-        return Currency::try_from_symbol_or_code( (string) $code ) ?? Currency::GBP;
+        return Currency::try_from_symbol_or_code( $code ) ?? Currency::GBP;
     }
 
+    /**
+     * Change invoice status.
+     *
+     * @param Invoice               $invoice Invoice entity.
+     * @param Invoice_Status|string $status  Target status.
+     * @return string
+     */
     private function invoice_status_change( Invoice $invoice, Invoice_Status|string $status ): string {
         $status_enum    = Invoice_Status::try_from_value( $status );
         $valid_statuses = [ Invoice_Status::DRAFT, Invoice_Status::FINAL, Invoice_Status::PAID, Invoice_Status::CANCELLED ];
@@ -606,17 +816,27 @@ class Finance_Service implements Finance_Service_Interface {
         $invoice->set_status_enum( $status_enum );
         $result = $this->invoice_repository->save( $invoice );
         if ( $result ) {
+            /* translators: %d: Invoice ID. */
             $msg = sprintf( __( 'Invoice %d status updated', 'racketmanager' ), $invoice->get_id() );
         } else {
+            /* translators: %d: Invoice ID. */
             $msg = sprintf( __( 'Invoice %d not updated', 'racketmanager' ), $invoice->get_id() );
         }
 
         return $msg;
     }
 
+    /**
+     * Mark a charge as final.
+     *
+     * @param string $key Charge ID or key.
+     * @return bool
+     * @throws Charge_Not_Found_Exception If charge is not found.
+     */
     public function set_charge_used( string $key ): bool {
         $charge = $this->charge_repository->find_by_id( $key );
         if ( ! $charge ) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new Charge_Not_Found_Exception( Util_Messages::charge_not_found( is_numeric( $key ) ? (int) $key : null ) );
         }
         if ( $charge->is_final() ) {
@@ -627,12 +847,23 @@ class Finance_Service implements Finance_Service_Interface {
         return $this->charge_repository->save( $charge );
     }
 
+    /**
+     * Set purchase order for an invoice.
+     *
+     * @param int|null    $invoice_id     Invoice ID.
+     * @param string|null $purchase_order Purchase order reference.
+     * @return bool
+     * @throws Invoice_Not_Found_Exception If invoice is not found.
+     * @throws Invalid_Argument_Exception If purchase order is unchanged.
+     */
     public function set_purchase_order_for_invoice( ?int $invoice_id, ?string $purchase_order ): bool {
         $invoice = $this->invoice_repository->find_by_id( $invoice_id );
         if ( ! $invoice ) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new Invoice_Not_Found_Exception( Util_Messages::invoice_not_found( $invoice_id ) );
         }
         if ( $purchase_order === $invoice->get_purchase_order() ) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new Invalid_Argument_Exception( Util_Messages::purchase_order_unchanged() );
         }
         $invoice->set_purchase_order( $purchase_order );
@@ -650,33 +881,47 @@ class Finance_Service implements Finance_Service_Interface {
         return $this->set_purchase_order_for_invoice( $invoice_id, $purchase_order );
     }
 
+    /**
+     * Create tournament payment request.
+     *
+     * @param int|null $tournament_id Tournament ID.
+     * @param int|null $player_id     Player ID.
+     * @param int|null $invoice_id    Invoice ID.
+     * @return string
+     * @throws Invoice_Not_Found_Exception If invoice is not found.
+     * @throws Tournament_Not_Found_Exception If tournament is not found.
+     * @throws Player_Not_Found_Exception If player is not found.
+     */
     public function create_tournament_payment_request( ?int $tournament_id, ?int $player_id, ?int $invoice_id ): string {
         $invoice = $this->invoice_repository->find_by_id( $invoice_id );
         if ( ! $invoice ) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new Invoice_Not_Found_Exception( Util_Messages::invoice_not_found( $invoice_id ) );
         }
         $tournament = $this->tournament_repository->find_by_id( $tournament_id );
         if ( ! $tournament ) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new Tournament_Not_Found_Exception( Util_Messages::tournament_not_found( $tournament_id ) );
         }
         $tournament_name = $tournament->get_name();
         try {
             $player = $this->player_service->get_player( $player_id );
         } catch ( Player_Not_Found_Exception $e ) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new Player_Not_Found_Exception( $e->getMessage() );
         }
         $currency                            = $this->get_currency();
         $money                               = $invoice->get_money( $currency );
         $args['description']                 = $player->get_fullname() . ' - ' . $tournament_name;
-        $args['amount']                      = $money ? $money->get_cents() : intval( round( floatval( $invoice->amount ) * 100 ) );
+        $args['amount']                      = $money ? $money->get_cents() : intval( round( floatval( $invoice->get_amount() ) * 100 ) );
         $args['currency']                    = $this->racketmanager->currency_code ?? 'GBP';
-        $args['payment_method_types']        = array('card');
+        $args['payment_method_types']        = array( 'card' );
         $args['statement_descriptor_suffix'] = $tournament_name;
         $args['receipt_email']               = $player->get_email();
 
         $payment_intent = $this->payment_gateway->create_payment_intent( $args );
 
-        if ( $payment_intent && ! empty( $payment_intent->id ) ) {
+        if ( ! empty( $payment_intent->id ) ) {
             $reference = $payment_intent->id;
             $invoice->set_payment_reference( $reference );
             $this->invoice_repository->save( $invoice );
@@ -684,15 +929,37 @@ class Finance_Service implements Finance_Service_Interface {
         return $payment_intent->client_secret ?? '';
     }
 
+    /**
+     * Cancel open player invoices for a tournament.
+     *
+     * @param int|null   $player_id   Player ID.
+     * @param Tournament $tournament Tournament entity.
+     * @return void
+     */
     public function cancel_player_invoices_by_tournament( ?int $player_id, Tournament $tournament ): void {
         $competition_id = $tournament->get_competition_id();
         $season         = $tournament->get_season();
-        $invoices       = $this->invoice_repository->find_by( array( 'billable_type' => 'player', 'billable_id' => $player_id, 'status' => 'open', 'competition' => $competition_id, 'season' => $season ) );
+        $invoices       = $this->invoice_repository->find_by(
+            array(
+                'billable_type' => 'player',
+                'billable_id'   => $player_id,
+                'status'        => 'open',
+                'competition'   => $competition_id,
+                'season'        => $season,
+            )
+        );
         foreach ( $invoices as $invoice ) {
             $this->invoice_repository->delete( $invoice->id );
         }
     }
 
+    /**
+     * Get tournament paid total for a player.
+     *
+     * @param int|null $player_id     Player ID.
+     * @param int|null $tournament_id Tournament ID.
+     * @return float
+     */
     public function get_tournament_paid_total_for_player( ?int $player_id, ?int $tournament_id ): float {
         if ( null === $player_id || null === $tournament_id ) {
             return 0.0;

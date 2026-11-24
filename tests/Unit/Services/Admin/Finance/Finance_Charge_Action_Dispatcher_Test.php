@@ -89,7 +89,7 @@ final class Finance_Charge_Action_Dispatcher_Test extends TestCase {
         $this->finance_service->expects( self::once() )
             ->method( 'remove_charge' )
             ->with( 10 )
-            ->willReturn( 1 );
+            ->willReturn( true );
 
         $result = $this->dispatcher->handle(
             array(),
@@ -108,7 +108,7 @@ final class Finance_Charge_Action_Dispatcher_Test extends TestCase {
         $this->finance_service->expects( self::once() )
             ->method( 'remove_charge' )
             ->with( 10 )
-            ->willReturn( 0 );
+            ->willReturn( false );
 
         $result = $this->dispatcher->handle(
             array(),
@@ -129,7 +129,7 @@ final class Finance_Charge_Action_Dispatcher_Test extends TestCase {
             ->willReturnCallback(
                 function( int $id ) {
                     if ( 1 === $id ) {
-                        return 1;
+                        return true;
                     }
                     throw new Charge_Not_Found_Exception( 'Charge 2 not found' );
                 }
@@ -345,6 +345,50 @@ final class Finance_Charge_Action_Dispatcher_Test extends TestCase {
 
         self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
         self::assertSame( array( 'view' => 'charge', 'charges' => 99 ), $result->query_params );
+    }
+
+    public function test_add_charge_success_numeric_id_redirects_to_new_id(): void {
+        $this->guard->expects( self::once() )->method( 'assert_allowed' );
+
+        $this->finance_service->expects( self::once() )
+            ->method( 'add_charge' )
+            ->willReturn( 42 );
+
+        $result = $this->dispatcher->handle(
+            array(),
+            array(
+                'saveCharge'     => '1',
+                'addCharge'      => '1',
+                'competition_id' => '2',
+                'season'         => '2026',
+                'status'         => 'draft',
+            )
+        );
+
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+        self::assertSame( array( 'view' => 'charge', 'charges' => 42 ), $result->query_params );
+    }
+
+    public function test_add_charge_success_without_id_redirects_to_charges(): void {
+        $this->guard->expects( self::once() )->method( 'assert_allowed' );
+
+        $this->finance_service->expects( self::once() )
+            ->method( 'add_charge' )
+            ->willReturn( 0 );
+
+        $result = $this->dispatcher->handle(
+            array(),
+            array(
+                'saveCharge'     => '1',
+                'addCharge'      => '1',
+                'competition_id' => '2',
+                'season'         => '2026',
+                'status'         => 'draft',
+            )
+        );
+
+        self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+        self::assertSame( array( 'view' => 'charges' ), $result->query_params );
     }
 
     public function test_add_charge_wp_error_flashes_errors_and_sanitized_form_data(): void {

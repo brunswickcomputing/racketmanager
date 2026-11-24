@@ -423,12 +423,16 @@ class Invoice_Presenter_Test extends TestCase {
             'id'             => 301,
             'charge_name'    => 'annual affiliation',
             'billable_name'  => 'Thorpe Bay LTC',
-            'invoice'        => new class {
+            'invoice'        => new class() {
                 public string $billable_type = 'club';
-                public function get_id(): int { return 301; }
-                public function get_invoice_number(): string { return 'INV-2026-99'; }
-                public function get_status(): string { return 'final'; }
-                public function get_purchase_order(): string { return 'PO-THORPE-1'; }
+                public function get_id(): int {
+                    return 301; }
+                public function get_invoice_number(): string {
+                    return 'INV-2026-99'; }
+                public function get_status(): string {
+                    return 'final'; }
+                public function get_purchase_order(): string {
+                    return 'PO-THORPE-1'; }
             },
         ];
 
@@ -448,36 +452,36 @@ class Invoice_Presenter_Test extends TestCase {
     }
 
     public function test_present_invoice_with_unknown_statuses(): void {
-        $statuses = ['pending', 'failed', ''];
-        foreach ($statuses as $status) {
+        $statuses = [ 'pending', 'failed', '' ];
+        foreach ( $statuses as $status ) {
             // Using REAL Invoice
             $invoice = new \Racketmanager\Domain\Finance\Invoice();
-            $invoice->status = $status;
-            $invoice->amount = '10.00';
-            $invoice->invoice_number = 123;
-            
+            $invoice->set_status( $status );
+            $invoice->set_amount( '10.00' );
+            $invoice->set_invoice_number( 123 );
+
             // Should not throw and is_paid should be false
-            $vm = $this->presenter->present_invoice($invoice);
-            $this->assertFalse($vm->is_paid);
-            $this->assertNull($vm->status_display);
-            
+            $vm = $this->presenter->present_invoice( $invoice );
+            $this->assertFalse( $vm->is_paid );
+            $this->assertNull( $vm->status_display );
+
             // Using Invoice_Full_Details_DTO
             $invoice_dto = new \Racketmanager\Domain\Finance\Invoice();
-            $invoice_dto->id = 1;
-            $invoice_dto->invoice_number = 123;
-            $invoice_dto->status = $status;
-            $invoice_dto->amount = '10.00';
-            $invoice_dto->charge_id = 1;
-            $invoice_dto->billable_id = 1;
-            $invoice_dto->billable_type = 'player';
-            $invoice_dto->date = '2026-01-01';
-            $invoice_dto->date_due = '2026-01-01';
-            $invoice_dto->payment_reference = 'ref';
-            $invoice_dto->purchase_order = 'po';
-            $invoice_dto->details = new stdClass();
-            $invoice_dto->club = new stdClass();
-            $invoice_dto->charge = new stdClass();
-            
+            $invoice_dto->set_id( 1 );
+            $invoice_dto->set_invoice_number( 123 );
+            $invoice_dto->set_status( $status );
+            $invoice_dto->set_amount( '10.00' );
+            $invoice_dto->set_charge_id( 1 );
+            $invoice_dto->set_billable_id( 1 );
+            $invoice_dto->set_billable_type( 'player' );
+            $invoice_dto->set_date( '2026-01-01' );
+            $invoice_dto->set_date_due( '2026-01-01' );
+            $invoice_dto->set_payment_reference( 'ref' );
+            $invoice_dto->set_purchase_order( 'po' );
+            $invoice_dto->set_details( new stdClass() );
+            $invoice_dto->set_club( new stdClass() );
+            $invoice_dto->set_charge( new stdClass() );
+
             $charge_data = new stdClass();
             $charge_data->id = 1;
             $charge_data->competition_id = 1;
@@ -491,8 +495,8 @@ class Invoice_Presenter_Test extends TestCase {
             $charge_data->fee_competition = '10.00';
             $charge_data->fee_event = '0.00';
 
-            $charge_details = new \Racketmanager\Domain\DTO\Finance\Charge_Details_DTO($charge_data);
-            
+            $charge_details = new \Racketmanager\Domain\DTO\Finance\Charge_Details_DTO( $charge_data );
+
             $full_dto = new \Racketmanager\Domain\DTO\Finance\Invoice_Full_Details_DTO(
                 $invoice_dto,
                 '',
@@ -500,10 +504,10 @@ class Invoice_Presenter_Test extends TestCase {
                 null,
                 $charge_details
             );
-            
-            $vm_dto = $this->presenter->present_invoice($full_dto);
-            $this->assertFalse($vm_dto->is_paid);
-            $this->assertNull($vm_dto->status_display);
+
+            $vm_dto = $this->presenter->present_invoice( $full_dto );
+            $this->assertFalse( $vm_dto->is_paid );
+            $this->assertNull( $vm_dto->status_display );
         }
     }
 }

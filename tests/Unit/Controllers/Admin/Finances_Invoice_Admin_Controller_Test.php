@@ -89,19 +89,7 @@ final class Finances_Invoice_Admin_Controller_Test extends TestCase {
         $charge_data->competition_type        = 'league';
         $charge_dto                           = new Charge_Details_DTO( $charge_data );
 
-        $invoice_entity                    = new Invoice();
-        $invoice_entity->id                = 42;
-        $invoice_entity->charge_id         = 10;
-        $invoice_entity->billable_id       = 5;
-        $invoice_entity->billable_type     = 'club';
-        $invoice_entity->invoice_number    = 1001;
-        $invoice_entity->status            = 'open';
-        $invoice_entity->amount            = '70.00';
-        $invoice_entity->date              = '2026-05-01';
-        $invoice_entity->date_due          = '2026-06-01';
-        $invoice_entity->payment_reference = 'REF123';
-        $invoice_entity->purchase_order    = 'PO123';
-        $invoice_entity->details           = new stdClass();
+        $invoice_entity = $this->create_invoice_entity( 42 );
 
         $invoice_dto = new Invoice_Full_Details_DTO(
             $invoice_entity,
@@ -212,19 +200,19 @@ final class Finances_Invoice_Admin_Controller_Test extends TestCase {
     }
 
     private function create_invoice_entity( int $id = 42 ): Invoice {
-        $invoice_entity                    = new Invoice();
-        $invoice_entity->id                = $id;
-        $invoice_entity->charge_id         = 10;
-        $invoice_entity->billable_id       = 5;
-        $invoice_entity->billable_type     = 'club';
-        $invoice_entity->invoice_number    = 1001;
-        $invoice_entity->status            = 'open';
-        $invoice_entity->amount            = '70.00';
-        $invoice_entity->date              = '2026-05-01';
-        $invoice_entity->date_due          = '2026-06-01';
-        $invoice_entity->payment_reference = 'REF123';
-        $invoice_entity->purchase_order    = 'PO123';
-        $invoice_entity->details           = new stdClass();
+        $invoice_entity = new Invoice();
+        $invoice_entity->set_id( $id );
+        $invoice_entity->set_charge_id( 10 );
+        $invoice_entity->set_billable_id( 5 );
+        $invoice_entity->set_billable_type( 'club' );
+        $invoice_entity->set_invoice_number( 1001 );
+        $invoice_entity->set_status( 'open' );
+        $invoice_entity->set_amount( '70.00' );
+        $invoice_entity->set_date( '2026-05-01' );
+        $invoice_entity->set_date_due( '2026-06-01' );
+        $invoice_entity->set_payment_reference( 'REF123' );
+        $invoice_entity->set_purchase_order( 'PO123' );
+        $invoice_entity->set_details( new stdClass() );
 
         return $invoice_entity;
     }

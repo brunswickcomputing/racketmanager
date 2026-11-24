@@ -47,7 +47,7 @@ class Finance_Templates_Test extends TestCase {
         $this->presenter = new Invoice_Presenter();
 
         global $racketmanager;
-        $racketmanager = new class {
+        $racketmanager = new class() {
             public function is_user_favourite( $type = null, $id = null ): bool {
                 return false;
             }
@@ -106,12 +106,16 @@ class Finance_Templates_Test extends TestCase {
             login_url: '/login'
         );
 
-        $html = $this->renderer->render_to_string( 'invoice', [], [
-            'invoice'           => $invoice_vm,
-            'organisation_name' => $invoice_vm->organisation_name,
-            'billing'           => [],
-            'invoice_number'    => $invoice_vm->invoice_number,
-        ] );
+        $html = $this->renderer->render_to_string(
+            'invoice',
+            [],
+            [
+                'invoice'           => $invoice_vm,
+                'organisation_name' => $invoice_vm->organisation_name,
+                'billing'           => [],
+                'invoice_number'    => $invoice_vm->invoice_number,
+            ]
+        );
 
         $this->assertStringContainsString( '<h2>Invoice&nbsp;2026-99</h2>', $html );
         $this->assertStringContainsString( '<div class="invoice-date">01-06-2026</div>', $html );
@@ -136,43 +140,47 @@ class Finance_Templates_Test extends TestCase {
 
     public function test_invoice_template_renders_end_to_end_from_dto_and_presenter(): void {
         $invoice = new Invoice();
-        $invoice->id                = 123;
-        $invoice->charge_id         = 10;
-        $invoice->billable_id       = 20;
-        $invoice->billable_type     = 'club';
-        $invoice->invoice_number    = 2026123;
-        $invoice->status            = 'final';
-        $invoice->amount            = '30.25';
-        $invoice->date              = '2026-06-01';
-        $invoice->date_due          = '2026-07-01';
-        $invoice->purchase_order    = 'PO-987';
-        $invoice->payment_reference = '2026123';
+        $invoice->set_id( 123 );
+        $invoice->set_charge_id( 10 );
+        $invoice->set_billable_id( 20 );
+        $invoice->set_billable_type( 'club' );
+        $invoice->set_invoice_number( 2026123 );
+        $invoice->set_status( 'final' );
+        $invoice->set_amount( '30.25' );
+        $invoice->set_date( '2026-06-01' );
+        $invoice->set_date_due( '2026-07-01' );
+        $invoice->set_purchase_order( 'PO-987' );
+        $invoice->set_payment_reference( '2026123' );
 
-        $details_json = json_encode( [
-            'fee_competition' => 5.25,
-            'fee_events'      => 12.50,
-            'fee'             => 30.25,
-            'paid'            => 10.00,
-            'total'           => 20.25,
-            'events'          => [
-                [
-                    'name'  => 'Men\'s Division 1',
-                    'count' => 2,
-                    'fee'   => 25.00,
+        $details_json = json_encode(
+            [
+                'fee_competition' => 5.25,
+                'fee_events'      => 12.50,
+                'fee'             => 30.25,
+                'paid'            => 10.00,
+                'total'           => 20.25,
+                'events'          => [
+                    [
+                        'name'  => 'Men\'s Division 1',
+                        'count' => 2,
+                        'fee'   => 25.00,
+                    ],
                 ],
-            ],
-        ] );
-        $invoice->details = json_decode( $details_json );
+            ]
+        );
+        $invoice->set_details( json_decode( $details_json ) );
 
-        $charge = new Charge_Details_DTO( (object) [
-            'id'               => 10,
-            'season'           => 2026,
-            'date'             => '2026-05-01',
-            'competition_id'   => 1,
-            'competition_name' => 'Annual Affiliation Fee',
-            'competition_type' => 'league',
-            'status'           => 'final',
-        ] );
+        $charge = new Charge_Details_DTO(
+            (object) [
+                'id'               => 10,
+                'season'           => 2026,
+                'date'             => '2026-05-01',
+                'competition_id'   => 1,
+                'competition_name' => 'Annual Affiliation Fee',
+                'competition_type' => 'league',
+                'status'           => 'final',
+            ]
+        );
 
         $dto = new Invoice_Full_Details_DTO(
             invoice: $invoice,
@@ -268,16 +276,18 @@ class Finance_Templates_Test extends TestCase {
         $club_service = $this->createStub( \Racketmanager\Services\Club_Service::class );
         $club_service->method( 'get_club_by_shortcode' )->willReturn( $club );
         $finance_service = $this->createStub( Finance_Service::class );
-        $finance_service->method( 'get_invoices_by_criteria' )->willReturn( [
-            (object) [
-                'id'             => 21,
-                'invoice_number' => 'INV-021',
-                'charge_name'    => 'summer league fees',
-                'amount'         => '12.50',
-                'status'         => 'sent',
-                'date_due'       => '2026-05-01',
-            ],
-        ] );
+        $finance_service->method( 'get_invoices_by_criteria' )->willReturn(
+            [
+                (object) [
+                    'id'             => 21,
+                    'invoice_number' => 'INV-021',
+                    'charge_name'    => 'summer league fees',
+                    'amount'         => '12.50',
+                    'status'         => 'sent',
+                    'date_due'       => '2026-05-01',
+                ],
+            ]
+        );
         $settings_service = $this->createStub( Settings_Service::class );
         $settings_service->method( 'get_category' )->willReturn( [ 'billingCurrency' => 'EUR' ] );
         $option_gateway = $this->createStub( Option_Gateway_Interface::class );
@@ -307,11 +317,13 @@ class Finance_Templates_Test extends TestCase {
             ],
             template_type: 'club'
         );
-        $renderer = new Shortcode_View_Presenter( new Shortcode_Template_Renderer(
-            $this->renderer,
-            new Club_Presenter(),
-            new Player_Presenter()
-        ) );
+        $renderer = new Shortcode_View_Presenter(
+            new Shortcode_Template_Renderer(
+                $this->renderer,
+                new Club_Presenter(),
+                new Player_Presenter()
+            )
+        );
         $html = $renderer->render( $view );
 
         $this->assertStringContainsString( 'INV-021', $html );
@@ -326,11 +338,11 @@ class Finance_Templates_Test extends TestCase {
         $club->name = 'Leigh LTC';
         $club->shortcode = 'Leigh';
         $invoice = new Invoice();
-        $invoice->id = 22;
-        $invoice->invoice_number = 2026022;
-        $invoice->billable_id = 10;
-        $invoice->billable_type = 'club';
-        $invoice->status = 'sent';
+        $invoice->set_id( 22 );
+        $invoice->set_invoice_number( 2026022 );
+        $invoice->set_billable_id( 10 );
+        $invoice->set_billable_type( 'club' );
+        $invoice->set_status( 'sent' );
 
         $club_service = $this->createStub( \Racketmanager\Services\Club_Service::class );
         $club_service->method( 'get_club_by_shortcode' )->willReturn( $club );
@@ -377,9 +389,13 @@ class Finance_Templates_Test extends TestCase {
             login_url: 'https://example.com/wp-login.php'
         );
 
-        $html = $this->renderer->render_to_string( 'invoice', [], [
-            'invoice' => $invoice_vm,
-        ] );
+        $html = $this->renderer->render_to_string(
+            'invoice',
+            [],
+            [
+                'invoice' => $invoice_vm,
+            ]
+        );
 
         $this->assertStringContainsString( 'You need to <a href="https://example.com/wp-login.php">login</a> to view invoices', $html );
         $this->assertStringNotContainsString( 'id="invoice-header"', $html );
@@ -403,11 +419,15 @@ class Finance_Templates_Test extends TestCase {
         $user_can_manage       = new stdClass();
         $user_can_manage->club = true;
 
-        $html = $this->renderer->render_to_string( 'club/invoice', [], [
-            'club'            => $club,
-            'invoice'         => $invoice_vm,
-            'user_can_manage' => $user_can_manage,
-        ] );
+        $html = $this->renderer->render_to_string(
+            'club/invoice',
+            [],
+            [
+                'club'            => $club,
+                'invoice'         => $invoice_vm,
+                'user_can_manage' => $user_can_manage,
+            ]
+        );
 
         $this->assertStringContainsString( 'Invoice 2026-55 (sent)', $html );
         $this->assertStringContainsString( 'data-invoice-id="55"', $html );
@@ -443,10 +463,14 @@ class Finance_Templates_Test extends TestCase {
 
         $list_vm = $this->presenter->present_club_invoices_list( $invoices_data, 'GBP', 'd-m-Y' );
 
-        $html = $this->renderer->render_to_string( 'club/invoices', [], [
-            'club'     => $club,
-            'invoices' => $list_vm,
-        ] );
+        $html = $this->renderer->render_to_string(
+            'club/invoices',
+            [],
+            [
+                'club'     => $club,
+                'invoices' => $list_vm,
+            ]
+        );
 
         $this->assertStringContainsString( 'Invoices', $html );
         $this->assertStringContainsString( 'href="10/"', $html );
@@ -632,12 +656,16 @@ class Finance_Templates_Test extends TestCase {
             'id'             => 88,
             'charge_name'    => 'summer balls',
             'billable_name'  => 'Hadleigh TC',
-            'invoice'        => new class {
+            'invoice'        => new class() {
                 public string $billable_type = 'club';
-                public function get_id(): int { return 88; }
-                public function get_invoice_number(): string { return '2026088'; }
-                public function get_status(): string { return 'final'; }
-                public function get_purchase_order(): string { return 'PO-HADLEIGH-1'; }
+                public function get_id(): int {
+                    return 88; }
+                public function get_invoice_number(): string {
+                    return '2026088'; }
+                public function get_status(): string {
+                    return 'final'; }
+                public function get_purchase_order(): string {
+                    return 'PO-HADLEIGH-1'; }
             },
         ];
 

@@ -108,8 +108,8 @@ class Finance_Service_Test extends TestCase {
         );
 
         $invoice = new Invoice();
-        $invoice->id = 101;
-        $invoice->amount = '25.00';
+        $invoice->set_id( 101 );
+        $invoice->set_amount( '25.00' );
 
         $invoice_repo->expects( self::once() )
             ->method( 'find_by_id' )
@@ -135,27 +135,37 @@ class Finance_Service_Test extends TestCase {
 
         $payment_gateway->expects( self::once() )
             ->method( 'create_payment_intent' )
-            ->with( self::callback( function( array $args ) {
-                return $args['amount'] === 2500
-                    && $args['currency'] === 'GBP'
-                    && $args['description'] === 'Jane Doe - County Championship'
-                    && $args['statement_descriptor_suffix'] === 'County Championship'
-                    && $args['receipt_email'] === 'jane.doe@example.com'
-                    && $args['payment_method_types'] === [ 'card' ];
-            } ) )
-            ->willReturn( new Payment_Intent_Result(
-                id: 'pi_test_intent_789',
-                client_secret: 'pi_test_intent_789_secret_xyz',
-                status: 'requires_payment_method',
-                amount: 2500,
-                currency: 'GBP'
-            ) );
+            ->with(
+                self::callback(
+                    function ( array $args ) {
+                        return 2500 === $args['amount']
+                        && 'GBP' === $args['currency']
+                        && 'Jane Doe - County Championship' === $args['description']
+                        && 'County Championship' === $args['statement_descriptor_suffix']
+                        && 'jane.doe@example.com' === $args['receipt_email']
+                        && [ 'card' ] === $args['payment_method_types'];
+                    }
+                )
+            )
+            ->willReturn(
+                new Payment_Intent_Result(
+                    id: 'pi_test_intent_789',
+                    client_secret: 'pi_test_intent_789_secret_xyz',
+                    status: 'requires_payment_method',
+                    amount: 2500,
+                    currency: 'GBP'
+                )
+            );
 
         $invoice_repo->expects( self::once() )
             ->method( 'save' )
-            ->with( self::callback( function( Invoice $inv ) {
-                return $inv->get_payment_reference() === 'pi_test_intent_789';
-            } ) )
+            ->with(
+                self::callback(
+                    function ( Invoice $inv ) {
+                        return $inv->get_payment_reference() === 'pi_test_intent_789';
+                    }
+                )
+            )
             ->willReturn( true );
 
         $client_secret = $service->create_tournament_payment_request( 202, 303, 101 );
@@ -235,8 +245,8 @@ class Finance_Service_Test extends TestCase {
         );
 
         $invoice = new Invoice();
-        $invoice->id = 101;
-        $invoice->amount = '25.00';
+        $invoice->set_id( 101 );
+        $invoice->set_amount( '25.00' );
         $this->invoice_repo->method( 'find_by_id' )->willReturn( $invoice );
 
         $tournament = $this->createStub( Tournament::class );
@@ -279,12 +289,12 @@ class Finance_Service_Test extends TestCase {
         );
 
         $invoice         = new Invoice();
-        $invoice->id     = 101;
-        $invoice->amount = '19.99';
+        $invoice->set_id( 101 );
+        $invoice->set_amount( '19.99' );
         $invoice_repo->method( 'find_by_id' )->willReturn( $invoice );
 
         $tournament = $this->createStub( Tournament::class );
-        $tournament->method( 'get_name' )->willReturn( 'Open');
+        $tournament->method( 'get_name' )->willReturn( 'Open' );
         $tournament_repo->method( 'find_by_id' )->willReturn( $tournament );
 
         $player = $this->createStub( Player::class );
@@ -294,16 +304,22 @@ class Finance_Service_Test extends TestCase {
 
         $payment_gateway->expects( self::once() )
             ->method( 'create_payment_intent' )
-            ->with( self::callback( static function ( array $args ) {
-                return 1999 === $args['amount'] && 'GBP' === $args['currency'];
-            } ) )
-            ->willReturn( new Payment_Intent_Result(
-                id: 'pi_eur',
-                client_secret: 'secret',
-                status: 'requires_payment_method',
-                amount: 1999,
-                currency: 'GBP'
-            ) );
+            ->with(
+                self::callback(
+                    static function ( array $args ) {
+                        return 1999 === $args['amount'] && 'GBP' === $args['currency'];
+                    }
+                )
+            )
+            ->willReturn(
+                new Payment_Intent_Result(
+                    id: 'pi_eur',
+                    client_secret: 'secret',
+                    status: 'requires_payment_method',
+                    amount: 1999,
+                    currency: 'GBP'
+                )
+            );
 
         $invoice_repo->method( 'save' )->willReturn( true );
 
@@ -313,7 +329,7 @@ class Finance_Service_Test extends TestCase {
     public function test_create_tournament_payment_request_uses_unsupported_locale_currency(): void {
         $app = $this->createStub( RacketManager::class );
         $app->currency_code = 'AUD';
-        $app->method( 'get_options' )->willReturn([]); // No billing currency set
+        $app->method( 'get_options' )->willReturn( [] ); // No billing currency set
 
         $payment_gateway = $this->createMock( Payment_Gateway_Interface::class );
         $invoice_repo    = $this->createStub( Invoice_Repository_Interface::class );
@@ -328,31 +344,37 @@ class Finance_Service_Test extends TestCase {
             payment_gateway: $payment_gateway
         );
         $invoice = new Invoice();
-        $invoice->id = 101;
-        $invoice->amount = '19.99';
-        $invoice_repo->method( 'find_by_id' )->willReturn($invoice);
+        $invoice->set_id( 101 );
+        $invoice->set_amount( '19.99' );
+        $invoice_repo->method( 'find_by_id' )->willReturn( $invoice );
 
         $tournament = $this->createStub( Tournament::class );
-        $tournament->method( 'get_name' )->willReturn( 'Open');
+        $tournament->method( 'get_name' )->willReturn( 'Open' );
         $tournament_repo->method( 'find_by_id' )->willReturn( $tournament );
 
         $player = $this->createStub( Player::class );
         $player->method( 'get_fullname' )->willReturn( 'Jane Doe' );
         $player->method( 'get_email' )->willReturn( 'jane@example.com' );
         $player_service->method( 'get_player' )->willReturn( $player );
-        
+
         $payment_gateway->expects( self::once() )
             ->method( 'create_payment_intent' )
-            ->with( self::callback( static function ( array $args ) {
-                return 'AUD' === $args['currency'];
-            } ) )
-            ->willReturn( new Payment_Intent_Result(
-                id: 'pi_aud',
-                client_secret: 'secret',
-                status: 'requires_payment_method',
-                amount: 1999,
-                currency: 'AUD'
-            ) );
+            ->with(
+                self::callback(
+                    static function ( array $args ) {
+                        return 'AUD' === $args['currency'];
+                    }
+                )
+            )
+            ->willReturn(
+                new Payment_Intent_Result(
+                    id: 'pi_aud',
+                    client_secret: 'secret',
+                    status: 'requires_payment_method',
+                    amount: 1999,
+                    currency: 'AUD'
+                )
+            );
 
         $service->create_tournament_payment_request( 202, 303, 101 );
     }
@@ -420,8 +442,8 @@ class Finance_Service_Test extends TestCase {
     }
 
     private function build_invoice_details(): Invoice_Full_Details_DTO {
-        $invoice     = new Invoice();
-        $invoice->id = 10;
+        $invoice = new Invoice();
+        $invoice->set_id( 10 );
         $contact = Player_Test_Factory::create( display_name: 'Jane Doe', email: 'jane.doe@example.com' );
 
         $details                  = $this->createStub( Invoice_Full_Details_DTO::class );
@@ -436,18 +458,20 @@ class Finance_Service_Test extends TestCase {
 
     private function build_invoice_email_service( Mailer_Interface $mailer, Option_Service $option_service, Invoice_Full_Details_DTO $details ): Finance_Service {
         $service = $this->getMockBuilder( Finance_Service::class )
-            ->setConstructorArgs( [
-                $this->app,
-                $this->charge_repo,
-                $this->invoice_repo,
-                $this->club_repo,
-                $this->tournament_repo,
-                $this->competition_service,
-                $this->player_service,
-                $this->createStub( Payment_Gateway_Interface::class ),
-                $mailer,
-                $option_service,
-            ] )
+            ->setConstructorArgs(
+                [
+                    $this->app,
+                    $this->charge_repo,
+                    $this->invoice_repo,
+                    $this->club_repo,
+                    $this->tournament_repo,
+                    $this->competition_service,
+                    $this->player_service,
+                    $this->createStub( Payment_Gateway_Interface::class ),
+                    $mailer,
+                    $option_service,
+                ]
+            )
             ->onlyMethods( [ 'get_full_invoice_details' ] )
             ->getMock();
         $service->expects( self::once() )->method( 'get_full_invoice_details' )->willReturn( $details );
@@ -466,25 +490,27 @@ class Finance_Service_Test extends TestCase {
     public function test_amend_invoice_normalizes_resend_to_sent(): void {
         $invoice_repo = $this->createMock( Invoice_Repository_Interface::class );
         $invoice      = new Invoice();
-        $invoice->id  = 10;
+        $invoice->set_id( 10 );
         $invoice->set_status( 'draft' );
 
         $invoice_repo->method( 'find_by_id' )->willReturn( $invoice );
         $invoice_repo->expects( self::once() )->method( 'save' )->willReturn( true );
 
         $service = $this->getMockBuilder( Finance_Service::class )
-            ->setConstructorArgs( [
-                $this->app,
-                $this->charge_repo,
-                $invoice_repo,
-                $this->club_repo,
-                $this->tournament_repo,
-                $this->competition_service,
-                $this->player_service,
-                $this->createStub( Payment_Gateway_Interface::class ),
-                $this->createStub( Mailer_Interface::class ),
-                $this->createStub( Option_Service::class ),
-            ] )
+            ->setConstructorArgs(
+                [
+                    $this->app,
+                    $this->charge_repo,
+                    $invoice_repo,
+                    $this->club_repo,
+                    $this->tournament_repo,
+                    $this->competition_service,
+                    $this->player_service,
+                    $this->createStub( Payment_Gateway_Interface::class ),
+                    $this->createStub( Mailer_Interface::class ),
+                    $this->createStub( Option_Service::class ),
+                ]
+            )
             ->onlyMethods( [ 'send_invoice' ] )
             ->getMock();
         $service->expects( self::once() )->method( 'send_invoice' )->willReturn( true );
@@ -499,7 +525,7 @@ class Finance_Service_Test extends TestCase {
     public function test_amend_invoice_rejects_invalid_status(): void {
         $invoice_repo = $this->createMock( Invoice_Repository_Interface::class );
         $invoice      = new Invoice();
-        $invoice->id  = 10;
+        $invoice->set_id( 10 );
         $invoice->set_status( 'draft' );
         $invoice_repo->method( 'find_by_id' )->willReturn( $invoice );
         $invoice_repo->expects( self::never() )->method( 'save' );
@@ -518,7 +544,7 @@ class Finance_Service_Test extends TestCase {
     public function test_action_invoice_rejects_new_and_sent_statuses(): void {
         $invoice_repo = $this->createMock( Invoice_Repository_Interface::class );
         $invoice      = new Invoice();
-        $invoice->id  = 10;
+        $invoice->set_id( 10 );
         $invoice->set_status( 'draft' );
         $invoice_repo->method( 'find_by_id' )->willReturn( $invoice );
         $invoice_repo->expects( self::never() )->method( 'save' );
@@ -554,19 +580,23 @@ class Finance_Service_Test extends TestCase {
     }
 
     public function test_add_invoice_builds_invoice_via_factory_and_persists_it(): void {
-        $this->app->method( 'get_options' )->willReturn( [
-            'invoiceNumber' => 42,
-            'paymentTerms'  => '14',
-        ] );
+        $this->app->method( 'get_options' )->willReturn(
+            [
+                'invoiceNumber' => 42,
+                'paymentTerms'  => '14',
+            ]
+        );
 
         $invoice_repo = $this->createMock( Invoice_Repository_Interface::class );
         $saved        = null;
         $invoice_repo->expects( self::once() )
             ->method( 'save' )
-            ->willReturnCallback( static function ( Invoice $invoice ) use ( &$saved ): bool {
-                $saved = $invoice;
-                return true;
-            } );
+            ->willReturnCallback(
+                static function ( Invoice $invoice ) use ( &$saved ): bool {
+                    $saved = $invoice;
+                    return true;
+                }
+            );
 
         $service = $this->create_service(
             invoice_repo: $invoice_repo
@@ -610,7 +640,7 @@ class Finance_Service_Test extends TestCase {
     public function test_set_purchase_order_updates_and_saves_invoice(): void {
         $invoice_repo = $this->createMock( Invoice_Repository_Interface::class );
         $invoice      = new Invoice();
-        $invoice->id  = 15;
+        $invoice->set_id( 15 );
         $invoice->set_purchase_order( 'OLD-PO' );
         $invoice_repo->expects( self::once() )->method( 'find_by_id' )->with( 15 )->willReturn( $invoice );
         $invoice_repo->expects( self::once() )->method( 'save' )->with( $invoice )->willReturn( true );
@@ -642,7 +672,7 @@ class Finance_Service_Test extends TestCase {
     public function test_update_payment_updates_and_saves_invoice_entity(): void {
         $invoice_repo = $this->createMock( Invoice_Repository_Interface::class );
         $invoice      = new Invoice();
-        $invoice->id  = 20;
+        $invoice->set_id( 20 );
         $invoice->set_status( 'final' );
 
         $invoice_repo->expects( self::once() )
@@ -668,7 +698,7 @@ class Finance_Service_Test extends TestCase {
     public function test_update_payment_supports_legacy_webhook_statuses( string $status ): void {
         $invoice_repo = $this->createMock( Invoice_Repository_Interface::class );
         $invoice      = new Invoice();
-        $invoice->id  = 22;
+        $invoice->set_id( 22 );
         $invoice->set_status( 'final' );
 
         $invoice_repo->method( 'find_by' )->willReturn( array( $this->make_invoice_details( 22, 'final', 'pi_legacy' ) ) );
@@ -747,11 +777,11 @@ class Finance_Service_Test extends TestCase {
     public function test_action_invoices_actions_multiple_invoices(): void {
         $invoice_repo = $this->createMock( Invoice_Repository_Interface::class );
         $invoice1     = new Invoice();
-        $invoice1->id = 1;
+        $invoice1->set_id( 1 );
         $invoice1->set_status( 'draft' );
 
         $invoice2     = new Invoice();
-        $invoice2->id = 2;
+        $invoice2->set_id( 2 );
         $invoice2->set_status( 'draft' );
 
         $invoice_repo->method( 'find_by_id' )->willReturnCallback(

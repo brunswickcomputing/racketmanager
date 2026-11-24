@@ -26,12 +26,24 @@ class Charge_Repository implements Charge_Repository_Interface {
     private wpdb $wpdb;
     private string $table_name;
 
+    /**
+     * Initialises the charges repository with the WordPress database connection and table name.
+     *
+     * @return void
+     */
     public function __construct() {
         global $wpdb;
         $this->wpdb       = $wpdb;
         $this->table_name = $this->wpdb->prefix . 'racketmanager_charges';
     }
 
+    /**
+     * Saves a charge entity to the database.
+     *
+     * @param object $entity Charge entity to insert or update.
+     *
+     * @return int|bool True when a new charge is inserted, number of rows updated when an existing charge is updated, or false on failure.
+     */
     public function save( object $entity ): int|bool {
         /** @var Charge $entity */
         $data        = array(
@@ -59,24 +71,31 @@ class Charge_Repository implements Charge_Repository_Interface {
             $entity->set_id( $this->wpdb->insert_id );
             wp_cache_set( $entity->get_id(), $entity, 'charges' );
 
-            return $result !== false;
+            return false !== $result;
         } else {
             wp_cache_set( $entity->get_id(), $entity, 'charges' );
 
             return $this->wpdb->update(
                 $this->table_name,
-                $data, // Data to update
+                $data, // Data to update.
                 array(
-                    'id' => $entity->get_id()
-                ), // Where clause
+                    'id' => $entity->get_id(),
+                ), // Where clause.
                 $data_format,
                 array(
-                    '%d'
-                ) // Where format
+                    '%d',
+                ) // Where format.
             );
         }
     }
 
+    /**
+     * Finds a charge by its numeric ID or composite competition and season identifier.
+     *
+     * @param int|string|null $id Charge ID, or composite identifier in the format competition_id_season.
+     *
+     * @return Charge|null Charge instance if found, or null when no matching charge exists.
+     */
     public function find_by_id( int|string|null $id ): ?Charge {
         if ( ! $id ) {
             return null;
@@ -100,7 +119,7 @@ class Charge_Repository implements Charge_Repository_Interface {
 
         if ( ! $charge ) {
             $charge = $this->wpdb->get_row(
-                "SELECT * FROM `$this->table_name` WHERE $search LIMIT 1",
+                "SELECT * FROM `$this->table_name` WHERE $search LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             );
 
             if ( ! $charge ) {
@@ -113,15 +132,23 @@ class Charge_Repository implements Charge_Repository_Interface {
         }
 
         return $charge;
-
     }
 
+    /**
+     * Finds a charge by ID with related competition details.
+     *
+     * @param int $charge_id Charge ID to retrieve.
+     *
+     * @return Charge_Details_DTO|null Charge details, or null if not found.
+     */
     public function find_by_id_with_details( int $charge_id ): ?Charge_Details_DTO {
         if ( ! $charge_id ) {
             return null;
         }
         $competition_table = $this->wpdb->prefix . 'racketmanager_competitions';
         $charge            = $this->wpdb->get_row(
+            // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared
+            // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             $this->wpdb->prepare(
                 "
                 SELECT c.*,
@@ -132,6 +159,8 @@ class Charge_Repository implements Charge_Repository_Interface {
                 WHERE c.`id` = %d
                 LIMIT 1",
                 $charge_id
+            // phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
+            // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             )
         );
         if ( $charge ) {
@@ -139,9 +168,15 @@ class Charge_Repository implements Charge_Repository_Interface {
         } else {
             return null;
         }
-
     }
 
+    /**
+     * Finds charges matching the specified criteria.
+     *
+     * @param array $criteria Search criteria used to filter and order charges.
+     *
+     * @return array List of charges with invoice totals.
+     */
     public function find_by( array $criteria ): array {
         $competitions_table = $this->wpdb->prefix . 'racketmanager_competitions';
         $invoices_table     = $this->wpdb->prefix . 'racketmanager_invoices';
@@ -184,6 +219,8 @@ class Charge_Repository implements Charge_Repository_Interface {
         $search  = Util::search_string( $search_terms, true );
         $order   = Util::order_by_string( $orderby );
         $results = $this->wpdb->get_results(
+            // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared
+            // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             "
             SELECT c.`id`, ct.`name`, c.`season`, c.`status`, c.`fee_competition`, c.`fee_event`, COALESCE( inv_totals.`total_value`, 0 ) AS total_invoice_value
             FROM `$this->table_name` c
@@ -192,6 +229,8 @@ class Charge_Repository implements Charge_Repository_Interface {
                 $search
                 $order
                 "
+            // phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
+            // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         );
 
         return array_map(
@@ -202,8 +241,14 @@ class Charge_Repository implements Charge_Repository_Interface {
         );
     }
 
+    /**
+     * Deletes a record by its ID.
+     *
+     * @param int $id The ID of the record to delete.
+     *
+     * @return bool True if the record was deleted, false otherwise.
+     */
     public function delete( int $id ): bool {
         return (bool) $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) );
     }
-
 }

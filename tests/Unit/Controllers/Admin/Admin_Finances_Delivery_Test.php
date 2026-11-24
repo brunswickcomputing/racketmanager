@@ -156,7 +156,7 @@ final class Admin_Finances_Delivery_Test extends TestCase {
         $this->finance_service->expects( self::once() )
             ->method( 'remove_charge' )
             ->with( 10 )
-            ->willReturn( 1 );
+            ->willReturn( true );
 
         $this->redirector->expects( self::once() )
             ->method( 'redirect' )
@@ -173,20 +173,22 @@ final class Admin_Finances_Delivery_Test extends TestCase {
 
         $this->finance_service->expects( self::once() )
             ->method( 'get_charges_by_criteria' )
-            ->willReturn( array(
-                (object) array(
-                    'id'     => 10,
-                    'name'   => 'Summer 2026 League',
-                    'status' => 'final',
-                    'total'  => '120.50',
-                ),
-                (object) array(
-                    'id'     => 11,
-                    'name'   => 'Winter 2026 Cup',
-                    'status' => 'draft',
-                    'total'  => '0.00',
-                ),
-            ) );
+            ->willReturn(
+                array(
+                    (object) array(
+                        'id'     => 10,
+                        'name'   => 'Summer 2026 League',
+                        'status' => 'final',
+                        'total'  => '120.50',
+                    ),
+                    (object) array(
+                        'id'     => 11,
+                        'name'   => 'Winter 2026 Cup',
+                        'status' => 'draft',
+                        'total'  => '0.00',
+                    ),
+                )
+            );
 
         $holder = $this->expect_render_capturing( 'admin/finances/show-charges', Finances_Charges_Page_View_Model::class );
 
@@ -204,17 +206,19 @@ final class Admin_Finances_Delivery_Test extends TestCase {
 
         $this->finance_service->expects( self::once() )
             ->method( 'get_invoices_by_criteria' )
-            ->willReturn( array(
-                (object) array(
-                    'id'             => 201,
-                    'invoice_number' => 1001,
-                    'charge_name'    => 'summer league',
-                    'billable_name'  => 'Westcliff Hardcourt',
-                    'amount'         => '75.25',
-                    'status'         => 'paid',
-                    'date_due'       => '2026-06-15',
-                ),
-            ) );
+            ->willReturn(
+                array(
+                    (object) array(
+                        'id'             => 201,
+                        'invoice_number' => 1001,
+                        'charge_name'    => 'summer league',
+                        'billable_name'  => 'Westcliff Hardcourt',
+                        'amount'         => '75.25',
+                        'status'         => 'paid',
+                        'date_due'       => '2026-06-15',
+                    ),
+                )
+            );
         $this->finance_service->expects( self::once() )
             ->method( 'get_charges_by_criteria' )
             ->willReturn( array() );
@@ -281,17 +285,17 @@ final class Admin_Finances_Delivery_Test extends TestCase {
     public function test_display_invoice_page_renders_get_view_model_and_rehydrates_po(): void {
         $_GET['invoice'] = '101';
 
-        $invoice                 = new Invoice();
-        $invoice->id             = 101;
-        $invoice->charge_id      = 5;
-        $invoice->billable_id    = 12;
-        $invoice->billable_type  = 'club';
-        $invoice->invoice_number = 1001;
-        $invoice->date           = '2026-06-01';
-        $invoice->date_due       = '2026-07-01';
-        $invoice->status         = 'draft';
-        $invoice->amount         = '100';
-        $invoice->details        = new stdClass();
+        $invoice = new Invoice();
+        $invoice->set_id( 101 );
+        $invoice->set_charge_id( 5 );
+        $invoice->set_billable_id( 12 );
+        $invoice->set_billable_type( 'club' );
+        $invoice->set_invoice_number( 1001 );
+        $invoice->set_date( '2026-06-01' );
+        $invoice->set_date_due( '2026-07-01' );
+        $invoice->set_status( 'draft' );
+        $invoice->set_amount( '100' );
+        $invoice->set_details( new stdClass() );
 
         $charge_dto = $this->create_charge_dto(
             array(

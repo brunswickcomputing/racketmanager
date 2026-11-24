@@ -83,6 +83,7 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         parent::setUp();
         $this->backup_globals();
         global $wp, $racketmanager;
+        // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
         $wp                    = (object) [ 'query_vars' => [] ];
         $racketmanager         = $this->createStub( RacketManager::class );
         $GLOBALS['query_vars'] = [ 'club_name' => 'leigh-ltc' ];
@@ -1028,9 +1029,9 @@ class Club_Shortcode_Adapter_Test extends TestCase {
     }
 
     private function invoice( int $id, int $billable_id ): Invoice {
-        $invoice              = new Invoice();
-        $invoice->id          = $id;
-        $invoice->billable_id = $billable_id;
+        $invoice = new Invoice();
+        $invoice->set_id( $id );
+        $invoice->set_billable_id( $billable_id );
 
         return $invoice;
     }

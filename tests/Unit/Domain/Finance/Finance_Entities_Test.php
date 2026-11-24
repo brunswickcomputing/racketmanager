@@ -187,17 +187,17 @@ final class Finance_Entities_Test extends TestCase {
     }
 
     public function test_invoice_full_details_dto(): void {
-        $raw_invoice                 = new Invoice();
-        $raw_invoice->id             = 1;
-        $raw_invoice->invoice_number = 1001;
-        $raw_invoice->charge_id      = 10;
-        $raw_invoice->billable_id    = 5;
-        $raw_invoice->billable_type  = 'club';
-        $raw_invoice->amount         = '150.50';
-        $raw_invoice->status         = 'sent';
-        $raw_invoice->date           = '2026-01-01';
-        $raw_invoice->date_due       = '2026-01-31';
-        $raw_invoice->details        = (object) [];
+        $raw_invoice = new Invoice();
+        $raw_invoice->set_id( 1 );
+        $raw_invoice->set_invoice_number( 1001 );
+        $raw_invoice->set_charge_id( 10 );
+        $raw_invoice->set_billable_id( 5 );
+        $raw_invoice->set_billable_type( 'club' );
+        $raw_invoice->set_amount( '150.50' );
+        $raw_invoice->set_status( 'sent' );
+        $raw_invoice->set_date( '2026-01-01' );
+        $raw_invoice->set_date_due( '2026-01-31' );
+        $raw_invoice->set_details( (object) [] );
 
         $charge_raw                   = new stdClass();
         $charge_raw->id               = 10;
@@ -312,7 +312,7 @@ final class Finance_Entities_Test extends TestCase {
 
         // Test action_invoice status update via Invoice_Status
         $invoice = new Invoice();
-        $invoice->id = 100;
+        $invoice->set_id( 100 );
         $invoice->set_status( 'draft' );
 
         $inv_repo->method( 'find_by_id' )->willReturn( $invoice );
@@ -324,8 +324,8 @@ final class Finance_Entities_Test extends TestCase {
 
         // Test get_club_entry fee calculation via Money
         $charge = new Charge();
-        $charge->competition_id = 1;
-        $charge->season = '2026';
+        $charge->set_competition_id( 1 );
+        $charge->set_season( '2026' );
         $charge->set_fee_competition( 30.0 );
         $charge->set_fee_event( 15.0 );
 
@@ -333,7 +333,7 @@ final class Finance_Entities_Test extends TestCase {
         $club->id = 10;
         $club->name = 'Westcliff Lawn';
 
-        $event = new class {
+        $event = new class() {
             public string $type = 'MD';
             public function get_id(): int {
                 return 5;
@@ -372,8 +372,8 @@ final class Finance_Entities_Test extends TestCase {
         );
 
         $charge = new Charge();
-        $charge->competition_id = 1;
-        $charge->season = '2026';
+        $charge->set_competition_id( 1 );
+        $charge->set_season( '2026' );
         $charge->set_fee_competition( 0.0 );
         $charge->set_fee_event( 0.10 );
 
@@ -381,7 +381,7 @@ final class Finance_Entities_Test extends TestCase {
         $club->id   = 10;
         $club->name = 'Westcliff Lawn';
 
-        $event = new class {
+        $event = new class() {
             public string $type = 'MD';
             public function get_id(): int {
                 return 5;
@@ -389,11 +389,13 @@ final class Finance_Entities_Test extends TestCase {
         };
 
         $comp_svc->method( 'get_events_for_competition' )->willReturn( [ $event ] );
-        $comp_svc->method( 'get_teams_for_event' )->willReturn( [
-            (object) [ 'id' => 1 ],
-            (object) [ 'id' => 2 ],
-            (object) [ 'id' => 3 ],
-        ] );
+        $comp_svc->method( 'get_teams_for_event' )->willReturn(
+            [
+                (object) [ 'id' => 1 ],
+                (object) [ 'id' => 2 ],
+                (object) [ 'id' => 3 ],
+            ]
+        );
 
         $entry = $finance_svc->get_club_entry( $charge, $club );
         self::assertNotFalse( $entry );
@@ -442,8 +444,8 @@ final class Finance_Entities_Test extends TestCase {
 
     public function test_unknown_and_empty_statuses_through_invoice_entity_dtos_and_presenter(): void {
         $invoice = new Invoice();
-        $invoice->id = 55;
-        $invoice->invoice_number = 2026055;
+        $invoice->set_id( 55 );
+        $invoice->set_invoice_number( 2026055 );
         $invoice->set_amount( '50.00' );
         $invoice->set_status( 'pending' );
 
@@ -468,23 +470,25 @@ final class Finance_Entities_Test extends TestCase {
         self::assertFalse( $invoice->is_paid() );
 
         // Test DTOs with unknown statuses
-        $details_dto = new Invoice_Details_DTO( (object) [
-            'id'                => 10,
-            'charge_id'         => 1,
-            'billable_id'       => 2,
-            'billable_type'     => 'club',
-            'billable_name'     => 'Club',
-            'invoice_number'    => 2026010,
-            'status'            => 'pending',
-            'amount'            => '30.00',
-            'date'              => '2026-05-01',
-            'date_due'          => '2026-05-15',
-            'payment_reference' => null,
-            'purchase_order'    => null,
-            'details'           => '{}',
-            'season'            => '2026',
-            'competition_name'  => 'Affiliation',
-        ] );
+        $details_dto = new Invoice_Details_DTO(
+            (object) [
+                'id'                => 10,
+                'charge_id'         => 1,
+                'billable_id'       => 2,
+                'billable_type'     => 'club',
+                'billable_name'     => 'Club',
+                'invoice_number'    => 2026010,
+                'status'            => 'pending',
+                'amount'            => '30.00',
+                'date'              => '2026-05-01',
+                'date_due'          => '2026-05-15',
+                'payment_reference' => null,
+                'purchase_order'    => null,
+                'details'           => '{}',
+                'season'            => '2026',
+                'competition_name'  => 'Affiliation',
+            ]
+        );
         self::assertNull( $details_dto->get_status_enum() );
 
         // Test Invoice_Presenter with unknown / pending / failed / empty status

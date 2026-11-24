@@ -25,12 +25,21 @@ class Invoice_Repository implements Invoice_Repository_Interface {
     private wpdb $wpdb;
     private string $table_name;
 
+    /**
+     * Constructor.
+     */
     public function __construct() {
         global $wpdb;
         $this->wpdb       = $wpdb;
         $this->table_name = $this->wpdb->prefix . 'racketmanager_invoices';
     }
 
+    /**
+     * Find invoice by ID.
+     *
+     * @param int|string|null $id Invoice ID.
+     * @return Invoice|null
+     */
     public function find_by_id( int|string|null $id ): ?Invoice {
         if ( ! $id ) {
             return null;
@@ -38,12 +47,12 @@ class Invoice_Repository implements Invoice_Repository_Interface {
         $invoice = wp_cache_get( $id, 'invoices' );
 
         if ( ! $invoice ) {
-            $invoice = $this->wpdb->get_row(
-                $this->wpdb->prepare(
-                    "SELECT * FROM `$this->table_name` WHERE `id` = %d LIMIT 1",
-                    $id
-                )
+            $query = $this->wpdb->prepare(
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is safely interpolated.
+                "SELECT * FROM `$this->table_name` WHERE `id` = %d LIMIT 1",
+                $id
             );
+            $invoice = $this->wpdb->get_row( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Pre-prepared query.
 
             if ( ! $invoice ) {
                 return null;
@@ -55,9 +64,14 @@ class Invoice_Repository implements Invoice_Repository_Interface {
         }
 
         return $invoice;
-
     }
 
+    /**
+     * Find invoices by criteria.
+     *
+     * @param array<string, mixed> $criteria Search criteria.
+     * @return array<Invoice_Details_DTO>
+     */
     public function find_by( array $criteria ): array {
         $charges_table      = $this->wpdb->prefix . 'racketmanager_charges';
         $competitions_table = $this->wpdb->prefix . 'racketmanager_competitions';
@@ -122,7 +136,8 @@ class Invoice_Repository implements Invoice_Repository_Interface {
         if ( $season ) {
             $search_terms[] = $this->wpdb->prepare( '`season` = %s', $season );
         }
-        $search  = Util::search_string( $search_terms, true );
+        $search = Util::search_string( $search_terms, true );
+        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names and search clauses are prepared or safe.
         $results = $this->wpdb->get_results(
             "
                 SELECT i.*,
@@ -139,6 +154,7 @@ class Invoice_Repository implements Invoice_Repository_Interface {
                     $search
                 order by `invoice_number`"
         );
+        // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         return array_map(
             function ( $row ) {
@@ -148,6 +164,14 @@ class Invoice_Repository implements Invoice_Repository_Interface {
         );
     }
 
+    /**
+     * Find invoice by charge and billable.
+     *
+     * @param int|null $charge_id Charge ID.
+     * @param int|null $billable_id Billable ID.
+     * @param string   $billable_type Billable type.
+     * @return Invoice|null
+     */
     public function find_by_charge_and_billable( ?int $charge_id, ?int $billable_id, string $billable_type = 'club' ): ?Invoice {
         if ( ! $charge_id || ! $billable_id ) {
             return null;
@@ -156,14 +180,14 @@ class Invoice_Repository implements Invoice_Repository_Interface {
         $invoice   = wp_cache_get( $cache_key, 'invoices' );
 
         if ( ! $invoice ) {
-            $invoice = $this->wpdb->get_row(
-                $this->wpdb->prepare(
-                    "SELECT * FROM `$this->table_name` WHERE `billable_id` = %d AND `billable_type` = %s AND `charge_id` = %d LIMIT 1",
-                    $billable_id,
-                    $billable_type,
-                    $charge_id
-                )
+            $query = $this->wpdb->prepare(
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is safely interpolated.
+                "SELECT * FROM `$this->table_name` WHERE `billable_id` = %d AND `billable_type` = %s AND `charge_id` = %d LIMIT 1",
+                $billable_id,
+                $billable_type,
+                $charge_id
             );
+            $invoice = $this->wpdb->get_row( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Pre-prepared query.
 
             if ( ! $invoice ) {
                 return null;
@@ -175,13 +199,18 @@ class Invoice_Repository implements Invoice_Repository_Interface {
         }
 
         return $invoice;
-
     }
 
+    /**
+     * Save invoice entity.
+     *
+     * @param object $entity Entity to save.
+     * @return int|bool
+     */
     public function save( object $entity ): int|bool {
         /** @var Invoice $entity */
         $data        = array(
-            'charge_id'         => $entity->charge_id,
+            'charge_id'         => $entity->get_charge_id(),
             'billable_id'       => $entity->get_billable_id(),
             'billable_type'     => $entity->get_billable_type(),
             'invoice_number'    => $entity->get_invoice_number(),
@@ -215,43 +244,54 @@ class Invoice_Repository implements Invoice_Repository_Interface {
             $entity->set_id( $this->wpdb->insert_id );
             wp_cache_set( $entity->get_id(), $entity, 'invoices' );
 
-            return $result !== false;
+            return false !== $result;
         } else {
             wp_cache_set( $entity->get_id(), $entity, 'invoices' );
 
             return $this->wpdb->update(
                 $this->table_name,
-                $data, // Data to update
+                $data, // Data to update.
                 array(
-                    'id' => $entity->get_id()
-                ), // Where clause
+                    'id' => $entity->get_id(),
+                ), // Where clause.
                 $data_format,
                 array(
-                    '%d'
-                ) // Where format
+                    '%d',
+                ) // Where format.
             );
         }
     }
 
+    /**
+     * Delete invoice by ID.
+     *
+     * @param int $id Invoice ID.
+     * @return bool
+     */
     public function delete( int $id ): bool {
         return (bool) $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) );
     }
 
+    /**
+     * Check if charge has invoices.
+     *
+     * @param int $charge_id Charge ID.
+     * @return bool
+     */
     public function has_invoices( int $charge_id ): bool {
-        return $this->wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $this->wpdb->prepare(
-                "SELECT count(*) FROM `$this->table_name` WHERE `charge_id` = %d",
-                $charge_id
-            )
+        $query = $this->wpdb->prepare(
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is safely interpolated.
+            "SELECT count(*) FROM `$this->table_name` WHERE `charge_id` = %d",
+            $charge_id
         );
-
+        return (bool) $this->wpdb->get_var( $query ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared -- Aggregation query.
     }
 
     /**
      * Retrieves the total amount paid by a player for a specific tournament.
      *
-     * @param int $player_id
-     * @param int $tournament_id
+     * @param int $player_id     Player ID.
+     * @param int $tournament_id Tournament ID.
      *
      * @return float
      */
@@ -259,6 +299,7 @@ class Invoice_Repository implements Invoice_Repository_Interface {
         $tournaments_table = $this->wpdb->prefix . 'racketmanager_tournaments';
         $charges_table     = $this->wpdb->prefix . 'racketmanager_charges';
 
+        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table names are safely interpolated.
         $query = $this->wpdb->prepare(
             "SELECT COALESCE(SUM(i.amount), 0)
          FROM `$this->table_name` i
@@ -271,8 +312,8 @@ class Invoice_Repository implements Invoice_Repository_Interface {
             $tournament_id,
             $player_id
         );
+        // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
-        return (float) $this->wpdb->get_var( $query );
+        return (float) $this->wpdb->get_var( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Pre-prepared query.
     }
-
 }

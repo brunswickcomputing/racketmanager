@@ -290,7 +290,7 @@ class Competition_Entry_Flow_Test extends TestCase {
         $entry_service->expects( $this->exactly( 2 ) )->method( 'get_tournament_entry_by_tournament_and_player' )
             ->with( 8, 1 )->willReturn( $entry );
         $charge = new Charge();
-        $charge->id = 6;
+        $charge->set_id( 6 );
         $finance = $this->createMock( Finance_Service::class );
         $finance->expects( $this->once() )->method( 'get_charge' )->with( '5_2026' )->willReturn( $charge );
         $finance->expects( $this->once() )->method( 'get_invoices_by_criteria' )
@@ -361,7 +361,7 @@ class Competition_Entry_Flow_Test extends TestCase {
         $player_service = $this->createStub( Player_Service::class );
         $player_service->method( 'get_player' )->willReturn( $this->player() );
         $charge = new Charge();
-        $charge->id = 6;
+        $charge->set_id( 6 );
         $finance = $this->createStub( Finance_Service::class );
         $finance->method( 'get_charge' )->willReturn( $charge );
         $finance->method( 'get_invoices_by_criteria' )->willReturn( [] );

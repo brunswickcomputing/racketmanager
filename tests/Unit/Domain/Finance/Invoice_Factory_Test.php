@@ -8,26 +8,27 @@ use Racketmanager\Domain\DTO\Finance\Invoice_Hydration_DTO;
 use Racketmanager\Domain\Enums\Invoice_Status;
 use Racketmanager\Domain\Finance\Invoice;
 use Racketmanager\Domain\Finance\Invoice_Factory;
-use ReflectionProperty;
 use TypeError;
 
 final class Invoice_Factory_Test extends TestCase {
 
     public function test_create_from_dto_copies_every_field(): void {
-        $invoice = Invoice_Factory::create_from_dto( new Invoice_Hydration_DTO(
-            id: 5,
-            invoice_number: 1001,
-            charge_id: 2,
-            billable_id: 42,
-            billable_type: 'club',
-            status: 'final',
-            date: '2026-01-01',
-            date_due: '2026-02-01',
-            amount: '125.50',
-            payment_reference: 'REF',
-            purchase_order: 'PO',
-            details: (object) [ 'item' => 'Entry fee' ],
-        ) );
+        $invoice = Invoice_Factory::create_from_dto(
+            new Invoice_Hydration_DTO(
+                id: 5,
+                invoice_number: 1001,
+                charge_id: 2,
+                billable_id: 42,
+                billable_type: 'club',
+                status: 'final',
+                date: '2026-01-01',
+                date_due: '2026-02-01',
+                amount: '125.50',
+                payment_reference: 'REF',
+                purchase_order: 'PO',
+                details: (object) [ 'item' => 'Entry fee' ],
+            )
+        );
 
         $this->assertInstanceOf( Invoice::class, $invoice );
         $this->assertSame( 5, $invoice->get_id() );
@@ -46,16 +47,18 @@ final class Invoice_Factory_Test extends TestCase {
     }
 
     public function test_from_object_casts_string_db_row_and_decodes_details_like_the_legacy_constructor(): void {
-        $invoice = Invoice_Factory::from_object( (object) [
-            'id'             => '5',
-            'invoice_number' => '1001',
-            'charge_id'      => '2',
-            'billable_id'    => '',
-            'amount'         => '125.50',
-            'status'         => 'final',
-            'details'        => '{"item":"Entry fee"}',
-            'club_id'        => '9',
-        ] );
+        $invoice = Invoice_Factory::from_object(
+            (object) [
+                'id'             => '5',
+                'invoice_number' => '1001',
+                'charge_id'      => '2',
+                'billable_id'    => '',
+                'amount'         => '125.50',
+                'status'         => 'final',
+                'details'        => '{"item":"Entry fee"}',
+                'club_id'        => '9',
+            ]
+        );
 
         $this->assertSame( 5, $invoice->id );
         $this->assertSame( 1001, $invoice->invoice_number );
@@ -67,14 +70,14 @@ final class Invoice_Factory_Test extends TestCase {
         $this->assertFalse( property_exists( $invoice, 'club_id' ) );
     }
 
-    public function test_missing_status_keeps_draft_default_and_missing_non_nullable_columns_stay_uninitialised(): void {
+    public function test_missing_status_keeps_draft_default_and_missing_columns_default_to_null(): void {
         $invoice = Invoice_Factory::from_object( (object) [ 'charge_id' => 3 ] );
 
         $this->assertSame( 'draft', $invoice->get_status() );
         $this->assertTrue( $invoice->is_draft() );
         $this->assertNull( $invoice->get_money() );
-        $this->assertFalse( new ReflectionProperty( Invoice::class, 'amount' )->isInitialized( $invoice ) );
-        $this->assertFalse( new ReflectionProperty( Invoice::class, 'date' )->isInitialized( $invoice ) );
+        $this->assertNull( $invoice->get_amount() );
+        $this->assertNull( $invoice->get_date() );
     }
 
     public function test_from_array_and_lenient_entity_helpers_match_from_object(): void {

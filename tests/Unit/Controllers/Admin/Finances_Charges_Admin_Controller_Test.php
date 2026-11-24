@@ -133,7 +133,7 @@ final class Finances_Charges_Admin_Controller_Test extends TestCase {
         $this->finance_service->expects( self::once() )
             ->method( 'remove_charge' )
             ->with( 10 )
-            ->willReturn( 1 );
+            ->willReturn( true );
 
         $result = $this->controller->charges_page(
             array(),

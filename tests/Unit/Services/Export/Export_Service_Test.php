@@ -55,15 +55,15 @@ class Export_Service_Test extends TestCase {
 
         $home_team = null;
         if ( null !== $home_title ) {
-            $home_team_obj        = $this->createStub( Team::class );
-            $home_team_obj->title = $home_title;
+            $home_team_obj        = new Team();
+            $home_team_obj->set_title( $home_title );
             $home_team            = new Team_Details_DTO( $home_team_obj, null, null );
         }
 
         $away_team = null;
         if ( null !== $away_title ) {
-            $away_team_obj        = $this->createStub( Team::class );
-            $away_team_obj->title = $away_title;
+            $away_team_obj        = new Team();
+            $away_team_obj->set_title( $away_title );
             $away_team            = new Team_Details_DTO( $away_team_obj, null, null );
         }
 

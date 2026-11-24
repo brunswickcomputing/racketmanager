@@ -147,7 +147,7 @@ final class Finance_Entities_Test extends TestCase {
 
     public function test_team_profile_enum_integration(): void {
         $team = new Team();
-        $team->profile = 1;
+        $team->set_profile( 1 );
         self::assertSame( Team_Profile::ACTIVE, $team->get_profile_enum() );
 
         $team->set_profile_enum( Team_Profile::WITHDRAWN );

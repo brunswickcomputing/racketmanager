@@ -50,7 +50,7 @@ class League_Team_Repository_Test extends TestCase {
 
         $player = Player_Factory::from_object( (object) [ 'id' => 77, 'display_name' => 'John Smith' ] );
         $team   = Team_Factory::from_object( (object) [ 'id' => 25 ] );
-        $team->players = [ $player ];
+        $team->set_players( [ $player ] );
         $team_repo->expects( $this->once() )
             ->method( 'find_by_id' )
             ->with( 25 )
@@ -365,7 +365,7 @@ class League_Team_Repository_Test extends TestCase {
     public function test_hydrate_empty_roster_still_loads_players(): void {
         $player = Player_Factory::from_object( (object) [ 'id' => 5, 'display_name' => 'A B' ] );
         $team   = Team_Factory::from_object( (object) [ 'id' => 9 ] );
-        $team->players = [ $player ];
+        $team->set_players( [ $player ] );
         $lt = $this->make_repo( 0, 1, null, $team, 9 )->hydrate( (object) [ 'id' => 9, 'table_id' => 2, 'team_type' => 'P', 'roster' => serialize( [] ) ] );
         $this->assertSame( [ $player ], $lt->players );
     }

@@ -79,7 +79,7 @@ final class Competition_Shortcode_Presenter_Test extends TestCase {
         $this->assertSame( '/league/division-2/2026/', $links[303]['league_link'] );
     }
 
-    public function test_competition_club_detail_team_links_uses_id_and_name_only(): void {
+    public function test_competition_club_detail_team_links_prefers_team_id_over_id(): void {
         $presenter   = $this->create_presenter();
         $competition = (object) [
             'type'            => 'league',
@@ -114,16 +114,16 @@ final class Competition_Shortcode_Presenter_Test extends TestCase {
 
         $this->assertSame( '/clubs/wtc/', $result['club_url'] );
         $this->assertSame( [], $result['player_links'] );
-        $this->assertArrayHasKey( 12, $result['team_links'] );
-        $this->assertArrayNotHasKey( 999, $result['team_links'] );
-        $this->assertArrayHasKey( 34, $result['team_links'] );
-        $this->assertArrayNotHasKey( 888, $result['team_links'] );
+        $this->assertArrayHasKey( 999, $result['team_links'] );
+        $this->assertArrayNotHasKey( 12, $result['team_links'] );
+        $this->assertArrayHasKey( 888, $result['team_links'] );
+        $this->assertArrayNotHasKey( 34, $result['team_links'] );
 
-        $this->assertSame( '/league/division-one/2026/team/men-a/', $result['team_links'][12]['team_link'] );
-        $this->assertSame( '/league/division-one/2026/', $result['team_links'][12]['league_link'] );
+        $this->assertSame( '/league/division-one/2026/team/men-a/', $result['team_links'][999]['team_link'] );
+        $this->assertSame( '/league/division-one/2026/', $result['team_links'][999]['league_link'] );
 
-        $this->assertSame( '/league/division-two/2026/team/ladies-b/', $result['team_links'][34]['team_link'] );
-        $this->assertSame( '/league/division-two/2026/', $result['team_links'][34]['league_link'] );
+        $this->assertSame( '/league/division-two/2026/team/ladies-b/', $result['team_links'][888]['team_link'] );
+        $this->assertSame( '/league/division-two/2026/', $result['team_links'][888]['league_link'] );
     }
 
     public function test_competition_club_detail_team_links_championship_routing(): void {
@@ -153,7 +153,7 @@ final class Competition_Shortcode_Presenter_Test extends TestCase {
         $this->assertSame( '/tournaments/men-singles/2026/', $result['team_links'][55]['league_link'] );
     }
 
-    public function test_event_club_detail_team_links_uses_id_and_name_only(): void {
+    public function test_event_club_detail_team_links_prefers_team_id_over_id(): void {
         $presenter = $this->create_presenter();
         $event     = (object) [
             'name'           => 'Men 1st Division',
@@ -187,19 +187,19 @@ final class Competition_Shortcode_Presenter_Test extends TestCase {
 
         $this->assertSame( '/clubs/etc/', $result['club_url'] );
         $this->assertSame( [], $result['player_links'] );
-        $this->assertArrayHasKey( 10, $result['team_links'] );
-        $this->assertArrayNotHasKey( 777, $result['team_links'] );
-        $this->assertArrayHasKey( 20, $result['team_links'] );
-        $this->assertArrayNotHasKey( 666, $result['team_links'] );
+        $this->assertArrayHasKey( 777, $result['team_links'] );
+        $this->assertArrayNotHasKey( 10, $result['team_links'] );
+        $this->assertArrayHasKey( 666, $result['team_links'] );
+        $this->assertArrayNotHasKey( 20, $result['team_links'] );
 
-        $this->assertSame( '/league/division-1/2026/team/team-1/', $result['team_links'][10]['team_link'] );
-        $this->assertSame( '/league/division-1/2026/', $result['team_links'][10]['league_link'] );
+        $this->assertSame( '/league/division-1/2026/team/team-1/', $result['team_links'][777]['team_link'] );
+        $this->assertSame( '/league/division-1/2026/', $result['team_links'][777]['league_link'] );
 
-        $this->assertSame( '/league/division-2/2026/team/team-2/', $result['team_links'][20]['team_link'] );
-        $this->assertSame( '/league/division-2/2026/', $result['team_links'][20]['league_link'] );
+        $this->assertSame( '/league/division-2/2026/team/team-2/', $result['team_links'][666]['team_link'] );
+        $this->assertSame( '/league/division-2/2026/', $result['team_links'][666]['league_link'] );
     }
 
-    public function test_event_teams_links_uses_id_and_name_only_and_handles_box_leagues(): void {
+    public function test_event_teams_links_prefers_team_id_and_handles_box_leagues(): void {
         $presenter = $this->create_presenter();
         $event     = (object) [
             'name'           => 'Box League Group A',
@@ -228,18 +228,18 @@ final class Competition_Shortcode_Presenter_Test extends TestCase {
 
         $links = $presenter->present_event_teams_links( $event, [ $team_obj, $team_arr ] );
 
-        $this->assertArrayHasKey( 1, $links );
-        $this->assertArrayNotHasKey( 501, $links );
-        $this->assertArrayHasKey( 2, $links );
-        $this->assertArrayNotHasKey( 502, $links );
+        $this->assertArrayHasKey( 501, $links );
+        $this->assertArrayNotHasKey( 1, $links );
+        $this->assertArrayHasKey( 502, $links );
+        $this->assertArrayNotHasKey( 2, $links );
 
-        $this->assertSame( '/league/box-group-1/2026/team/box-player-1/', $links[1]['team_link'] );
-        $this->assertSame( '/leagues/box-league-group-a/2026/club/boxc/', $links[1]['club_link'] );
-        $this->assertSame( '/league/box-group-1/round-2026/', $links[1]['league_link'] );
+        $this->assertSame( '/league/box-group-1/2026/team/box-player-1/', $links[501]['team_link'] );
+        $this->assertSame( '/leagues/box-league-group-a/2026/club/boxc/', $links[501]['club_link'] );
+        $this->assertSame( '/league/box-group-1/round-2026/', $links[501]['league_link'] );
 
-        $this->assertSame( '/league/box-group-2/2026/team/box-player-2/', $links[2]['team_link'] );
-        $this->assertSame( '/leagues/box-league-group-a/2026/club/boxd/', $links[2]['club_link'] );
-        $this->assertSame( '/league/box-group-2/round-2026/', $links[2]['league_link'] );
+        $this->assertSame( '/league/box-group-2/2026/team/box-player-2/', $links[502]['team_link'] );
+        $this->assertSame( '/leagues/box-league-group-a/2026/club/boxd/', $links[502]['club_link'] );
+        $this->assertSame( '/league/box-group-2/round-2026/', $links[502]['league_link'] );
     }
 
     public function test_club_detail_player_links_prefers_fullname_over_display_name(): void {
@@ -1231,5 +1231,367 @@ final class Competition_Shortcode_Presenter_Test extends TestCase {
             [ 'Charlie Smith' => '/leagues/premier-division/2026/player/charlie-smith/' ],
             $mixed_player_stats
         );
+    }
+
+    public function test_competition_club_detail_team_links_numeric_string_ids_cast_to_int(): void {
+        $presenter   = $this->create_presenter();
+        $competition = (object) [
+            'type'            => 'league',
+            'name'            => 'Summer League',
+            'current_season'  => [ 'name' => '2026' ],
+            'is_championship' => false,
+        ];
+
+        // Numeric string IDs on both object and array, verifying strict_types int return
+        $team_obj = (object) [
+            'team_id'      => '999',
+            'id'           => '12',
+            'name'         => 'Men A',
+            'league_title' => 'Division One',
+        ];
+
+        $team_obj_no_team_id = (object) [
+            'id'           => '42',
+            'name'         => 'Men B',
+            'league_title' => 'Division Two',
+        ];
+
+        $team_arr = [
+            'team_id'      => '888',
+            'id'           => '34',
+            'name'         => 'Ladies A',
+            'league_title' => 'Division Three',
+        ];
+
+        $club = (object) [
+            'shortcode' => 'WTC',
+            'teams'     => [ $team_obj, $team_obj_no_team_id, $team_arr ],
+            'players'   => [],
+        ];
+
+        $result = $presenter->present_competition_club_detail_links( $competition, $club );
+
+        $this->assertArrayHasKey( 999, $result['team_links'] );
+        $this->assertArrayHasKey( 42, $result['team_links'] );
+        $this->assertArrayHasKey( 888, $result['team_links'] );
+        $this->assertSame( '/league/division-one/2026/team/men-a/', $result['team_links'][999]['team_link'] );
+        $this->assertSame( '/league/division-two/2026/team/men-b/', $result['team_links'][42]['team_link'] );
+        $this->assertSame( '/league/division-three/2026/team/ladies-a/', $result['team_links'][888]['team_link'] );
+
+        foreach ( array_keys( $result['team_links'] ) as $key ) {
+            $this->assertIsInt( $key );
+        }
+    }
+
+    public function test_competition_club_detail_team_links_missing_and_invalid_ids(): void {
+        $presenter   = $this->create_presenter();
+        $competition = (object) [
+            'type'            => 'league',
+            'name'            => 'Summer League',
+            'current_season'  => [ 'name' => '2026' ],
+            'is_championship' => false,
+        ];
+
+        $team_no_id = (object) [
+            'name'         => 'No ID Team',
+            'league_title' => 'Division 1',
+        ];
+
+        $team_invalid_string = (object) [
+            'team_id'      => 'invalid_id',
+            'id'           => 'not_numeric',
+            'name'         => 'Invalid ID Team',
+            'league_title' => 'Division 2',
+        ];
+
+        $team_empty_team_id = (object) [
+            'team_id'      => '',
+            'id'           => '50',
+            'name'         => 'Fallback Team',
+            'league_title' => 'Division 3',
+        ];
+
+        $team_malformed_string = (object) [
+            'team_id'      => '12abc',
+            'id'           => '99',
+            'name'         => 'Malformed ID Team',
+            'league_title' => 'Division 4',
+        ];
+
+        $club = (object) [
+            'shortcode' => 'WTC',
+            'teams'     => [ null, 'scalar_team', $team_no_id, $team_invalid_string, $team_empty_team_id, $team_malformed_string ],
+            'players'   => [],
+        ];
+
+        $result = $presenter->present_competition_club_detail_links( $competition, $club );
+
+        $this->assertArrayHasKey( 0, $result['team_links'] );
+        $this->assertArrayHasKey( 50, $result['team_links'] );
+        $this->assertSame( '/league/division-3/2026/team/fallback-team/', $result['team_links'][50]['team_link'] );
+    }
+
+    public function test_competition_club_detail_team_links_two_distinct_teams_sharing_league_id(): void {
+        $presenter   = $this->create_presenter();
+        $competition = (object) [
+            'type'            => 'league',
+            'name'            => 'Summer League',
+            'current_season'  => [ 'name' => '2026' ],
+            'is_championship' => false,
+        ];
+
+        // Two distinct teams in the same league share query league id = '5'
+        $team_1 = (object) [
+            'team_id'      => '101',
+            'id'           => '5',
+            'name'         => 'Men 1st',
+            'league_title' => 'Premier Division',
+        ];
+
+        $team_2 = (object) [
+            'team_id'      => '102',
+            'id'           => '5',
+            'name'         => 'Men 2nd',
+            'league_title' => 'Premier Division',
+        ];
+
+        $club = (object) [
+            'shortcode' => 'WTC',
+            'teams'     => [ $team_1, $team_2 ],
+            'players'   => [],
+        ];
+
+        $result = $presenter->present_competition_club_detail_links( $competition, $club );
+
+        // Must key by team_id (101 and 102), not shared league id (5), preventing overwrite
+        $this->assertCount( 2, $result['team_links'] );
+        $this->assertArrayHasKey( 101, $result['team_links'] );
+        $this->assertArrayHasKey( 102, $result['team_links'] );
+        $this->assertArrayNotHasKey( 5, $result['team_links'] );
+
+        $this->assertSame( '/league/premier-division/2026/team/men-1st/', $result['team_links'][101]['team_link'] );
+        $this->assertSame( '/league/premier-division/2026/', $result['team_links'][101]['league_link'] );
+
+        $this->assertSame( '/league/premier-division/2026/team/men-2nd/', $result['team_links'][102]['team_link'] );
+        $this->assertSame( '/league/premier-division/2026/', $result['team_links'][102]['league_link'] );
+    }
+
+    public function test_competition_club_template_lookup_consistency_with_shared_league_id(): void {
+        $presenter   = $this->create_presenter();
+        $competition = new class() {
+            public int $id = 1;
+            public array $current_season = [ 'name' => '2026' ];
+            public bool $is_championship = false;
+            public function get_type(): string {
+                return 'league';
+            }
+        };
+
+        $team_1 = (object) [
+            'team_id'      => '101',
+            'id'           => '5',
+            'name'         => 'Men 1st',
+            'league_title' => 'Premier Division',
+            'league_name'  => 'Premier Division',
+            'rank'         => 1,
+        ];
+        $team_2 = (object) [
+            'team_id'      => '102',
+            'id'           => '5',
+            'name'         => 'Men 2nd',
+            'league_title' => 'Premier Division',
+            'league_name'  => 'Premier Division',
+            'rank'         => 2,
+        ];
+
+        $competition_club = (object) [
+            'shortcode' => 'WTC',
+            'name'      => 'Westcliff Tennis Club',
+            'address'   => '',
+            'teams'     => [ $team_1, $team_2 ],
+            'players'   => [],
+        ];
+
+        $detail_links = $presenter->present_competition_club_detail_links( $competition, $competition_club );
+        $team_links   = $detail_links['team_links'];
+        $club_url     = $detail_links['club_url'];
+        $player_links = $detail_links['player_links'];
+
+        ob_start();
+        include dirname( __DIR__, 4 ) . '/templates/competition/clubs.php';
+        $output = (string) ob_get_clean();
+
+        $this->assertStringContainsString( 'href="/league/premier-division/2026/team/men-1st/"', $output );
+        $this->assertStringContainsString( 'href="/league/premier-division/2026/team/men-2nd/"', $output );
+        $this->assertStringContainsString( 'Men 1st', $output );
+        $this->assertStringContainsString( 'Men 2nd', $output );
+    }
+
+    public function test_event_club_template_lookup_consistency_with_shared_league_id(): void {
+        $presenter = $this->create_presenter();
+        $event     = (object) [
+            'id'             => 1,
+            'name'           => 'Men Event',
+            'current_season' => [ 'name' => '2026' ],
+            'competition'    => (object) [ 'type' => 'league' ],
+        ];
+
+        $team_1 = (object) [
+            'team_id'      => '201',
+            'id'           => '8',
+            'name'         => 'Ladies 1st',
+            'league_title' => 'Division 1',
+            'league_name'  => 'Division 1',
+            'rank'         => 1,
+        ];
+        $team_2 = (object) [
+            'team_id'      => '202',
+            'id'           => '8',
+            'name'         => 'Ladies 2nd',
+            'league_title' => 'Division 1',
+            'league_name'  => 'Division 1',
+            'rank'         => 2,
+        ];
+
+        $event_club = (object) [
+            'shortcode' => 'ETC',
+            'name'      => 'East Tennis Club',
+            'address'   => '',
+            'teams'     => [ $team_1, $team_2 ],
+            'players'   => [],
+        ];
+
+        $detail_links = $presenter->present_event_club_detail_links( $event, $event_club );
+        $team_links   = $detail_links['team_links'];
+        $club_url     = $detail_links['club_url'];
+        $player_links = $detail_links['player_links'];
+
+        ob_start();
+        include dirname( __DIR__, 4 ) . '/templates/event/clubs.php';
+        $output = (string) ob_get_clean();
+
+        $this->assertStringContainsString( 'href="/league/division-1/2026/team/ladies-1st/"', $output );
+        $this->assertStringContainsString( 'href="/league/division-1/2026/team/ladies-2nd/"', $output );
+        $this->assertStringContainsString( 'Ladies 1st', $output );
+        $this->assertStringContainsString( 'Ladies 2nd', $output );
+    }
+
+    public function test_extract_team_id_semantics(): void {
+        // Object cases
+        $this->assertSame( 101, Competition_Shortcode_Presenter::extract_team_id( (object) [ 'team_id' => '101', 'id' => '5' ] ) );
+        $this->assertSame( 101, Competition_Shortcode_Presenter::extract_team_id( (object) [ 'team_id' => 101 ] ) );
+        $this->assertSame( 5, Competition_Shortcode_Presenter::extract_team_id( (object) [ 'id' => '5' ] ) );
+        $this->assertSame( 5, Competition_Shortcode_Presenter::extract_team_id( (object) [ 'team_id' => '', 'id' => '5' ] ) );
+        $this->assertSame( 0, Competition_Shortcode_Presenter::extract_team_id( (object) [ 'team_id' => '12abc', 'id' => '5' ] ) );
+        $this->assertSame( 0, Competition_Shortcode_Presenter::extract_team_id( (object) [ 'team_id' => 'invalid' ] ) );
+        $this->assertSame( 0, Competition_Shortcode_Presenter::extract_team_id( (object) [] ) );
+
+        // Array cases
+        $this->assertSame( 201, Competition_Shortcode_Presenter::extract_team_id( [ 'team_id' => '201', 'id' => '8' ] ) );
+        $this->assertSame( 201, Competition_Shortcode_Presenter::extract_team_id( [ 'team_id' => 201 ] ) );
+        $this->assertSame( 8, Competition_Shortcode_Presenter::extract_team_id( [ 'id' => '8' ] ) );
+        $this->assertSame( 8, Competition_Shortcode_Presenter::extract_team_id( [ 'team_id' => '', 'id' => '8' ] ) );
+        $this->assertSame( 0, Competition_Shortcode_Presenter::extract_team_id( [ 'team_id' => '12abc', 'id' => '8' ] ) );
+        $this->assertSame( 0, Competition_Shortcode_Presenter::extract_team_id( [ 'team_id' => 'invalid' ] ) );
+        $this->assertSame( 0, Competition_Shortcode_Presenter::extract_team_id( [] ) );
+
+        // Fallback / scalar
+        $this->assertSame( 0, Competition_Shortcode_Presenter::extract_team_id( null ) );
+        $this->assertSame( 0, Competition_Shortcode_Presenter::extract_team_id( 'scalar' ) );
+    }
+
+    public function test_event_teams_template_lookup_consistency_with_shared_league_id(): void {
+        $presenter = $this->create_presenter();
+        $team_1    = (object) [
+            'team_id'      => '301',
+            'id'           => '9',
+            'name'         => 'Alpha 1st',
+            'club'         => (object) [ 'id' => 10, 'shortcode' => 'ALPH' ],
+            'league_name'  => 'Premier Division',
+            'player_count' => 4,
+        ];
+        $team_2    = (object) [
+            'team_id'      => '302',
+            'id'           => '9',
+            'name'         => 'Alpha 2nd',
+            'club'         => (object) [ 'id' => 10, 'shortcode' => 'ALPH' ],
+            'league_name'  => 'Premier Division',
+            'player_count' => 6,
+        ];
+
+        $event = (object) [
+            'id'             => 1,
+            'name'           => 'Summer Event',
+            'current_season' => [ 'name' => '2026' ],
+            'is_box'         => false,
+            'teams'          => [ $team_1, $team_2 ],
+            'competition'    => (object) [ 'type' => 'league' ],
+        ];
+
+        $team_links = $presenter->present_event_teams_links( $event, $event->teams );
+
+        ob_start();
+        include dirname( __DIR__, 4 ) . '/templates/event/teams.php';
+        $output = (string) ob_get_clean();
+
+        // Distinct team hrefs
+        $this->assertStringContainsString( 'href="/league/premier-division/2026/team/alpha-1st/"', $output );
+        $this->assertStringContainsString( 'href="/league/premier-division/2026/team/alpha-2nd/"', $output );
+        // Club and league hrefs
+        $this->assertStringContainsString( 'href="/leagues/summer-event/2026/club/alph/"', $output );
+        $this->assertStringContainsString( 'href="/league/premier-division/2026/"', $output );
+        // Names and player counts
+        $this->assertStringContainsString( 'Alpha 1st', $output );
+        $this->assertStringContainsString( 'Alpha 2nd', $output );
+        $this->assertStringContainsString( 'ALPH', $output );
+    }
+
+    public function test_competition_teams_template_lookup_consistency_with_shared_league_id(): void {
+        $presenter   = $this->create_presenter();
+        $competition = (object) [
+            'id'              => 1,
+            'name'            => 'Main Competition',
+            'current_season'  => [ 'name' => '2026' ],
+            'is_championship' => false,
+            'is_team_entry'   => true,
+            'type'            => 'league',
+        ];
+
+        $team_1 = (object) [
+            'team_id'        => '401',
+            'id'             => '7',
+            'team_name'      => 'Beta 1st',
+            'club_id'        => 12,
+            'club_shortcode' => 'BETA',
+            'league_name'    => 'Division 1',
+            'num_players'    => 5,
+        ];
+        $team_2 = (object) [
+            'team_id'        => '402',
+            'id'             => '7',
+            'team_name'      => 'Beta 2nd',
+            'club_id'        => 12,
+            'club_shortcode' => 'BETA',
+            'league_name'    => 'Division 1',
+            'num_players'    => 5,
+        ];
+        $teams  = [ $team_1, $team_2 ];
+
+        $team_links = $presenter->present_competition_teams_links( $competition, $teams );
+
+        ob_start();
+        include dirname( __DIR__, 4 ) . '/templates/competition/teams.php';
+        $output = (string) ob_get_clean();
+
+        // Distinct team hrefs
+        $this->assertStringContainsString( 'href="/league/division-1/2026/team/beta-1st/"', $output );
+        $this->assertStringContainsString( 'href="/league/division-1/2026/team/beta-2nd/"', $output );
+        // Club and league hrefs
+        $this->assertStringContainsString( 'href="/main-competition/2026/club/beta/"', $output );
+        $this->assertStringContainsString( 'href="/league/division-1/2026/"', $output );
+        // Names and player counts
+        $this->assertStringContainsString( 'Beta 1st', $output );
+        $this->assertStringContainsString( 'Beta 2nd', $output );
+        $this->assertStringContainsString( 'BETA', $output );
     }
 }

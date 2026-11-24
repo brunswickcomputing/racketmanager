@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
+
 /** @var object $event */
 /** @var array<int, array{team_link: string, club_link: string, league_link: string}> $team_links */
 $event      = $event ?? ( $vars['event'] ?? ( $vm->event ?? null ) );
@@ -56,7 +58,7 @@ if ( ! $event ) {
                     </div>
                     <?php
                     foreach ( $event->teams as $team ) {
-                        $team_id     = is_object( $team ) ? (int) ( $team->id ?? 0 ) : (int) ( $team['id'] ?? 0 );
+                        $team_id     = Competition_Shortcode_Presenter::extract_team_id( $team );
                         $team_link   = $team_links[ $team_id ]['team_link'] ?? '';
                         $club_link   = $team_links[ $team_id ]['club_link'] ?? '';
                         $league_link = $team_links[ $team_id ]['league_link'] ?? '';

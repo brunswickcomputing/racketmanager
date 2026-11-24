@@ -322,8 +322,8 @@ class Championship_Admin_Integration_Test extends TestCase {
         $league_team = $this->createMock( League_Team::class );
         $league_team->method( 'get_team_id' )->willReturn( 70 );
 
-        $team        = $this->createMock( Team::class );
-        $team->title = 'Team A';
+        $team        = new Team();
+        $team->set_title( 'Team A' );
 
         $league_team_repository = $this->createMock( League_Team_Repository_Interface::class );
         $league_team_repository->expects( self::once() )
@@ -377,8 +377,8 @@ class Championship_Admin_Integration_Test extends TestCase {
         $second_league_team = $this->createMock( League_Team::class );
         $second_league_team->method( 'get_team_id' )->willReturn( 71 );
 
-        $first_team        = $this->createMock( Team::class );
-        $first_team->title = 'Team A';
+        $first_team        = new Team();
+        $first_team->set_title( 'Team A' );
 
         $league_team_repository = $this->createMock( League_Team_Repository_Interface::class );
         $league_team_repository->expects( self::exactly( 2 ) )

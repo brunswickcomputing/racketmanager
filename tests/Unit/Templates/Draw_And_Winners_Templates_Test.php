@@ -295,11 +295,11 @@ class Draw_And_Winners_Templates_Test extends TestCase {
     }
 
     private function make_team( int $id, string $title, array $players = [] ): Team {
-        $team          = $this->createStub( Team::class );
-        $team->id      = $id;
-        $team->title   = $title;
-        $team->players = $players;
-        $team->method( 'get_id' )->willReturn( $id );
+        $team          = new Team();
+        $team->set_id( $id );
+        $team->set_title( $title );
+        $team->set_players( $players );
+        $team->set_id( $id );
 
         return $team;
     }
@@ -511,11 +511,11 @@ class Draw_And_Winners_Templates_Test extends TestCase {
         $p2 = $this->createStub( Player::class );
         $p2->method( 'get_fullname' )->willReturn( 'Lloyd Watts' );
 
-        $team1 = $this->createStub( Team::class );
-        $team1->id = 101;
-        $team1->title = 'Scott Bowman & Lloyd Watts';
-        $team1->method( 'get_id' )->willReturn( 101 );
-        $team1->players = [ $p1, $p2 ];
+        $team1 = new Team();
+        $team1->set_id( 101 );
+        $team1->set_title( 'Scott Bowman & Lloyd Watts' );
+        $team1->set_id( 101 );
+        $team1->set_players( [ $p1, $p2 ] );
 
         // Doubles Pair 2
         $p3 = $this->createStub( Player::class );
@@ -523,11 +523,11 @@ class Draw_And_Winners_Templates_Test extends TestCase {
         $p4 = $this->createStub( Player::class );
         $p4->method( 'get_fullname' )->willReturn( 'Liam Maskell' );
 
-        $team2 = $this->createStub( Team::class );
-        $team2->id = 102;
-        $team2->title = 'Archie Taylor & Liam Maskell';
-        $team2->method( 'get_id' )->willReturn( 102 );
-        $team2->players = [ $p3, $p4 ];
+        $team2 = new Team();
+        $team2->set_id( 102 );
+        $team2->set_title( 'Archie Taylor & Liam Maskell' );
+        $team2->set_id( 102 );
+        $team2->set_players( [ $p3, $p4 ] );
 
         // Persisted set shape (custom['sets'] arrays keyed player1/player2/tiebreak), as stored for fixture 159507.
         $fixture = Fixture_Factory::from_object(

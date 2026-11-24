@@ -35,6 +35,7 @@ use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Team\Team;
+use Racketmanager\Domain\Team\Team_Factory;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\League_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\League_Archive_Presenter;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
@@ -423,12 +424,12 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $league_obj->team_index = [ 7 => 0, 8 => 1 ];
 
         // Team details success
-        $team_obj        = new class extends Team { public function __construct() { $this->id = 7; $this->title = 'Westcliff 1'; } };
+        $team_obj        = Team_Factory::from_array( [ 'id' => 7, 'title' => 'Westcliff 1' ] );
         $team_details    = new Team_Details_DTO( team: $team_obj );
         $team_service->method( 'get_team_details' )->willReturnCallback(
             function( int|string|null $team_id ) use ( $team_details ) {
                 if ( 8 === (int) $team_id ) {
-                    $unranked_team = new class extends Team { public function __construct() { $this->id = 8; $this->title = 'Unranked Team'; } };
+                    $unranked_team = Team_Factory::from_array( [ 'id' => 8, 'title' => 'Unranked Team' ] );
                     return new Team_Details_DTO( team: $unranked_team );
                 }
                 return $team_details;
@@ -474,7 +475,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
         };
         $league_service->method( 'get_league' )->willReturn( $league_obj );
 
-        $team_obj = new class extends Team { public function __construct() { $this->id = 7; $this->title = 'Westcliff 1'; } };
+        $team_obj = Team_Factory::from_array( [ 'id' => 7, 'title' => 'Westcliff 1' ] );
         $team_service->method( 'get_team_details' )->willReturn( new Team_Details_DTO( team: $team_obj ) );
 
         [ $low, $high, $stats ] = $this->build_stat_players( $league_obj, '2025', 'league' );

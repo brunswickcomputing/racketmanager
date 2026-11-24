@@ -519,13 +519,8 @@ namespace Racketmanager\Tests\Unit\Services\Fixture {
         }
 
         private function create_team_details_with_players( array $players ): Team_Details_DTO {
-            $team = new class( $players ) extends Team {
-                public array $players;
-
-                public function __construct( array $players ) {
-                    $this->players = $players;
-                }
-            };
+            $team = new Team();
+            $team->set_players( $players );
 
             return new Team_Details_DTO( $team );
         }

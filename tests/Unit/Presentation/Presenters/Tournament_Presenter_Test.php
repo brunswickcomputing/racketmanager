@@ -172,14 +172,14 @@ final class Tournament_Presenter_Test extends TestCase {
 		$p2->method( 'get_id' )->willReturn( 102 );
 		$p2->method( 'get_fullname' )->willReturn( 'Rafael Nadal' );
 
-		$t1 = $this->createStub( Team::class );
-		$t1->method( 'get_id' )->willReturn( 10 );
-		$t1->method( 'get_name' )->willReturn( 'Federer' );
-		$t1->players = [ $p1 ];
-		$t2 = $this->createStub( Team::class );
-		$t2->method( 'get_id' )->willReturn( 20 );
-		$t2->method( 'get_name' )->willReturn( 'Nadal' );
-		$t2->players = [ $p2 ];
+		$t1 = new Team();
+		$t1->set_id( 10 );
+		$t1->set_title( 'Federer' );
+		$t1->set_players( [ $p1 ] );
+		$t2 = new Team();
+		$t2->set_id( 20 );
+		$t2->set_title( 'Nadal' );
+		$t2->set_players( [ $p2 ] );
 
 		$detail = new Fixture_Details_DTO(
 			fixture: $fixture,

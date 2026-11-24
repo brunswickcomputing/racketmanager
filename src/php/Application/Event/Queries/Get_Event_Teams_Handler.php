@@ -8,6 +8,7 @@ use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
 use Racketmanager\Application\Competition\Ports\Event_Query_Service_Interface;
 use Racketmanager\Application\Event\DTOs\Event_Teams_Result;
 use Racketmanager\Application\Player\Ports\Player_Stats_Service_Interface;
+use Racketmanager\Domain\Team\Team;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Throwable;
 use function __;
@@ -90,8 +91,8 @@ readonly class Get_Event_Teams_Handler {
                 $team = null;
             }
             if ( $team ) {
-                $team->info    = $this->event_query_service->get_team_info( $event, $team->id );
-                $team->matches = $this->event_query_service->get_matches(
+                $info    = $this->event_query_service->get_team_info( $event, $team->id );
+                $matches = $this->event_query_service->get_matches(
                     $event,
                     [
                         'team_id'          => $team->id,
@@ -102,13 +103,30 @@ readonly class Get_Event_Teams_Handler {
                         'orderby'          => [ 'date' => 'ASC' ],
                     ]
                 );
-                $team->players = $this->event_query_service->get_players(
+                $players = $this->event_query_service->get_players(
                     $event,
                     [
                         'team' => $team->id,
                     ]
                 );
-                $team->players = $this->player_stats_service->populate_players_stats( $team->players, $event, $current_season, 'event' );
+                if ( is_array( $players ) ) {
+                    $players = $this->player_stats_service->populate_players_stats( $players, $event, $current_season, 'event' );
+                }
+
+                if ( $team instanceof Team ) {
+                    $team->set_info( $info );
+                    if ( is_array( $matches ) ) {
+                        $team->set_matches( $matches );
+                    }
+                    if ( is_array( $players ) ) {
+                        $team->set_players( $players );
+                    }
+                } else {
+                    $team->info    = $info;
+                    $team->matches = $matches;
+                    $team->players = $players;
+                }
+
                 $event->set_team( $team );
             }
         }

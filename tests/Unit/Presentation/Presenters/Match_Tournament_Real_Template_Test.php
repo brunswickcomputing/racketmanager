@@ -214,11 +214,10 @@ class Match_Tournament_Real_Template_Test extends TestCase {
     }
 
     private function create_test_team( int $id, string $name, array $players = [] ): Team_Details_DTO {
-        $team = $this->createStub( Team::class );
-        $team->method( 'get_id' )->willReturn( $id );
-        $team->method( 'get_name' )->willReturn( $name );
-        $team->method( 'has_player' )->willReturnCallback( static fn( int $player_id ) => in_array( $player_id, array_map( static fn( $p ) => $p->get_id(), $players ), true ) );
-        $team->players = $players;
+        $team = new Team();
+        $team->set_id( $id );
+        $team->set_title( $name );
+        $team->set_players( $players );
         return new Team_Details_DTO( $team );
     }
 

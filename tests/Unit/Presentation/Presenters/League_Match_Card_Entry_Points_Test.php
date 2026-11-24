@@ -32,6 +32,7 @@ use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Scoring\Set_Score;
 use Racketmanager\Domain\Team\Team;
+use Racketmanager\Domain\Team\Team_Factory;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Fixture_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
@@ -185,11 +186,13 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
     }
 
     private function create_team_details( int $id, string $name, array $players ): Team_Details_DTO {
-        $team = $this->createStub( Team::class );
-        $team->method( 'get_id' )->willReturn( $id );
-        $team->method( 'get_name' )->willReturn( $name );
-        $team->method( 'has_player' )->willReturnCallback( static fn( int $player_id ) => in_array( $player_id, array_map( static fn( $p ) => $p->get_id(), $players ), true ) );
-        $team->players = $players;
+        $team = Team_Factory::from_array(
+            [
+                'id'      => $id,
+                'title'   => $name,
+                'players' => $players,
+            ]
+        );
         return new Team_Details_DTO( $team );
     }
 
@@ -377,12 +380,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
 
         $league_service = $this->createStub( League_Service::class );
         $league_service->method( 'get_league' )->willReturn( $league );
-        $team = new class() extends Team {
-            public function __construct() {
-                $this->id    = 10;
-                $this->title = 'Team Federer';
-            }
-        };
+        $team = Team_Factory::from_array( [ 'id' => 10, 'title' => 'Team Federer' ] );
         $team_service = $this->createStub( Team_Service::class );
         $team_service->method( 'get_team_details' )->willReturn( new Team_Details_DTO( team: $team ) );
         $stats = $this->createStub( Player_Stats_Service::class );
@@ -439,12 +437,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
 
         $league_service = $this->createStub( League_Service::class );
         $league_service->method( 'get_league' )->willReturn( $league );
-        $team = new class() extends Team {
-            public function __construct() {
-                $this->id    = 10;
-                $this->title = 'Team A';
-            }
-        };
+        $team = Team_Factory::from_array( [ 'id' => 10, 'title' => 'Team A' ] );
         $team_service = $this->createStub( Team_Service::class );
         $team_service->method( 'get_team_details' )->willReturn( new Team_Details_DTO( team: $team ) );
         $stats = $this->createStub( Player_Stats_Service::class );
@@ -597,12 +590,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $league               = $this->create_league( $event, [] );
         [ $fixture, $detail ] = $this->build_played_fixture( $league, $event, $competition );
 
-        $team = new class() extends Team {
-            public function __construct() {
-                $this->id    = 10;
-                $this->title = 'Team Federer';
-            }
-        };
+        $team = Team_Factory::from_array( [ 'id' => 10, 'title' => 'Team Federer' ] );
 
         $event_stub = new class() extends Event {
             public function __construct() {
@@ -680,12 +668,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         );
         $fixture->set_league( (object) [ 'id' => 3, 'title' => 'Mens Singles Division' ] );
 
-        $team = new class() extends Team {
-            public function __construct() {
-                $this->id    = 10;
-                $this->title = 'Team Federer';
-            }
-        };
+        $team = Team_Factory::from_array( [ 'id' => 10, 'title' => 'Team Federer' ] );
         $competition_service = $this->createStub( Competition_Service::class );
         $competition_service->method( 'get_event_by_id' )->willReturn( $event );
         $team_service = $this->createStub( Team_Service::class );
@@ -708,18 +691,20 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $this->assertSame( 'W', $row->status_text );
 
         $event->set_is_championship( false );
-        $event->team->standings       = (object) [
+        $standings                    = (object) [
             'rank'           => 1,
             'done_matches'   => 1,
             'points_formatted' => [ 'primary' => 2 ],
         ];
-        $event->team->info = (object) [
+        $info                         = (object) [
             'captain'      => '',
             'contactno'    => '',
             'contactemail' => '',
             'players'      => [],
             'match_time'   => null,
         ];
+        $event->team->set_standings( $standings );
+        $event->team->set_info( $info );
         $team_details = new Team_Details_DTO( team: $team );
         $vm           = new Team_Details_Presenter( new Wp_Option_Gateway(), new Settings_Service() )->present( $event, $team_details );
         $object       = $event;

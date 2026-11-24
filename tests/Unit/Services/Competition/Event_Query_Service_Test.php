@@ -393,8 +393,8 @@ class Event_Query_Service_Test extends TestCase {
         $team_player = $this->createMock( Player::class );
         $team_player->method( 'get_fullname' )->willReturn( 'Jane Doe' );
         $team_player->method( 'get_id' )->willReturn( 123 );
-        $team_entity = $this->createMock( Team::class );
-        $team_entity->players = [ $team_player ];
+        $team_entity = new Team();
+        $team_entity->set_players( [ $team_player ] );
         $team_repository->expects( $this->once() )
             ->method( 'find_by_id' )
             ->with( 20 )

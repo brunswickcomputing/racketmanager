@@ -446,16 +446,18 @@ class Matches_Team_List_Template_Test extends TestCase {
     }
 
     public function test_team_details_template_renders_cleanly(): void {
-        $team = $this->createStub( Team::class );
-        $team->method( 'get_id' )->willReturn( 12 );
-        $team->method( 'get_name' )->willReturn( 'Westcliff 1' );
-        $team->matches = [];
-        $team->players = [];
-        $team->info = (object) [
+        $team = new Team();
+        $team->set_id( 12 );
+        $team->set_title( 'Westcliff 1' );
+        $team->set_matches( [] );
+        $team->set_players( [] );
+        $team_info = (object) [
             'captain' => 'Jane Smith',
             'match_day' => 'Tuesday',
             'match_time' => '19:30:00',
         ];
+
+        $team->set_info( $team_info );
 
         $club = $this->createStub( Club::class );
         $club->method( 'get_id' )->willReturn( 8 );
@@ -522,17 +524,19 @@ class Matches_Team_List_Template_Test extends TestCase {
             }
         };
 
-        $team = $this->createStub( Team::class );
-        $team->id = 12;
-        $team->title = 'Westcliff 1';
-        $team->method( 'get_id' )->willReturn( 12 );
-        $team->method( 'get_name' )->willReturn( 'Westcliff 1' );
-        $team->matches = [];
-        $team->info = (object) [
+        $team = new Team();
+        $team->set_id( 12 );
+        $team->set_title( 'Westcliff 1' );
+        $team->set_id( 12 );
+        $team->set_title( 'Westcliff 1' );
+        $team->set_matches( [] );
+        $team_info = (object) [
             'captain' => 'Jane Smith',
             'match_day' => 'Tuesday',
             'match_time' => '19:30:00',
         ];
+
+        $team->set_info( $team_info );
 
         $player = Player_Test_Factory::create(
             id: 55,
@@ -546,7 +550,7 @@ class Matches_Team_List_Template_Test extends TestCase {
             ]
         );
 
-        $team->players = [ $player ];
+        $team->set_players( [ $player ] );
 
         $club = $this->createStub( Club::class );
         $club->shortcode = 'WLTC';
@@ -669,17 +673,19 @@ class Matches_Team_List_Template_Test extends TestCase {
             }
         };
 
-        $team = $this->createStub( Team::class );
-        $team->id = 12;
-        $team->title = 'Westcliff 1';
-        $team->method( 'get_id' )->willReturn( 12 );
-        $team->method( 'get_name' )->willReturn( 'Westcliff 1' );
-        $team->matches = [];
-        $team->info = (object) [
+        $team = new Team();
+        $team->set_id( 12 );
+        $team->set_title( 'Westcliff 1' );
+        $team->set_id( 12 );
+        $team->set_title( 'Westcliff 1' );
+        $team->set_matches( [] );
+        $team_info = (object) [
             'captain' => 'Jane Smith',
             'match_day' => 'Tuesday',
             'match_time' => '19:30:00',
         ];
+
+        $team->set_info( $team_info );
 
         $player = Player_Test_Factory::create(
             id: 55,
@@ -693,7 +699,7 @@ class Matches_Team_List_Template_Test extends TestCase {
             ]
         );
 
-        $team->players = [ $player ];
+        $team->set_players( [ $player ] );
 
         $club = $this->createStub( Club::class );
         $club->shortcode = 'WLTC';

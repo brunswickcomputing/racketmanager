@@ -8,8 +8,10 @@ use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Repositories\Concerns\Wpdb_Transactions;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use Racketmanager\Tests\Helpers\Recording_Wpdb;
 
 require_once __DIR__ . '/../../wp-stubs.php';
@@ -25,6 +27,7 @@ final class Team_Repository_Test extends TestCase {
 		$this->backup_globals();
 
 		$this->db        = new Recording_Wpdb();
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Test setup requires mocking global wpdb.
 		$GLOBALS['wpdb'] = $this->db;
 
 		$GLOBALS['wp_stubs_cache_enabled'] = true;
@@ -366,6 +369,7 @@ final class Team_Repository_Test extends TestCase {
 	}
 
 	public function test_delete_with_fixtures_without_connection_still_reports_failure(): void {
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Simulating missing global wpdb connection.
 		$GLOBALS['wpdb'] = null;
 		$repository      = new Team_Repository( null );
 		$fixtures        = $this->createMock( Fixture_Repository_Interface::class );
@@ -439,7 +443,7 @@ final class Team_Repository_Test extends TestCase {
 	}
 
 	public function test_find_by_id_enriches_placeholder_title_with_translated_match_relations(): void {
-		$GLOBALS['wp_stubs_translate_callback'] = static function ( string $text, string $domain ): string {
+		$GLOBALS['wp_stubs_translate_callback'] = static function ( string $text ): string {
 			return match ( $text ) {
 				'Winner of' => 'Vainqueur de',
 				'vs'        => 'contre',
@@ -476,13 +480,13 @@ final class Team_Repository_Test extends TestCase {
 	}
 
 	public function test_find_by_id_resolves_lazy_fixture_repository_closure_only_once(): void {
-        $fixture = Fixture_Factory::from_object( (object) array( 'id' => 250 ) );
-        $fixture->set_teams(
-            array(
-                'home' => (object) array( 'title' => 'Alpha' ),
-                'away' => (object) array( 'title' => 'Beta' ),
-            )
-        );
+		$fixture = Fixture_Factory::from_object( (object) array( 'id' => 250 ) );
+		$fixture->set_teams(
+			array(
+				'home' => (object) array( 'title' => 'Alpha' ),
+				'away' => (object) array( 'title' => 'Beta' ),
+			)
+		);
 
 		$fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
 		$fixture_repo->expects( $this->exactly( 2 ) )
@@ -520,7 +524,7 @@ final class Team_Repository_Test extends TestCase {
 	}
 
 	public function test_find_by_id_falls_back_to_localized_base_label_when_no_fixture_repo_or_match_missing(): void {
-		$GLOBALS['wp_stubs_translate_callback'] = static function ( string $text, string $domain ): string {
+		$GLOBALS['wp_stubs_translate_callback'] = static function ( string $text ): string {
 			return 'Winner of' === $text ? 'Vainqueur de' : $text;
 		};
 
@@ -560,25 +564,27 @@ final class Team_Repository_Test extends TestCase {
 		$fixture_repo->expects( $this->once() )
 			->method( 'find_by_id_with_relations' )
 			->with( 250 )
-			->willReturnCallback( function () use ( $repo ) {
-				// Re-entrant call while resolving fixture 250
-				$this->db->get_row_return = (object) array(
-					'id'        => 12,
-					'title'     => '1_semi_250',
-					'team_ref'  => '1_semi_250',
-					'team_type' => null,
-				);
-				$repo->find_by_id( 12 );
+			->willReturnCallback(
+				function () use ( $repo ) {
+					// Re-entrant call while resolving fixture 250.
+					$this->db->get_row_return = (object) array(
+						'id'        => 12,
+						'title'     => '1_semi_250',
+						'team_ref'  => '1_semi_250',
+						'team_type' => null,
+					);
+					$repo->find_by_id( 12 );
 
-                $fixture = Fixture_Factory::from_object( (object) array( 'id' => 250 ) );
-                $fixture->set_teams(
-                    array(
-                        'home' => (object) array( 'title' => 'Alpha' ),
-                        'away' => (object) array( 'title' => 'Beta' ),
-                    )
-                );
-				return $fixture;
-			} );
+					$fixture = Fixture_Factory::from_object( (object) array( 'id' => 250 ) );
+					$fixture->set_teams(
+						array(
+							'home' => (object) array( 'title' => 'Alpha' ),
+							'away' => (object) array( 'title' => 'Beta' ),
+						)
+					);
+					return $fixture;
+				}
+			);
 
 		$this->db->get_row_return = (object) array(
 			'id'        => 12,
@@ -590,5 +596,106 @@ final class Team_Repository_Test extends TestCase {
 		$team = $repo->find_by_id( 12 );
 		$this->assertNotNull( $team );
 		$this->assertSame( 'Winner of Alpha vs Beta', $team->title );
+	}
+
+	public function test_find_by_id_sql_query_excludes_roster_column(): void {
+		$this->db->get_row_return = (object) array(
+			'id'        => 10,
+			'title'     => 'Test Team',
+			'stadium'   => 'Court 1',
+			'home'      => 'Home',
+			'profile'   => 'senior',
+			'status'    => 'active',
+			'club_id'   => 5,
+			'type'      => 'MD',
+			'team_type' => 'C',
+		);
+
+		$team = $this->repository->find_by_id( 10 );
+
+		$this->assertNotNull( $team );
+		$get_row_calls = array_values(
+			array_filter(
+				$this->db->executed,
+				fn( $op ) => 'get_row' === $op['method']
+			)
+		);
+		$this->assertNotEmpty( $get_row_calls );
+		$sql = $get_row_calls[0]['sql'];
+		$this->assertStringContainsString( 'SELECT `id`, `title`, `stadium`, `home`, `profile`, `status`, `club_id`, `type`, `team_type`', $sql );
+		$this->assertStringNotContainsString( 'roster', $sql );
+	}
+
+	public function test_find_by_id_non_player_team_with_legacy_roster_skips_player_enrichment(): void {
+		$this->db->get_row_return = (object) array(
+			'id'        => 20,
+			'title'     => 'Club Team',
+			'stadium'   => null,
+			'home'      => null,
+			'profile'   => null,
+			'status'    => null,
+			'club_id'   => null,
+			'type'      => 'MD',
+			'team_type' => 'C',
+			'roster'    => 'legacy_roster_data',
+		);
+
+		$team = $this->repository->find_by_id( 20 );
+
+		$this->assertNotNull( $team );
+		$this->assertSame( array(), $team->get_players() );
+		$this->assertSame( array(), $team->player_ids );
+		$results_calls = array_filter(
+			$this->db->executed,
+			fn( $op ) => 'get_results' === $op['method']
+		);
+		$this->assertEmpty( $results_calls );
+	}
+
+	public function test_find_by_id_player_entry_team_enriches_players_and_player_ids(): void {
+		$player_repo = $this->createMock( Player_Repository_Interface::class );
+		$player1     = Player_Test_Factory::create( id: 101 );
+		$player2     = Player_Test_Factory::create( id: 102 );
+
+		$player_repo->expects( $this->exactly( 2 ) )
+			->method( 'find' )
+			->willReturnCallback(
+				fn( int $id ) => match ( $id ) {
+					101     => $player1,
+					102     => $player2,
+					default => null,
+				}
+			);
+
+		$this->db->get_row_return     = (object) array(
+			'id'        => 30,
+			'title'     => 'Player Team',
+			'stadium'   => null,
+			'home'      => null,
+			'profile'   => null,
+			'status'    => null,
+			'club_id'   => null,
+			'type'      => 'MD',
+			'team_type' => 'P',
+		);
+		$this->db->get_results_return = array(
+			(object) array( 'player_id' => 101 ),
+			(object) array( 'player_id' => 102 ),
+		);
+
+		$repo = new Team_Repository( $this->db, $player_repo );
+		$team = $repo->find_by_id( 30 );
+
+		$this->assertNotNull( $team );
+		$this->assertCount( 2, $team->get_players() );
+		$this->assertSame( 101, $team->get_players()[0]->id );
+		$this->assertSame( 102, $team->get_players()[1]->id );
+		$this->assertSame( array( 1 => 101, 2 => 102 ), $team->player_ids );
+
+		$results_calls = array_filter(
+			$this->db->executed,
+			fn( $op ) => 'get_results' === $op['method']
+		);
+		$this->assertNotEmpty( $results_calls );
 	}
 }

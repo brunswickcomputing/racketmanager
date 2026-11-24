@@ -203,8 +203,8 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 
 	public function test_teams_handler_details_delegates_to_league_query_service(): void {
 		$league = $this->league();
-		$team   = $this->createStub( Team::class );
-		$team->id = 12;
+		$team   = new Team();
+		$team->set_id( 12 );
 
 		$team_service = $this->createStub( Team_Service::class );
 		$team_service->method( 'get_team_details' )->willReturn( new Team_Details_DTO( $team ) );
@@ -334,8 +334,8 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 
     public function test_teams_handler_returns_error_when_team_not_in_league_or_unranked(): void {
         $league = $this->league();
-        $team   = $this->createStub( Team::class );
-        $team->id = 12;
+        $team   = new Team();
+        $team->set_id( 12 );
 
         $team_service = $this->createStub( Team_Service::class );
         $team_service->method( 'get_team_details' )
@@ -388,8 +388,8 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 
     public function test_teams_handler_details_populates_matches_players_view_state_and_side_effects(): void {
         $league       = $this->league();
-        $team         = $this->createStub( Team::class );
-        $team->id     = 12;
+        $team         = new Team();
+        $team->set_id( 12 );
         $info         = (object) [ 'captain' => 'Jane Smith' ];
         $standings    = (object) [ 'rank' => 3, 'points' => 24 ];
         $raw_matches  = [ (object) [ 'id' => 1001, 'home_team' => 12 ] ];
@@ -480,8 +480,8 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 
     public function test_teams_handler_resolves_user_edit_permissions_correctly(): void {
         $league       = $this->league();
-        $team         = $this->createStub( Team::class );
-        $team->id     = 12;
+        $team         = new Team();
+        $team->set_id( 12 );
         $secretary    = Player_Test_Factory::create( id: 42 );
         $team_details = new Team_Details_DTO( $team, match_secretary: $secretary );
 
@@ -620,8 +620,8 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 
     public function test_teams_handler_details_normalizes_iterable_matches(): void {
         $league       = $this->league();
-        $team         = $this->createStub( Team::class );
-        $team->id     = 12;
+        $team         = new Team();
+        $team->set_id( 12 );
         $team_details = new Team_Details_DTO( $team );
 
         $team_service = $this->createStub( Team_Service::class );

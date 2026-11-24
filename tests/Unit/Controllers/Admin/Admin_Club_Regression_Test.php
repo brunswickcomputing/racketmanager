@@ -9,6 +9,7 @@ use Racketmanager\Admin\Admin_Club;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Team\Team;
+use Racketmanager\Domain\Team\Team_Factory;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
@@ -149,10 +150,7 @@ final class Admin_Club_Regression_Test extends TestCase {
 	public function test_display_team_page_renders_club_team_form_using_injected_services(): void {
 		$_GET = array( 'edit' => '10', 'club_id' => '1' );
 
-		$team         = new Team();
-		$team->id     = 10;
-		$team->title  = 'Men 1st';
-		$team->roster = array();
+		$team = Team_Factory::from_array( array( 'id' => 10, 'title' => 'Men 1st', 'roster' => array() ) );
 
 		$this->team_service->method( 'get_team_by_id' )
 			->willReturn( $team );

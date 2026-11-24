@@ -38,6 +38,7 @@ use Racketmanager\Application\Event\Queries\Get_Event_Teams_Query;
 use Racketmanager\Application\Event\Queries\Get_Team_Order_Players_Handler;
 use Racketmanager\Application\Event\Queries\Get_Team_Order_Players_Query;
 use Racketmanager\Application\Ports\Query_Vars_Interface;
+use Racketmanager\Domain\Team\Team;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
@@ -413,7 +414,7 @@ class Event_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         $team  = $result->team;
 
         if ( $event && $team && ! empty( $team->matches ) && is_array( $team->matches ) ) {
-            $team->matches = ( $event->competition->is_player_entry ?? false )
+            $presented_matches = ( $event->competition->is_player_entry ?? false )
                 ? $tourn_presenter->present_match_cards( $team->matches, null, null, '', false, $tourn_presenter->is_tournament_competition( $event->competition ) )
                 : $tourn_presenter->present_match_list(
                     $team->matches,
@@ -423,6 +424,12 @@ class Event_Shortcode_Adapter implements Shortcode_Adapter_Interface {
                         'show_header'  => false,
                     ]
                 );
+
+            if ( $team instanceof Team ) {
+                $team->set_matches( $presented_matches );
+            } else {
+                $team->matches = $presented_matches;
+            }
         }
 
         $team_rows = [];

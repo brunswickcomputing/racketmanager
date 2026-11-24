@@ -105,8 +105,8 @@ final class League_Team_Admin_Service_Test extends TestCase {
     }
 
     public function test_withdraw_teams_uses_team_title_in_message(): void {
-        $team        = $this->createMock( Team::class );
-        $team->title = 'Alpha 1';
+        $team        = new Team();
+        $team->set_title( 'Alpha 1' );
         $this->team_repository->method( 'find_by_id' )->willReturn( $team );
         $this->league_service->expects( self::once() )->method( 'withdraw_team' );
 

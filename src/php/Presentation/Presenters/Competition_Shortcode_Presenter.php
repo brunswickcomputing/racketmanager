@@ -786,7 +786,7 @@ readonly class Competition_Shortcode_Presenter {
 
         $team_links = [];
         foreach ( $competition_club->teams as $team ) {
-            $team_id                = $this->extract_team_id( $team );
+            $team_id                = self::extract_team_id( $team );
             $team_links[ $team_id ] = $this->build_competition_club_team_link_entry( $team, $comp_type, $season, $is_championship );
         }
 
@@ -1102,7 +1102,7 @@ readonly class Competition_Shortcode_Presenter {
 
         $team_links = [];
         foreach ( $event_club->teams as $team ) {
-            $team_id      = $this->extract_team_id( $team );
+            $team_id      = self::extract_team_id( $team );
             $team_name    = $this->extract_team_name( $team );
             $league_title = $this->extract_league_name_from_team( $team );
 
@@ -1161,7 +1161,7 @@ readonly class Competition_Shortcode_Presenter {
 
         $links = [];
         foreach ( $teams as $team ) {
-            $team_id           = $this->extract_team_id( $team );
+            $team_id           = self::extract_team_id( $team );
             $links[ $team_id ] = $this->build_event_team_link_entry( $team, $comp_type, $event_name, $season, $is_box );
         }
 
@@ -1253,18 +1253,20 @@ readonly class Competition_Shortcode_Presenter {
     }
 
     /**
-     * Extracts a team ID from an object or array.
+     * Extracts a team ID from an object or array, preferring team_id before falling back to id.
      *
-     * @param mixed $team Team data containing an ID property or array key.
+     * @param mixed $team Team data containing team_id or id property or array key.
      *
      * @return int Team ID, or 0 when no ID is available.
      */
-    private function extract_team_id( mixed $team ): int {
+    public static function extract_team_id( mixed $team ): int {
         if ( is_object( $team ) ) {
-            return $team->id ?? 0;
+            $id = ( isset( $team->team_id ) && '' !== $team->team_id ) ? $team->team_id : ( $team->id ?? 0 );
+            return is_numeric( $id ) ? (int) $id : 0;
         }
         if ( is_array( $team ) ) {
-            return (int) ( $team['id'] ?? 0 );
+            $id = ( isset( $team['team_id'] ) && '' !== $team['team_id'] ) ? $team['team_id'] : ( $team['id'] ?? 0 );
+            return is_numeric( $id ) ? (int) $id : 0;
         }
 
         return 0;
@@ -1315,14 +1317,7 @@ readonly class Competition_Shortcode_Presenter {
      * @return int Team ID, or 0 when no ID is available.
      */
     private function extract_competition_team_id( mixed $team ): int {
-        if ( is_object( $team ) ) {
-            return $team->team_id ?? ( $team->id ?? 0 );
-        }
-        if ( is_array( $team ) ) {
-            return (int) ( $team['team_id'] ?? ( $team['id'] ?? 0 ) );
-        }
-
-        return 0;
+        return self::extract_team_id( $team );
     }
 
     /**

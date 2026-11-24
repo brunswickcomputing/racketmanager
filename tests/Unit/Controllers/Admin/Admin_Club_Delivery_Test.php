@@ -89,13 +89,15 @@ final class Admin_Club_Delivery_Test extends TestCase {
         );
         $_POST                     = array();
 
-        $player = Player_Test_Factory::create_sparse( array(
-            'id'           => 10,
-            'display_name' => 'John Doe',
-            'firstname'    => 'John',
-            'surname'      => 'Doe',
-            'wtn'          => '10.5',
-        ) );
+        $player = Player_Test_Factory::create_sparse(
+            array(
+                'id'           => 10,
+                'display_name' => 'John Doe',
+                'firstname'    => 'John',
+                'surname'      => 'Doe',
+                'wtn'          => '10.5',
+            )
+        );
 
         $club = Club_Test_Factory::create( id: 2, name: 'Test Club' );
 
@@ -118,10 +120,12 @@ final class Admin_Club_Delivery_Test extends TestCase {
             ->method( 'render' )
             ->with(
                 'admin/players/show-player',
-                self::callback( function( $vm ) use ( &$captured_vm ): bool {
-                    $captured_vm = $vm;
-                    return $vm instanceof Player_Page_View_Model;
-                } )
+                self::callback(
+                    function ( $vm ) use ( &$captured_vm ): bool {
+                        $captured_vm = $vm;
+                        return $vm instanceof Player_Page_View_Model;
+                    }
+                )
             );
 
         $this->screen->handle_display( 'player' );

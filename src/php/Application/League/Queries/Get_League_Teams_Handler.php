@@ -10,6 +10,7 @@ use Racketmanager\Application\League\DTOs\League_View_State;
 use Racketmanager\Application\League\Ports\League_Query_Service_Interface;
 use Racketmanager\Application\League\Ports\League_Service_Interface;
 use Racketmanager\Application\Player\Ports\Player_Stats_Service_Interface;
+use Racketmanager\Domain\Team\Team;
 use Racketmanager\Util\Util;
 use Throwable;
 use function __;
@@ -180,12 +181,20 @@ readonly class Get_League_Teams_Handler {
 
         $info = $this->league_query_service->get_team_dtls( $league, $team->id );
         if ( is_object( $info ) ) {
-            $team->info = $info;
+            if ( $team instanceof Team ) {
+                $team->set_info( $info );
+            } else {
+                $team->info = $info;
+            }
         }
 
         $standings = $this->league_query_service->get_league_team( $league, $team->id );
         if ( is_object( $standings ) ) {
-            $team->standings = $standings;
+            if ( $team instanceof Team ) {
+                $team->set_standings( $standings );
+            } else {
+                $team->standings = $standings;
+            }
         }
 
         return ! empty( $team->standings->rank );
@@ -230,18 +239,28 @@ readonly class Get_League_Teams_Handler {
      * @return void
      */
     private function populate_team_players( object $league, object $team ): void {
-        $team->players = $this->league_query_service->get_players(
+        $players = $this->league_query_service->get_players(
             $league,
             [
                 'team' => $team->id,
             ]
         );
-        $team->players = $this->player_stats_service->populate_players_stats(
-            $team->players,
-            $league,
-            $league->current_season['name'] ?? null,
-            'league'
-        );
+        if ( is_array( $players ) ) {
+            $players = $this->player_stats_service->populate_players_stats(
+                $players,
+                $league,
+                $league->current_season['name'] ?? null,
+                'league'
+            );
+        }
+
+        if ( $team instanceof Team ) {
+            if ( is_array( $players ) ) {
+                $team->set_players( $players );
+            }
+        } else {
+            $team->players = $players;
+        }
     }
 
     /**
@@ -289,7 +308,11 @@ readonly class Get_League_Teams_Handler {
             foreach ( $teams as $team ) {
                 $info = $this->league_query_service->get_team_dtls( $league, $team->id );
                 if ( is_object( $info ) ) {
-                    $team->info = $info;
+                    if ( $team instanceof Team ) {
+                        $team->set_info( $info );
+                    } else {
+                        $team->info = $info;
+                    }
                 }
                 $league_teams[] = $team;
             }

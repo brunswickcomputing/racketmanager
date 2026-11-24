@@ -350,8 +350,12 @@ class Team_Service implements Fixture_Team_Resolver_Interface, Team_Service_Inte
             /* translators: %1$s: type (Winner/Loser), %2$s: round name, %3$s: match number */
             $team_name = sprintf( __( '%1$s %2$s %3$s', 'racketmanager' ), $type, $round_name, $match_num );
         }
-        $new_team           = Team_Factory::from_array( array( 'title' => $team_name ) );
-        $new_team->team_ref = $team_ref;
+        $new_team = Team_Factory::from_array(
+            array(
+                'title'    => $team_name,
+                'team_ref' => $team_ref,
+            )
+        );
         return new Team_Details_DTO( $new_team, null, null );
     }
 

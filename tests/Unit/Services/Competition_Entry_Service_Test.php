@@ -233,7 +233,7 @@ class Competition_Entry_Service_Test extends TestCase {
     private function create_mock_team( int $id, string $title ): Team {
         $team = new Team();
         $team->set_id( $id );
-        $team->title = $title;
+        $team->set_title( $title );
         return $team;
     }
 

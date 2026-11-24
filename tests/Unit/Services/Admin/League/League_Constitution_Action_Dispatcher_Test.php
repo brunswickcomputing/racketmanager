@@ -368,8 +368,8 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             )
             ->willReturn( 1 );
 
-        $team_entity          = new Team();
-        $team_entity->club_id = 7;
+        $team_entity = new Team();
+        $team_entity->set_club_id( 7 );
         $team_repository      = $this->createMock( Team_Repository_Interface::class );
         $team_repository->expects( self::once() )->method( 'find_by_id' )->with( '34' )->willReturn( $team_entity );
 
@@ -427,8 +427,8 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
         $league_repository = $this->createStub( League_Repository_Interface::class );
         $league_repository->method( 'find_by_id' )->willReturn( $league );
 
-        $known_team          = new Team();
-        $known_team->club_id = 7;
+        $known_team = new Team();
+        $known_team->set_club_id( 7 );
         $team_repository     = $this->createStub( Team_Repository_Interface::class );
         $team_repository->method( 'find_by_id' )->willReturnCallback( static fn( $id ) => '34' === $id ? $known_team : null );
 

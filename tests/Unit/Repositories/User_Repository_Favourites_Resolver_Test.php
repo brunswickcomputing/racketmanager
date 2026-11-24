@@ -182,7 +182,7 @@ final class User_Repository_Favourites_Resolver_Test extends TestCase {
         $this->set_favourites( 'team', [ 12 ] );
 
         $team        = new Team();
-        $team->title = 'Leigh A';
+        $team->set_title( 'Leigh A' );
 
         $team_repository = $this->createMock( Team_Repository_Interface::class );
         $team_repository->expects( $this->once() )->method( 'find_by_id' )->with( 12 )->willReturn( $team );
@@ -224,7 +224,7 @@ final class User_Repository_Favourites_Resolver_Test extends TestCase {
         $club       = new Club();
         $club->name = 'Leigh';
         $team        = new Team();
-        $team->title = 'Leigh A';
+        $team->set_title( 'Leigh A' );
 
         $league_repository = $this->createStub( League_Repository_Interface::class );
         $league_repository->method( 'find_by_id' )->willReturn( League_Test_Factory::from_object( (object) [ 'id' => 9, 'title' => 'Division 1' ] ) );

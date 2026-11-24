@@ -12,14 +12,14 @@ use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
+use Racketmanager\Domain\Team\Team_Factory;
 use Racketmanager\Domain\Tournament\Tournament;
 use stdClass;
 
 require_once __DIR__ . '/../../../wp-stubs.php';
 
 #[AllowMockObjectsWithoutExpectations]
-final
-class Tournament_Team_Admin_Controller_Test extends TestCase {
+final class Tournament_Team_Admin_Controller_Test extends TestCase {
 
     private $tournament_service;
     private $league_service;
@@ -61,15 +61,14 @@ class Tournament_Team_Admin_Controller_Test extends TestCase {
             'tournament' => '456',
         ];
 
-        $tournament = unserialize( sprintf( 'O:%d:"Racketmanager\Domain\Tournament\Tournament":0:{}', strlen( 'Racketmanager\Domain\Tournament\Tournament' ) ) );
+        $tournament = new Tournament();
         $this->tournament_service->expects( self::once() )->method( 'get_tournament' )->with( 456 )->willReturn( $tournament );
 
         $team_obj = new stdClass();
         $team_obj->id = 123;
         $team_obj->title = 'Test Team';
-        $team_obj->roster = [];
         $team_obj->team_type = 'C';
-        $team = \Racketmanager\Domain\Team\Team::from_object( $team_obj );
+        $team = Team_Factory::from_object( $team_obj );
 
         $this->team_service->expects( self::once() )->method( 'get_team_by_id' )->with( 123 )->willReturn( $team );
         $this->club_service->method( 'get_clubs' )->willReturn( [] );
@@ -93,9 +92,8 @@ class Tournament_Team_Admin_Controller_Test extends TestCase {
         $team_obj            = new stdClass();
         $team_obj->id        = 123;
         $team_obj->title     = 'Test Team';
-        $team_obj->roster    = [];
         $team_obj->team_type = 'C';
-        $team                = \Racketmanager\Domain\Team\Team::from_object( $team_obj );
+        $team                = Team_Factory::from_object( $team_obj );
 
         $this->league_query_service->expects( self::once() )->method( 'get_team_dtls' )->with( $league, 123 )->willReturn( $team );
         $this->team_service->expects( self::never() )->method( 'get_team_by_id' );
@@ -105,5 +103,43 @@ class Tournament_Team_Admin_Controller_Test extends TestCase {
 
         self::assertArrayHasKey( 'view_model', $result );
         self::assertSame( $team, $result['view_model']->team );
+    }
+
+    public function test_handle_stdclass_passes_through_untouched(): void {
+        $competition                  = new stdClass();
+        $competition->is_player_entry = false;
+        $event                        = new \Racketmanager\Domain\Competition\Event();
+        $event->set_competition( $competition );
+        $league                       = $this->createStub( \Racketmanager\Domain\Competition\League::class );
+        $league->event                = $event;
+
+        $this->league_service->method( 'get_league' )->willReturn( $league );
+
+        $team            = new stdClass();
+        $team->id        = 123;
+        $team->title     = 'Legacy League Team';
+        $team->team_type = 'C';
+
+        $this->league_query_service->expects( self::once() )->method( 'get_team_dtls' )->with( $league, 123 )->willReturn( $team );
+        $this->club_service->method( 'get_clubs' )->willReturn( [] );
+
+        $result = $this->controller->handle( [ 'edit' => '123', 'league_id' => '7' ] );
+
+        self::assertArrayHasKey( 'view_model', $result );
+        self::assertSame( $team, $result['view_model']->team );
+        self::assertFalse( property_exists( $result['view_model']->team, 'roster' ) );
+    }
+
+    public function test_handle_domain_team_passes_through_untouched(): void {
+        $team = Team_Factory::from_array( [ 'id' => 123, 'title' => 'Domain Team' ] );
+
+        $this->team_service->expects( self::once() )->method( 'get_team_by_id' )->with( 123 )->willReturn( $team );
+        $this->club_service->method( 'get_clubs' )->willReturn( [] );
+
+        $result = $this->controller->handle( [ 'edit' => '123' ] );
+
+        self::assertArrayHasKey( 'view_model', $result );
+        self::assertSame( $team, $result['view_model']->team );
+        self::assertFalse( property_exists( $result['view_model']->team, 'roster' ) );
     }
 }

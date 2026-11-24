@@ -8,17 +8,18 @@
 namespace Racketmanager;
 
 use BackedEnum;
+use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 
 /** @var object $event */
-$event        = $event ?? $vars['event'] ?? $vm->event ?? null;
+$event = $event ?? $vars['event'] ?? $vm->event ?? null;
 if ( ! $event ) {
     return;
 }
-$event_club   = $event_club ?? $vars['event_club'] ?? $vm->event_club ?? null;
-$club_links   = $club_links ?? $vars['club_links'] ?? $vm->club_links ?? array();
-$club_url     = $club_url ?? $vars['club_url'] ?? $vm->club_url ?? '';
-$team_links   = $team_links ?? $vars['team_links'] ?? $vm->team_links ?? array();
-$player_links = $player_links ?? $vars['player_links'] ?? $vm->player_links ?? array();
+$event_club       = $event_club ?? $vars['event_club'] ?? $vm->event_club ?? null;
+$club_links       = $club_links ?? $vars['club_links'] ?? $vm->club_links ?? array();
+$club_url         = $club_url ?? $vars['club_url'] ?? $vm->club_url ?? '';
+$team_links       = $team_links ?? $vars['team_links'] ?? $vm->team_links ?? array();
+$player_links     = $player_links ?? $vars['player_links'] ?? $vm->player_links ?? array();
 $competition_type = $event->competition->type instanceof BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
 if ( empty( $event_club ) ) {
     ?>
@@ -182,7 +183,7 @@ if ( empty( $event_club ) ) {
                             </div>
                             <?php
                             foreach ( $event_club->teams as $team ) {
-                                $team_id     = is_object( $team ) ? $team->id ?? 0 : (int) ( $team['id'] ?? 0 );
+                                $team_id     = Competition_Shortcode_Presenter::extract_team_id( $team );
                                 $team_link   = $team_links[ $team_id ]['team_link'] ?? '';
                                 $league_link = $team_links[ $team_id ]['league_link'] ?? '';
                                 ?>

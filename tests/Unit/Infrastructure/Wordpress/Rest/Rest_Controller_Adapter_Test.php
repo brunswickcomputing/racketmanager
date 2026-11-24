@@ -326,9 +326,9 @@ final class Rest_Controller_Adapter_Test extends TestCase {
         $home_team = $this->createStub( Team::class );
         $home_team->method( 'get_name' )->willReturn( 'Park Tennis Club' );
 
-        $empty_title_team = $this->createStub( Team::class );
-        $empty_title_team->method( 'get_name' )->willReturn( '' );
-        $empty_title_team->title = '';
+        $empty_title_team = new Team();
+        $empty_title_team->set_title( '' );
+        $empty_title_team->set_title( '' );
 
         $lookup_count = 0;
         $team_repo = $this->createStub( Team_Repository_Interface::class );

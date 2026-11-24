@@ -540,9 +540,9 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'teams', $vm_all->template );
 
         // Single team lookup
-        $team_stub = $this->createStub( Team::class );
-        $team_stub->id = 20;
-        $team_stub->title = 'Team 1';
+        $team_stub = new Team();
+        $team_stub->set_id( 20 );
+        $team_stub->set_title( 'Team 1' );
 
         $team_service->method( 'get_team_by_id' )->willReturn( $team_stub );
 
@@ -566,9 +566,9 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->attach_test_competition( $event_stub );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
-        $team_stub        = $this->createStub( Team::class );
-        $team_stub->id    = 20;
-        $team_stub->title = 'Team 1';
+        $team_stub        = new Team();
+        $team_stub->set_id( 20 );
+        $team_stub->set_title( 'Team 1' );
         $team_service->method( 'get_team_by_id' )->willReturn( $team_stub );
 
         [ $low, $high, $stats ] = $this->build_stat_players( $event_stub, '2025', 'event' );

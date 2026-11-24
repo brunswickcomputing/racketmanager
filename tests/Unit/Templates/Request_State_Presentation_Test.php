@@ -175,10 +175,10 @@ class Request_State_Presentation_Test extends TestCase {
         $GLOBALS['wp_stubs_is_user_logged_in'] = $logged_in;
         $GLOBALS['wp_stubs_current_user_can'] = $admin;
         $GLOBALS['wp_stubs_get_current_user_id'] = 41;
-        $team = $this->createStub( Team::class );
-        $team->id = 12;
-        $team->method( 'get_id' )->willReturn( 12 );
-        $team->method( 'get_name' )->willReturn( 'Westcliff 1' );
+        $team = new Team();
+        $team->set_id( 12 );
+        $team->set_id( 12 );
+        $team->set_title( 'Westcliff 1' );
         $secretary = null;
         if ( null !== $secretary_id ) {
             $secretary = Player_Test_Factory::create( id: $secretary_id );

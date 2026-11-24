@@ -407,9 +407,8 @@ class Rest_Resources_Test extends TestCase {
         $away_team = $this->createStub( Team::class );
         $away_team->method( 'get_name' )->willReturn( 'Active Team 6' );
 
-        $empty_title_team = $this->createStub( Team::class );
-        $empty_title_team->method( 'get_name' )->willReturn( '' );
-        $empty_title_team->title = '';
+        $empty_title_team = new Team();
+        $empty_title_team->set_title( '' );
 
         $team_repo = $this->createStub( Team_Repository_Interface::class );
         $team_repo->method( 'find_by_id' )->willReturnCallback( function( int $id ) use ( $home_team, $away_team, $empty_title_team ) {

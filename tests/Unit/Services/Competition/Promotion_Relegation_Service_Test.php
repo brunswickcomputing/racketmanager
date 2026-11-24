@@ -38,8 +38,8 @@ final class Promotion_Relegation_Service_Test extends TestCase {
 	}
 
 	private function team_entity( int $club_id ): Team {
-		$team          = $this->createStub( Team::class );
-		$team->club_id = $club_id;
+		$team = new Team();
+		$team->set_club_id( $club_id );
 		return $team;
 	}
 
@@ -67,8 +67,8 @@ final class Promotion_Relegation_Service_Test extends TestCase {
 					if ( array_key_exists( (int) $id, $teams_by_id ) ) {
 						return $teams_by_id[ (int) $id ];
 					}
-					$team          = new Team();
-					$team->club_id = 7;
+					$team = new Team();
+					$team->set_club_id( 7 );
 					return $team;
 				}
 			);
@@ -150,8 +150,8 @@ final class Promotion_Relegation_Service_Test extends TestCase {
 		$league_team_repository = $this->createMock( League_Team_Repository_Interface::class );
 		$league_team_repository->expects( $this->never() )->method( 'update_constitution' );
 
-		$known               = new Team();
-		$known->club_id      = 7;
+		$known = new Team();
+		$known->set_club_id( 7 );
 		$team_repository     = $this->createStub( Team_Repository_Interface::class );
 		$team_repository->method( 'find_by_id' )->willReturnCallback(
 			static fn( $id ) => 34 === (int) $id ? $known : null

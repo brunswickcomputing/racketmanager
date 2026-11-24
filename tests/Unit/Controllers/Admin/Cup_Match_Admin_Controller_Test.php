@@ -12,6 +12,7 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Team\Team;
+use Racketmanager\Domain\Team\Team_Factory;
 use Racketmanager\Domain\Tournament\Championship;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Fixture_Not_Found_Exception;
@@ -105,13 +106,8 @@ final class Cup_Match_Admin_Controller_Test extends TestCase {
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repo->expects( self::once() )->method( 'find_by_id' )->with( 50 )->willReturn( $match );
 
-        $home_team = new Team();
-        $home_team->id = 101;
-        $home_team->title = 'Home Club A';
-
-        $away_team = new Team();
-        $away_team->id = 102;
-        $away_team->title = 'Away Club B';
+        $home_team = Team_Factory::from_array( array( 'id' => 101, 'title' => 'Home Club A' ) );
+        $away_team = Team_Factory::from_array( array( 'id' => 102, 'title' => 'Away Club B' ) );
 
         $team_repo = $this->createMock( Team_Repository_Interface::class );
         $team_repo->expects( self::exactly( 2 ) )

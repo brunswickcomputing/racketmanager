@@ -9,9 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Controllers\Club_Team_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Team_Page_View_Model;
 use Racketmanager\Domain\Competition\League;
-use Racketmanager\Domain\Team\Team;
-use Racketmanager\Domain\Tournament\Tournament;
-use Racketmanager\Exceptions\League_Not_Found_Exception;
+use Racketmanager\Domain\Team\Team_Factory;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
@@ -122,10 +120,7 @@ final class Club_Team_Admin_Controller_Test extends TestCase {
     }
 
     public function test_club_team_success_returns_view_model(): void {
-        $team = $this->createStub( Team::class );
-        $team->id = 5;
-        $team->title = 'Team 1';
-        $team->club_id = 1;
+        $team = Team_Factory::from_array( array( 'id' => 5, 'title' => 'Team 1', 'club_id' => 1 ) );
         $this->team_service->expects( self::once() )
             ->method( 'get_team_by_id' )
             ->with( 5 )
@@ -142,6 +137,7 @@ final class Club_Team_Admin_Controller_Test extends TestCase {
         self::assertSame( $team, $result['view_model']->team );
         self::assertSame( 1, $result['view_model']->club_id );
         self::assertStringContainsString( 'team', $result['view_model']->file );
+        self::assertFalse( property_exists( $result['view_model']->team, 'roster' ) );
     }
 
     public function test_league_team_success_returns_view_model(): void {
@@ -168,5 +164,6 @@ final class Club_Team_Admin_Controller_Test extends TestCase {
         self::assertSame( $team, $result['view_model']->team );
         self::assertSame( $league, $result['view_model']->league );
         self::assertSame( '2025', $result['view_model']->season );
+        self::assertFalse( property_exists( $result['view_model']->team, 'roster' ) );
     }
 }

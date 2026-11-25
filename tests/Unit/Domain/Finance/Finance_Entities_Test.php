@@ -3,10 +3,10 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Domain\Finance;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Application\Payment\Ports\Payment_Gateway_Interface;
-use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\DTO\Finance\Charge_Details_DTO;
 use Racketmanager\Domain\DTO\Finance\Invoice_Details_DTO;
 use Racketmanager\Domain\DTO\Finance\Invoice_Full_Details_DTO;
@@ -31,15 +31,13 @@ use Racketmanager\Services\Player_Service;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use stdClass;
 
-/**
- * @covers \Racketmanager\Domain\Finance\Invoice
- * @covers \Racketmanager\Domain\Finance\Charge
- * @covers \Racketmanager\Domain\Team\Team
- * @covers \Racketmanager\Domain\DTO\Finance\Invoice_Details_DTO
- * @covers \Racketmanager\Domain\DTO\Finance\Invoice_Full_Details_DTO
- * @covers \Racketmanager\Domain\DTO\Finance\Charge_Details_DTO
- * @covers \Racketmanager\Services\Finance_Service
- */
+#[CoversClass( Finance_Service::class )]
+#[CoversClass( Charge_Details_DTO::class )]
+#[CoversClass( Invoice_Full_Details_DTO::class )]
+#[CoversClass( Invoice_Details_DTO::class )]
+#[CoversClass( Team::class )]
+#[CoversClass( Charge::class )]
+#[CoversClass( Invoice::class )]
 final class Finance_Entities_Test extends TestCase {
 
     public function test_invoice_money_and_status_enum(): void {
@@ -286,7 +284,7 @@ final class Finance_Entities_Test extends TestCase {
     public function test_finance_service_workflow_with_money_and_status(): void {
         $plugin = $this->createStub( RacketManager::class );
         $plugin->method( 'get_options' )->willReturnCallback(
-            static fn( $key = null ) => 'billing' === $key ? [ 'billingCurrency' => 'EUR' ] : []
+            static fn( $key = null ) => ( 'billing' === $key ) ? [ 'billingCurrency' => 'EUR' ] : []
         );
 
         $charge_repo = $this->createStub( Charge_Repository_Interface::class );
@@ -353,7 +351,7 @@ final class Finance_Entities_Test extends TestCase {
     public function test_get_club_entry_fractional_event_fees(): void {
         $plugin = $this->createStub( RacketManager::class );
         $plugin->method( 'get_options' )->willReturnCallback(
-            static fn( $key = null ) => 'billing' === $key ? [ 'billingCurrency' => 'EUR' ] : []
+            static fn( $key = null ) => ( 'billing' === $key ) ? [ 'billingCurrency' => 'EUR' ] : []
         );
 
         $comp_svc = $this->createStub( Competition_Service::class );

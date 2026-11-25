@@ -448,9 +448,9 @@ class Team_List_Render_Regression_Test extends TestCase {
 
         $club = new class extends Club {
             public function __construct() {
-                $this->id        = 12;
-                $this->name      = 'Westcliff Hardcourt';
-                $this->shortcode = 'Westcliff';
+                $this->set_id( 12 );
+                $this->set_name( 'Westcliff Hardcourt' );
+                $this->set_shortcode( 'Westcliff' );
             }
             public function get_id(): int {
                 return 12;

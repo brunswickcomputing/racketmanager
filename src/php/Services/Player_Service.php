@@ -62,11 +62,26 @@ class Player_Service implements Player_Service_Interface {
     private ?Player_Details_Validator $player_details_validator = null;
 
     /**
-     * Constructor
+     * Initialise the player service dependencies.
      *
+     * Stores the plugin instance and required repositories, gateways, mailer, and
+     * optional player details validator used by player-related workflows.
+     *
+     * @param RacketManager|null                $plugin_instance Main plugin instance.
+     * @param Player_Repository                 $player_repository Player data repository.
+     * @param Player_Error_Repository_Interface $player_error_repository Player error repository.
+     * @param Club_Role_Repository_Interface    $club_role_repository Club role repository.
+     * @param Rating_Gateway_Interface          $wtn_api_client Rating gateway client.
+     * @param League_Team_Repository            $league_team_repository League team repository.
+     * @param Club_Repository                   $club_repository Club repository.
+     * @param Registration_Repository_Interface $registration_repository Registration repository.
+     * @param Mailer_Interface                  $mailer Mailer service.
+     * @param Player_Details_Validator|null     $player_details_validator Optional player details validator.
+     *
+     * @return void
      */
     public function __construct(
-        $plugin_instance,
+        ?RacketManager $plugin_instance,
         Player_Repository $player_repository,
         Player_Error_Repository_Interface $player_error_repository,
         Club_Role_Repository_Interface $club_role_repository,
@@ -220,7 +235,7 @@ class Player_Service implements Player_Service_Interface {
     public function delete_player( $player_id ): bool {
         $player = $this->player_repository->find( $player_id );
         if ( ! $player ) {
-            throw new Player_Not_Found_Exception( sprintf( "Player ID %s not found.", 'racketmanager' ), $player_id );
+            throw new Player_Not_Found_Exception( sprintf( 'Player ID %s not found.', 'racketmanager' ), $player_id );
         }
         wp_cache_flush_group( 'players' );
         if ( $this->player_repository->has_club_associations( $player_id ) ) {
@@ -235,13 +250,12 @@ class Player_Service implements Player_Service_Interface {
 
             return true;
         }
-
     }
 
     /**
      * Save opt-in for player
      *
-     * @param int $player_id
+     * @param int    $player_id
      * @param string $opt_in
      *
      * @return bool
@@ -253,7 +267,7 @@ class Player_Service implements Player_Service_Interface {
     /**
      * Amend player details
      *
-     * @param int|null $player_id
+     * @param int|null   $player_id
      * @param array|null $request
      *
      * @return Player|WP_Error
@@ -272,7 +286,7 @@ class Player_Service implements Player_Service_Interface {
             return $this->update_player( $player->id, $player );
         } catch ( Player_Not_Found_Exception $e ) {
             throw new Player_Not_Found_Exception( $e->getMessage() );
-        } catch ( Player_Not_Updated_Exception|Exception $e ) {
+        } catch ( Player_Not_Updated_Exception | Exception $e ) {
             throw new Player_Not_Updated_Exception( $e->getMessage() );
         }
     }
@@ -280,7 +294,7 @@ class Player_Service implements Player_Service_Interface {
     /**
      * Update player details
      *
-     * @param int $player_id
+     * @param int    $player_id
      * @param object $updated_player
      *
      * @return Player|bool
@@ -354,8 +368,8 @@ class Player_Service implements Player_Service_Interface {
     /**
      * Handle tournament entry personal information
      *
-     * @param int $player_id
-     * @param int|null $btm
+     * @param int         $player_id
+     * @param int|null    $btm
      * @param string|null $contactno
      * @param string|null $contactemail
      *
@@ -390,7 +404,7 @@ class Player_Service implements Player_Service_Interface {
         if ( intval( $player->btm ) !== $btm ) {
             // implement this later
             // if ( empty( $player->btm ) ) {
-            //     $this->check_results_warning( 'btm' );
+            // $this->check_results_warning( 'btm' );
             // }
             $player->set_btm( (string) $btm );
             $updates['btm'] = true;
@@ -405,7 +419,7 @@ class Player_Service implements Player_Service_Interface {
     /**
      * Update player contact details
      *
-     * @param int $player_id
+     * @param int    $player_id
      * @param string $contact_no
      * @param string $contact_email
      *
@@ -489,11 +503,13 @@ class Player_Service implements Player_Service_Interface {
             // Active players only; restrict to club if provided.
             $player_ids = $this->player_repository->find_player_ids_by_club( $club_id );
         } else {
-            // Sync all players who have a BTM number (our proxy for a "player" user)
-            $player_ids = get_users( array(
-                'meta_key' => Player_Repository::META_KEY_BTM,
-                'fields'   => 'ID',
-            ) );
+            // Sync all players who have a BTM number (our proxy for a "player" user).
+            $player_ids = get_users(
+                array(
+                    'meta_key' => Player_Repository::META_KEY_BTM,
+                    'fields'   => 'ID',
+                )
+            );
         }
         if ( $player_ids ) {
             foreach ( $player_ids as $player ) {
@@ -527,9 +543,9 @@ class Player_Service implements Player_Service_Interface {
             try {
                 $this->get_latest_wtn( $player );
             } catch ( WTN_Error_Exception ) {
-                ++ $error_count;
+                ++$error_count;
             } catch ( LTA_Tennis_Number_Not_Found_Exception ) {
-                ++ $btm_missing;
+                ++$btm_missing;
             }
         }
         if ( $club_id ) {
@@ -546,13 +562,14 @@ class Player_Service implements Player_Service_Interface {
         }
         $email_to      = $this->racketmanager->admin_email;
         $email_message = $this->racketmanager->shortcodes->load_template(
-            'wtn-report', array(
-            'error_count'   => $error_count,
-            'club'          => $club,
-            'player_count'  => count( $players ),
-            'email_subject' => $email_subject,
-            'organisation'  => $organisation_name,
-        ),
+            'wtn-report',
+            array(
+                'error_count'   => $error_count,
+                'club'          => $club,
+                'player_count'  => count( $players ),
+                'email_subject' => $email_subject,
+                'organisation'  => $organisation_name,
+            ),
             'email',
         );
         $this->mailer->send( $email_to, $email_subject, $email_message, $headers );
@@ -641,7 +658,12 @@ class Player_Service implements Player_Service_Interface {
      * @return Player
      */
     public function get_match_secretary_details( int $club_id ): Player {
-        $roles             = $this->club_role_repository->search( array( 'club' => $club_id, 'role' => Club_Role::MATCH_SECRETARY->value ) );
+        $roles             = $this->club_role_repository->search(
+            array(
+                'club' => $club_id,
+                'role' => Club_Role::MATCH_SECRETARY->value,
+            )
+        );
         $secretary_user_id = null;
         foreach ( $roles as $role ) {
             if ( $role->get_user_id() ) {
@@ -664,8 +686,8 @@ class Player_Service implements Player_Service_Interface {
     /**
      * Finds all unique Club entities where the player has any association (registered, captain, or secretary).
      *
-     * @param int $player_id
-     * @param string $type
+     * @param int      $player_id
+     * @param string   $type
      * @param int|null $club_id
      *
      * @return Club[] Array of Club domain objects.
@@ -709,20 +731,19 @@ class Player_Service implements Player_Service_Interface {
     /**
      * Retrieves a unique list of active player names for a competition/season.
      *
-     * @param int|null $competition_id
+     * @param int|null    $competition_id
      * @param string|null $season
      *
      * @return array
      */
-    public function get_players_for_competition( ?int $competition_id, ?string $season): array {
+    public function get_players_for_competition( ?int $competition_id, ?string $season ): array {
         return $this->player_repository->find_active_players_by_competition_and_season(
             $competition_id,
-            sanitize_text_field($season)
+            sanitize_text_field( $season )
         );
     }
 
     public function get_players_for_team( ?int $team_id ): array {
         return $this->player_repository->find_by_team( $team_id );
     }
-
 }

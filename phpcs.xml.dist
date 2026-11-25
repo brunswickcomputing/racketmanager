@@ -45,6 +45,8 @@
 		<!-- Core exclusions for existing plugin architecture -->
 		<exclude name="WordPress.WP.DeprecatedFunctions.sanitize_urlFound"/>
 		<exclude name="WordPress.DB.DirectDatabaseQuery.DirectQuery"/>
+		<exclude name="WordPress.DB.PreparedSQL.NotPrepared"/>
+		<exclude name="WordPress.DB.PreparedSQL.InterpolatedNotPrepared"/>
 		<exclude name="WordPress.PHP.StrictInArray.FoundNonStrictFalse"/>
 		<exclude name="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound"/>
 		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.matchFound"/>

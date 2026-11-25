@@ -7,10 +7,11 @@ use Exception;
 use Racketmanager\Application\Club\Ports\Club_Service_Interface;
 use Racketmanager\Application\Club\Ports\Club_Validator_Factory_Interface;
 use Racketmanager\Application\Player\Ports\Player_Service_Interface;
+use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
-use RuntimeException;
+use Racketmanager\Exceptions\Invalid_Factory_Exception;
 use stdClass;
 
 /**
@@ -37,7 +38,7 @@ final readonly class Club_Handler {
      * @param Add_Club_Admin_Command $command add club command handler.
      *
      * @return Action_Result_DTO
-     * @throws RuntimeException If club validator factory is missing.
+     * @throws Invalid_Factory_Exception If club validator factory is missing.
      */
     public function handle_add_club( Add_Club_Admin_Command $command ): Action_Result_DTO {
         $club_input                                = new stdClass();
@@ -56,7 +57,7 @@ final readonly class Club_Handler {
         $club_input->address                       = $command->address;
 
         if ( null === $this->club_validator_factory ) {
-            throw new RuntimeException( 'Club validator factory is required to validate club.' );
+            throw new Invalid_Factory_Exception( 'Club validator factory is required to validate club.' );
         }
         $validator = $this->club_validator_factory->create();
         $validator = $validator->name( $club_input->name );
@@ -99,10 +100,40 @@ final readonly class Club_Handler {
      * @param Edit_Club_Admin_Command $command edit club command handler.
      *
      * @return Action_Result_DTO
-     * @throws RuntimeException If club validator factory is missing.
+     * @throws Invalid_Factory_Exception If club validator factory is missing.
      */
     public function handle_edit_club( Edit_Club_Admin_Command $command ): Action_Result_DTO {
-        $club_id = $command->club_id;
+        $club = $this->fetch_existing_club( $command->club_id );
+        if ( $club instanceof Action_Result_DTO ) {
+            return $club;
+        }
+
+        $query_params     = array(
+            'view'    => 'club',
+            'club_id' => $command->club_id,
+        );
+        $club_updated     = $this->build_updated_club( $club, $command );
+        $validation_error = $this->validate_club( $club_updated );
+
+        if ( null !== $validation_error ) {
+            return new Action_Result_DTO(
+                message: $validation_error,
+                message_type: Admin_Message_Type::ERROR,
+                query_params: $query_params,
+            );
+        }
+
+        return $this->execute_update( $command->club_id, $club_updated, $query_params );
+    }
+
+    /**
+     * Fetch existing club entity or return error result DTO.
+     *
+     * @param int|null $club_id Club ID.
+     *
+     * @return Club|Action_Result_DTO Club entity on success, or Action_Result_DTO on error.
+     */
+    private function fetch_existing_club( ?int $club_id ): Club|Action_Result_DTO {
         if ( ! $club_id ) {
             return new Action_Result_DTO(
                 message: __( 'Club not found', 'racketmanager' ),
@@ -111,87 +142,97 @@ final readonly class Club_Handler {
         }
 
         try {
-            $club = $this->club_service->get_club( $club_id );
+            return $this->club_service->get_club( $club_id );
         } catch ( Club_Not_Found_Exception $e ) {
             return new Action_Result_DTO(
                 message: $e->getMessage(),
                 message_type: Admin_Message_Type::ERROR,
             );
         }
+    }
 
-        $club_updated                                = clone $club;
-        $club_updated->name                          = $command->name;
-        $club_updated->type                          = $command->type;
-        $club_updated->shortcode                     = $command->shortcode;
-        $club_updated->match_secretary               = new stdClass();
-        $club_updated->match_secretary->id           = $command->match_secretary_id;
-        $club_updated->match_secretary->display_name = $command->match_secretary_name;
-        $club_updated->match_secretary->contactno    = $command->match_secretary_contactno;
-        $club_updated->match_secretary->email        = $command->match_secretary_email;
-        $club_updated->contactno                     = $command->contactno;
-        $club_updated->website                       = $command->website;
-        $club_updated->founded                       = $command->founded;
-        $club_updated->facilities                    = $command->facilities;
-        $club_updated->address                       = $command->address;
+    /**
+     * Build updated club domain entity from command data.
+     *
+     * @param object                  $club    Current club entity.
+     * @param Edit_Club_Admin_Command $command Command containing updated values.
+     *
+     * @return object Cloned and updated club entity.
+     */
+    private function build_updated_club( object $club, Edit_Club_Admin_Command $command ): object {
+        $match_secretary               = new stdClass();
+        $match_secretary->id           = $command->match_secretary_id;
+        $match_secretary->display_name = $command->match_secretary_name;
+        $match_secretary->contactno    = $command->match_secretary_contactno;
+        $match_secretary->email        = $command->match_secretary_email;
 
+        $club_updated = clone $club;
+        $club_updated->set_name( $command->name );
+        $club_updated->set_type( $command->type );
+        $club_updated->set_shortcode( $command->shortcode );
+        $club_updated->set_match_secretary( $match_secretary );
+        $club_updated->set_contact_no( $command->contactno );
+        $club_updated->set_website( $command->website );
+        $club_updated->set_founded( $command->founded );
+        $club_updated->set_facilities( $command->facilities );
+        $club_updated->set_address( $command->address );
+
+        return $club_updated;
+    }
+
+    /**
+     * Validate updated club using the validator factory.
+     *
+     * @param object $club Club entity to validate.
+     *
+     * @return string|null First error message or null if valid.
+     * @throws Invalid_Factory_Exception If club validator factory is missing.
+     */
+    private function validate_club( object $club ): ?string {
         if ( null === $this->club_validator_factory ) {
-            throw new RuntimeException( 'Club validator factory is required to validate club.' );
-        }
-        $validator = $this->club_validator_factory->create();
-        $validator = $validator->name( $club_updated->name );
-        $validator = $validator->short_code( $club_updated->shortcode );
-        $validator = $validator->type( $club_updated->type );
-        $validator = $validator->address( $club_updated->address );
-        $validator = $validator->match_secretary( $club_updated->match_secretary->id );
-        $validator = $validator->telephone( $club_updated->match_secretary->contactno );
-        $validator = $validator->email( $club_updated->match_secretary->email, $club_updated->match_secretary->id );
-
-        if ( $validator->has_errors() ) {
-            $error_message = $validator->get_first_error_message() ?? __( 'Unable to update club', 'racketmanager' );
-            return new Action_Result_DTO(
-                message: $error_message,
-                message_type: Admin_Message_Type::ERROR,
-                query_params: array(
-                    'view'    => 'club',
-                    'club_id' => $club_id,
-                ),
-            );
+            throw new Invalid_Factory_Exception( 'Club validator factory is required to validate club.' );
         }
 
+        $validator = $this->club_validator_factory->create()
+                                                  ->name( $club->name )
+                                                  ->short_code( $club->shortcode )
+                                                  ->type( $club->type )
+                                                  ->address( $club->address )
+                                                  ->match_secretary( $club->match_secretary->id )
+                                                  ->telephone( $club->match_secretary->contactno )
+                                                  ->email( $club->match_secretary->email, $club->match_secretary->id );
+
+        return $validator->has_errors()
+            ? ( $validator->get_first_error_message() ?? __( 'Unable to update club', 'racketmanager' ) )
+            : null;
+    }
+
+    /**
+     * Execute club update via service.
+     *
+     * @param int                  $club_id      Club ID.
+     * @param object               $club_updated Updated club entity.
+     * @param array<string, mixed> $query_params Query parameters for redirection.
+     *
+     * @return Action_Result_DTO
+     */
+    private function execute_update( int $club_id, object $club_updated, array $query_params ): Action_Result_DTO {
         try {
             $response = $this->club_service->update_club( $club_id, $club_updated );
-            if ( $response ) {
-                $dto = new Action_Result_DTO(
-                    message: __( 'Club updated', 'racketmanager' ),
-                    message_type: Admin_Message_Type::SUCCESS,
-                    entity_id: $club_id,
-                    query_params: array(
-                        'view'    => 'club',
-                        'club_id' => $club_id,
-                    ),
-                );
-            } else {
-                $dto = new Action_Result_DTO(
-                    message: __( 'Club details unchanged', 'racketmanager' ),
-                    message_type: Admin_Message_Type::WARNING,
-                    entity_id: $club_id,
-                    query_params: array(
-                        'view'    => 'club',
-                        'club_id' => $club_id,
-                    ),
-                );
-            }
+
+            return new Action_Result_DTO(
+                message: $response ? __( 'Club updated', 'racketmanager' ) : __( 'Club details unchanged', 'racketmanager' ),
+                message_type: $response ? Admin_Message_Type::SUCCESS : Admin_Message_Type::WARNING,
+                entity_id: $club_id,
+                query_params: $query_params,
+            );
         } catch ( Exception $e ) {
-            $dto = new Action_Result_DTO(
+            return new Action_Result_DTO(
                 message: $e->getMessage(),
                 message_type: Admin_Message_Type::ERROR,
-                query_params: array(
-                    'view'    => 'club',
-                    'club_id' => $club_id,
-                ),
+                query_params: $query_params,
             );
         }
-        return $dto;
     }
 
     /**
@@ -232,11 +273,9 @@ final readonly class Club_Handler {
     /**
      * Schedule player ratings command handler.
      *
-     * @param Schedule_Global_Player_Ratings_Command $command schedule player ratings command handler.
-     *
      * @return Action_Result_DTO
      */
-    public function handle_schedule_player_ratings( Schedule_Global_Player_Ratings_Command $command ): Action_Result_DTO {
+    public function handle_schedule_player_ratings(): Action_Result_DTO {
         try {
             $result = $this->player_service->schedule_global_player_ratings();
             if ( is_wp_error( $result ) ) {

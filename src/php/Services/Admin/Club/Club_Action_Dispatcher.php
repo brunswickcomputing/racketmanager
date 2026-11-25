@@ -15,54 +15,65 @@ use Racketmanager\Application\Admin\Commands\Add_Club_Admin_Command;
 use Racketmanager\Application\Admin\Commands\Club_Handler;
 use Racketmanager\Application\Admin\Commands\Delete_Clubs_Command;
 use Racketmanager\Application\Admin\Commands\Edit_Club_Admin_Command;
-use Racketmanager\Application\Admin\Commands\Schedule_Global_Player_Ratings_Command;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Services\Admin\Admin_Command_Input as Input;
 use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
-use Racketmanager\Services\Club_Service;
-use Racketmanager\Services\Player_Service;
 
 /**
  * Handles club mutations for the club admin screen (add/edit club, delete clubs, schedule player ratings).
  */
-readonly final class Club_Action_Dispatcher {
+final readonly class Club_Action_Dispatcher {
 
+    /**
+     * Initialises the handler with required club and player services, action guard, and command handler.
+     *
+     * @param Action_Guard_Interface $action_guard Action guard dependency.
+     * @param Club_Handler           $commands Club command handler dependency.
+     *
+     * @return void
+     */
     public function __construct(
-        Club_Service $club_service,
-        Player_Service $player_service,
         private Action_Guard_Interface $action_guard,
         private Club_Handler $commands,
     ) {
     }
 
     /**
-     * @param array<string, mixed> $query Typically $_GET
-     * @param array<string, mixed> $post  Typically $_POST
+     * Handles club-related form actions based on query and post data.
+     *
+     * @param array $query Request query parameters.
+     * @param array $post Submitted post data containing the requested action.
+     *
+     * @return Action_Result_DTO Result of the handled action, or an empty result when no supported action is requested.
      */
     public function handle( array $query, array $post ): Action_Result_DTO {
         if ( isset( $post['addClub'] ) ) {
-            return $this->handle_add_club( $post );
+            $dto = $this->handle_add_club( $post );
         }
 
         if ( isset( $post['editClub'] ) ) {
-            return $this->handle_edit_club( $query, $post );
+            $dto = $this->handle_edit_club( $query, $post );
         }
 
         if ( isset( $post['doClubDel'] ) && isset( $post['action'] ) && 'delete' === $post['action'] ) {
-            return $this->handle_delete_clubs( $post );
+            $dto = $this->handle_delete_clubs( $post );
         }
 
         if ( isset( $post['doSchedulePlayerRatings'] ) ) {
-            return $this->handle_schedule_player_ratings();
+            $dto = $this->handle_schedule_player_ratings();
         }
 
-        return new Action_Result_DTO();
+        return $dto ?? new Action_Result_DTO();
     }
 
     /**
-     * @param array<string, mixed> $post
+     * Handles an add-club request by validating permissions, building the add-club command from submitted data, and returning the action result.
+     *
+     * @param array $post Submitted club data.
+     *
+     * @return Action_Result_DTO Result of the add-club action, including any validation or permission error message.
      */
     private function handle_add_club( array $post ): Action_Result_DTO {
         try {
@@ -100,8 +111,12 @@ readonly final class Club_Action_Dispatcher {
     }
 
     /**
-     * @param array<string, mixed> $query
-     * @param array<string, mixed> $post
+     * Handles an admin request to edit a club by validating permissions, building the edit command from request data, and delegating processing.
+     *
+     * @param array $query Query parameters containing fallback club identifiers.
+     * @param array $post Posted form data containing club details to update.
+     *
+     * @return Action_Result_DTO Result of the edit operation, including success or error message details.
      */
     private function handle_edit_club( array $query, array $post ): Action_Result_DTO {
         try {
@@ -142,7 +157,11 @@ readonly final class Club_Action_Dispatcher {
     }
 
     /**
-     * @param array<string, mixed> $post
+     * Handles a bulk club deletion request by validating the action, creating the delete command, and delegating execution.
+     *
+     * @param array $post Posted request data containing selected club identifiers.
+     *
+     * @return Action_Result_DTO Result of the delete operation or an error result when validation fails.
      */
     private function handle_delete_clubs( array $post ): Action_Result_DTO {
         try {
@@ -168,6 +187,11 @@ readonly final class Club_Action_Dispatcher {
         return $this->commands->handle_delete_clubs( $command );
     }
 
+    /**
+     * Handles scheduling player ratings after verifying the current request is authorised.
+     *
+     * @return Action_Result_DTO Result of the schedule player ratings action, including any authorization error message.
+     */
     private function handle_schedule_player_ratings(): Action_Result_DTO {
         try {
             $this->action_guard->assert_allowed( 'racketmanager_nonce', 'clubs-bulk', 'edit_teams' );
@@ -178,6 +202,6 @@ readonly final class Club_Action_Dispatcher {
             );
         }
 
-        return $this->commands->handle_schedule_player_ratings( new Schedule_Global_Player_Ratings_Command() );
+        return $this->commands->handle_schedule_player_ratings();
     }
 }

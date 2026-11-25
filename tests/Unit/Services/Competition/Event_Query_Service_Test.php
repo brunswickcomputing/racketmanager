@@ -262,8 +262,8 @@ class Event_Query_Service_Test extends TestCase {
             ->with( 93, $this->anything() )
             ->willReturn( [ $club_row ] );
 
-        $club = $this->createMock( Club::class );
-        $club->id = 133;
+        $club = new Club();
+        $club->set_id( 133 );
 
         $club_repository->expects( $this->once() )
             ->method( 'find_by_id' )

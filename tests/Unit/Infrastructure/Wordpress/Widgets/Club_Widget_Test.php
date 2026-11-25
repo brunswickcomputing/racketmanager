@@ -457,7 +457,7 @@ final class Club_Widget_Test extends TestCase {
 		$club->set_id( 32 );
 		$club->set_name( 'Null Website Club' );
 		$club->set_shortcode( 'nwc' );
-		$club->website = null;
+		$club->set_website( null );
 
 		$club_service = $this->createMock( Club_Service::class );
 		$club_service->expects( $this->once() )

@@ -30,6 +30,7 @@ use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
+use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
@@ -268,10 +269,11 @@ class Finance_Templates_Test extends TestCase {
     }
 
     public function test_club_invoice_handler_renders_list_with_billing_currency_and_site_date_format(): void {
-        $club = new Club();
-        $club->id = 10;
-        $club->name = 'Leigh LTC';
-        $club->shortcode = 'Leigh';
+        $club = Club_Test_Factory::create(
+            id: 10,
+            name: 'Leigh LTC',
+            shortcode: 'Leigh',
+        );
 
         $club_service = $this->createStub( \Racketmanager\Services\Club_Service::class );
         $club_service->method( 'get_club_by_shortcode' )->willReturn( $club );
@@ -333,10 +335,11 @@ class Finance_Templates_Test extends TestCase {
     }
 
     public function test_club_invoice_handler_presents_single_invoice_detail(): void {
-        $club = new Club();
-        $club->id = 10;
-        $club->name = 'Leigh LTC';
-        $club->shortcode = 'Leigh';
+        $club = Club_Test_Factory::create(
+            id: 10,
+            name: 'Leigh LTC',
+            shortcode: 'Leigh',
+        );
         $invoice = new Invoice();
         $invoice->set_id( 22 );
         $invoice->set_invoice_number( 2026022 );

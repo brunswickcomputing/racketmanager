@@ -28,6 +28,7 @@ use Racketmanager\Repositories\Interfaces\Tournament_Repository_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Player_Service;
+use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use stdClass;
 
 /**
@@ -329,9 +330,7 @@ final class Finance_Entities_Test extends TestCase {
         $charge->set_fee_competition( 30.0 );
         $charge->set_fee_event( 15.0 );
 
-        $club = new Club();
-        $club->id = 10;
-        $club->name = 'Westcliff Lawn';
+        $club = Club_Test_Factory::create( id: 10, name: 'Westcliff Lawn' );
 
         $event = new class() {
             public string $type = 'MD';
@@ -377,9 +376,7 @@ final class Finance_Entities_Test extends TestCase {
         $charge->set_fee_competition( 0.0 );
         $charge->set_fee_event( 0.10 );
 
-        $club       = new Club();
-        $club->id   = 10;
-        $club->name = 'Westcliff Lawn';
+        $club = Club_Test_Factory::create( id: 10, name: 'Westcliff Lawn' );
 
         $event = new class() {
             public string $type = 'MD';

@@ -7,6 +7,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Controllers\Clubs_Admin_Controller;
 use Racketmanager\Admin\View_Models\Clubs_Page_View_Model;
+use Racketmanager\Application\Admin\Commands\Club_Handler;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Services\Admin\Club\Club_Action_Dispatcher;
 use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
@@ -22,7 +23,6 @@ final class Clubs_Admin_Controller_Test extends TestCase {
     private Club_Service $club_service;
     private Player_Service $player_service;
     private Action_Guard_Interface $guard;
-    private Club_Action_Dispatcher $dispatcher;
     private Clubs_Admin_Controller $controller;
 
     protected function setUp(): void {
@@ -30,16 +30,14 @@ final class Clubs_Admin_Controller_Test extends TestCase {
         $this->player_service = $this->createMock( Player_Service::class );
         $this->guard          = $this->createMock( Action_Guard_Interface::class );
 
-        $this->dispatcher = new Club_Action_Dispatcher(
-            $this->club_service,
-            $this->player_service,
+        $dispatcher = new Club_Action_Dispatcher(
             $this->guard,
-            new \Racketmanager\Application\Admin\Commands\Club_Handler( $this->club_service, $this->player_service )
+            new Club_Handler( $this->club_service, $this->player_service )
         );
 
         $this->controller = new Clubs_Admin_Controller(
             $this->club_service,
-            $this->dispatcher,
+            $dispatcher,
             $this->guard
         );
     }

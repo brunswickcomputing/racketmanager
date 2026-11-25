@@ -177,8 +177,8 @@ final class Competition_Repository_Resolver_Hydration_Test extends TestCase {
 		];
 		$this->install_wpdb( $rows, 3 );
 
-		$club       = new Club();
-		$club->name = 'Leigh';
+		$club = new Club();
+		$club->set_name( 'Leigh' );
 
 		$club_repository = $this->createMock( Club_Repository_Interface::class );
 		$club_repository->expects( $this->once() )

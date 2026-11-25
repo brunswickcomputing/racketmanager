@@ -13,7 +13,6 @@ namespace Racketmanager\Repositories;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Club\Club_Factory;
 use Racketmanager\Domain\DTO\Club\Club_Competition_DTO;
-use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Team\Team_Factory;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Util\Util;
@@ -26,9 +25,14 @@ class Club_Repository implements Club_Repository_Interface {
     private wpdb $wpdb;
     private string $table_name;
 
+    /**
+     * Initialises the clubs repository with the global WordPress database instance.
+     *
+     * @return void
+     */
     public function __construct() {
         global $wpdb;
-        $this->wpdb = $wpdb;
+        $this->wpdb       = $wpdb;
         $this->table_name = $this->wpdb->prefix . 'racketmanager_clubs';
     }
 
@@ -42,7 +46,6 @@ class Club_Repository implements Club_Repository_Interface {
      */
     public function save( object $entity ): bool|int {
         /** @var Club $entity */
-        //`id`, `name`, `website`, `type`, `address`, `contactno`, `founded`, `facilities`, `shortcode`
         if ( $entity->get_id() === null ) {
             $inserted = $this->wpdb->insert(
                 $this->table_name,
@@ -57,14 +60,14 @@ class Club_Repository implements Club_Repository_Interface {
                     'shortcode'  => $entity->get_shortcode(),
                 ),
                 array(
-                    '%s', // Format for name (string)
-                    '%s', // Format for website (string)
-                    '%s', // Format for type (string)
-                    '%s', // Format for address (string)
-                    '%s', // Format for contactno (string)
-                    '%s', // Format for founded (string)
-                    '%s', // Format for facilities (string)
-                    '%s', // Format for shortcode (string)
+                    '%s', // Format for name (string).
+                    '%s', // Format for website (string).
+                    '%s', // Format for type (string).
+                    '%s', // Format for address (string).
+                    '%s', // Format for contactno (string).
+                    '%s', // Format for founded (string).
+                    '%s', // Format for facilities (string).
+                    '%s', // Format for shortcode (string).
                 )
             );
             if ( $inserted ) {
@@ -74,42 +77,44 @@ class Club_Repository implements Club_Repository_Interface {
             }
             return false;
         } else {
-            // UPDATE: Use wpdb->update with the prepare logic built-in
+            // UPDATE: Use wpdb->update with the prepare logic built-in.
             $updated = $this->wpdb->update(
                 $this->table_name,
-                array( 'name'       => $entity->get_name(),
-                       'website'    => $entity->get_website(),
-                       'type'       => $entity->get_type(),
-                       'address'    => $entity->get_address(),
-                       'contactno'  => $entity->get_contact_no(),
-                       'founded'    => $entity->get_founded(),
-                       'facilities' => $entity->get_facilities(),
-                       'shortcode'  => $entity->get_shortcode()
-                    ), // Data to update
-                array('id' => $entity->get_id() ),            // Where clause
-                array( '%s',
+                array(
+                    'name'       => $entity->get_name(),
+                    'website'    => $entity->get_website(),
+                    'type'       => $entity->get_type(),
+                    'address'    => $entity->get_address(),
+                    'contactno'  => $entity->get_contact_no(),
+                    'founded'    => $entity->get_founded(),
+                    'facilities' => $entity->get_facilities(),
+                    'shortcode'  => $entity->get_shortcode(),
+                ),                                             // Data to update.
+                array( 'id' => $entity->get_id() ),            // Where clause.
+                array(
                     '%s',
                     '%s',
                     '%s',
                     '%s',
                     '%s',
                     '%s',
-                    '%s'
-                ),                                          // Data format
-                array('%d')                                 // Where format
+                    '%s',
+                    '%s',
+                ),                                            // Data format.
+                array( '%d' )                                 // Where format.
             );
             wp_cache_flush_group( 'clubs' );
-            return $updated !== false;
+            return false !== $updated;
         }
     }
 
     /**
-     * Retrieves an existing club from the database by ID.
+     * Finds a club by the specified identifier or search field.
      *
-     * @param int|string|null $id The user ID.
-     * @param string $search_term
+     * @param null|int|string $id Club identifier, name, or shortcode to search for.
+     * @param string          $search_term Field to search by. Supported values are 'id', 'name', and 'shortcode'.
      *
-     * @return Club|null The user object or null if not found.
+     * @return Club|null Club instance when found, or null when no matching club exists.
      */
     public function find_by_id( null|int|string $id, string $search_term = 'id' ): ?Club {
         if ( empty( $id ) ) {
@@ -132,21 +137,21 @@ class Club_Repository implements Club_Repository_Interface {
         $club_data = wp_cache_get( $id, 'clubs' );
         if ( ! $club_data ) {
 
-            // Prepare the query safely using prepare() to prevent SQL injection
-            $query = "SELECT `id`, `name`, `website`, `type`, `address`, `contactno`, `founded`, `facilities`, `shortcode` FROM $this->table_name WHERE " . $search . " LIMIT 1";
+            // Prepare the query safely using prepare() to prevent SQL injection.
+            $query = "SELECT `id`, `name`, `website`, `type`, `address`, `contactno`, `founded`, `facilities`, `shortcode` FROM $this->table_name WHERE " . $search . ' LIMIT 1';
 
-            $club_data = $this->wpdb->get_row( $query ); // Get a single row as an object
+            $club_data = $this->wpdb->get_row( $query ); // Get a single row as an object.
             if ( $club_data ) {
                 wp_cache_set( $id, $club_data, 'clubs' );
             }
         }
 
         if ( $club_data ) {
-            // Instantiate and return a new Club object with the fetched data
+            // Instantiate and return a new Club object with the fetched data.
             return Club_Factory::from_object( $club_data );
         }
 
-        return null; // Club not found
+        return null; // Club not found.
     }
 
     /**
@@ -158,20 +163,20 @@ class Club_Repository implements Club_Repository_Interface {
      */
     public function get_teams( array $args = array() ): array|int {
         $teams_table = $this->wpdb->prefix . 'racketmanager_teams';
-        $defaults = array(
+        $defaults    = array(
             'club'    => false,
             'count'   => false,
             'players' => false,
             'type'    => false,
         );
-        $args     = array_merge( $defaults, $args );
-        $club     = $args['club'];
-        $count    = $args['count'];
-        $players  = $args['players'];
-        $type     = $args['type'];
+        $args        = array_merge( $defaults, $args );
+        $club        = $args['club'];
+        $count       = $args['count'];
+        $players     = $args['players'];
+        $type        = $args['type'];
 
-        $search_terms = array();
-        $sql    = " FROM $teams_table WHERE `club_id` = '%d'";
+        $search_terms   = array();
+        $sql            = " FROM $teams_table WHERE `club_id` = '%d'";
         $search_terms[] = $club;
         if ( ! $players ) {
             $sql .= " AND (`team_type` is null OR `team_type` != 'P')";
@@ -180,25 +185,24 @@ class Club_Repository implements Club_Repository_Interface {
         }
         if ( $type ) {
             if ( 'OS' === $type ) {
-                $sql   .= " AND `type` like '%%%s%%'";
+                $sql           .= " AND `type` like '%%%s%%'";
                 $search_terms[] = 'S';
             } else {
-                $sql   .= " AND `type` = '%s'";
+                $sql           .= " AND `type` = '%s'";
                 $search_terms[] = $type;
             }
         }
         if ( $count ) {
             $sql = 'SELECT COUNT(*) ' . $sql;
-            return $this->wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                $this->wpdb->prepare(
-                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                    $sql,
-                    $search_terms
+            return (int) $this->wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+                $this->wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+                    $sql,            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+                    $search_terms    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
                 )
             );
         }
-        $sql  = 'SELECT * ' . $sql . ' ORDER BY `title`';
-        $sql  = $this->wpdb->prepare(
+        $sql = 'SELECT * ' . $sql . ' ORDER BY `title`';
+        $sql = $this->wpdb->prepare(
         // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
             $sql,
             $search_terms
@@ -211,9 +215,9 @@ class Club_Repository implements Club_Repository_Interface {
         }
 
         return array_map(
-            function( $row ) {
+            function ( $row ) {
                 return Team_Factory::from_object( $row );
-                },
+            },
             $teams
         );
     }
@@ -227,7 +231,7 @@ class Club_Repository implements Club_Repository_Interface {
      * @return array|int array of clubs.
      */
     public function find_all( array $args = array() ): array|int {
-        $defaults     = array(
+        $defaults = array(
             'offset'      => 0,
             'limit'       => 99999999,
             'type'        => 'affiliated',
@@ -238,71 +242,21 @@ class Club_Repository implements Club_Repository_Interface {
             'club'        => false,
             'orderby'     => 'asc',
         );
-        $args         = array_merge( $defaults, $args );
-        $offset       = $args['offset'];
-        $limit        = $args['limit'];
-        $type         = $args['type'];
-        $count        = $args['count'];
-        $orderby      = $args['orderby'];
-        $player_type  = $args['player_type'];
-        $player       = $args['player'];
-        $club         = $args['club'];
-        $search_terms = array();
-        if ( $type && 'all' !== $type ) {
-            if ( 'current' === $type ) {
-                $search_terms[] = "`type` != 'past'";
-            } else {
-                $search_terms[] = $this->wpdb->prepare( '`type` = %s', $type );
-            }
-        }
-        $search_terms[] = empty( $club ) ? '1 = 1' : $this->wpdb->prepare( '`id` = %d', $club );
-        if ( $player ) {
-            $roles_table        = $this->wpdb->prefix . 'racketmanager_club_roles';
-            $teams_events_table = $this->wpdb->prefix . 'racketmanager_teams_events';
-            $teams_table        = $this->wpdb->prefix . 'racketmanager_teams';
-            $club_players_table = $this->wpdb->prefix . 'racketmanager_club_players';
+        $args     = array_merge( $defaults, $args );
 
-            switch ( $player_type ) {
-                case 'secretary':
-                    $search_terms[] = $this->wpdb->prepare( "`id` IN (SELECT `club_id` FROM $roles_table WHERE `role_id` = 1 AND `user_id` = %d)", $player );
-                    break;
-                case 'captain':
-                    $search_terms[] = $this->wpdb->prepare( "(`id` IN (SELECT `club_id` FROM $teams_events_table te, $teams_table t WHERE `captain` = %d AND te.`team_id` = t.`id`) OR `id` IN (SELECT `club_id` FROM $roles_table WHERE `role_id` = 1 AND `user_id` = %d))", $player, $player );
-                    break;
-                case 'player':
-                    $search_terms[] = $this->wpdb->prepare( "`id` IN (SELECT `club_id` FROM $club_players_table cp WHERE `player_id` = %d AND `removed_date` IS NULL)", $player );
-                    break;
-                default:
-                    break;
-            }
-        }
-        $search = Util::search_string( $search_terms, true );
-        switch ( $orderby ) {
-            case 'asc':
-                $order = '`name` ASC';
-                break;
-            case 'desc':
-                $order = '`name` DESC';
-                break;
-            case 'rand':
-                $order = 'RAND()';
-                break;
-            case 'menu_order':
-                $order = '`id` ASC';
-                break;
-            default:
-                break;
-        }
-        $order = empty( $order ) ? null : 'ORDER BY ' . $order;
-        if ( $count ) {
+        $search_terms = $this->build_search_terms( $args );
+        $search       = Util::search_string( $search_terms, true );
+
+        if ( ! empty( $args['count'] ) ) {
             $sql = "SELECT COUNT(ID) FROM $this->table_name $search";
             return (int) $this->wpdb->get_var( $sql );
         }
 
-        $sql = $this->wpdb->prepare(
+        $order = $this->build_order_clause( (string) $args['orderby'] );
+        $sql   = $this->wpdb->prepare(
             "SELECT `id` FROM $this->table_name $search $order LIMIT %d, %d",
-            intval( $offset ),
-            intval( $limit )
+            (int) $args['offset'],
+            (int) $args['limit']
         );
 
         $clubs = wp_cache_get( md5( $sql ), 'clubs' );
@@ -310,25 +264,117 @@ class Club_Repository implements Club_Repository_Interface {
             $clubs = $this->wpdb->get_results( $sql );
             wp_cache_set( md5( $sql ), $clubs, 'clubs' );
         }
-        if ( ! is_array( $clubs ) ) {
-            return array();
+
+        return is_array( $clubs ) ? $this->hydrate_clubs( $clubs ) : [];
+    }
+
+    /**
+     * Builds SQL search conditions from query arguments.
+     *
+     * @param array $args Query arguments.
+     *
+     * @return array List of SQL condition strings.
+     */
+    private function build_search_terms( array $args ): array {
+        $search_terms = [];
+
+        $type = $args['type'];
+        if ( $type && 'all' !== $type ) {
+            $search_terms[] = ( 'current' === $type )
+                ? "`type` != 'past'"
+                : $this->wpdb->prepare( '`type` = %s', $type );
         }
-        $hydrated_clubs = array();
-        foreach ( $clubs as $row ) {
+
+        if ( ! empty( $args['club'] ) ) {
+            $search_terms[] = $this->wpdb->prepare( '`id` = %d', $args['club'] );
+        }
+
+        if ( ! empty( $args['player'] ) && ! empty( $args['player_type'] ) ) {
+            $player_term = $this->build_player_search_term( (string) $args['player_type'], (int) $args['player'] );
+            if ( $player_term ) {
+                $search_terms[] = $player_term;
+            }
+        }
+
+        return $search_terms;
+    }
+
+    /**
+     * Builds the player-specific SQL condition based on player role.
+     *
+     * @param string $player_type Type of player role ('secretary', 'captain', 'player').
+     * @param int    $player      Player user/player ID.
+     *
+     * @return string|null SQL condition string or null if unhandled.
+     */
+    private function build_player_search_term( string $player_type, int $player ): ?string {
+        $roles_table        = $this->wpdb->prefix . 'racketmanager_club_roles';
+        $teams_events_table = $this->wpdb->prefix . 'racketmanager_teams_events';
+        $teams_table        = $this->wpdb->prefix . 'racketmanager_teams';
+        $club_players_table = $this->wpdb->prefix . 'racketmanager_club_players';
+
+        return match ( $player_type ) {
+            'secretary' => $this->wpdb->prepare(
+                "`id` IN (SELECT `club_id` FROM $roles_table WHERE `role_id` = 1 AND `user_id` = %d)",
+                $player
+            ),
+            'captain'   => $this->wpdb->prepare(
+                "(`id` IN (SELECT `club_id` FROM $teams_events_table te, $teams_table t WHERE `captain` = %d AND te.`team_id` = t.`id`) OR `id` IN (SELECT `club_id` FROM $roles_table WHERE `role_id` = 1 AND `user_id` = %d))",
+                $player,
+                $player
+            ),
+            'player'    => $this->wpdb->prepare(
+                "`id` IN (SELECT `club_id` FROM $club_players_table cp WHERE `player_id` = %d AND `removed_date` IS NULL)",
+                $player
+            ),
+            default     => null,
+        };
+    }
+
+    /**
+     * Maps orderby argument to SQL ORDER BY clause.
+     *
+     * @param string $orderby Sort order keyword.
+     *
+     * @return string SQL ORDER BY clause or empty string.
+     */
+    private function build_order_clause( string $orderby ): string {
+        $order = match ( $orderby ) {
+            'asc'        => '`name` ASC',
+            'desc'       => '`name` DESC',
+            'rand'       => 'RAND()',
+            'menu_order' => '`id` ASC',
+            default      => '',
+        };
+
+        return $order ? "ORDER BY $order" : '';
+    }
+
+    /**
+     * Hydrates database club rows into Club domain objects.
+     *
+     * @param array $rows Array of database row objects.
+     *
+     * @return array Array of hydrated Club objects.
+     */
+    private function hydrate_clubs( array $rows ): array {
+        $hydrated_clubs = [];
+        foreach ( $rows as $row ) {
             $club = $this->find_by_id( (int) $row->id );
             if ( $club ) {
                 $hydrated_clubs[] = $club;
             }
         }
+
         return $hydrated_clubs;
     }
 
     /**
-     * Delete club from the database.
+     * Deletes a club record by its unique identifier and flushes the clubs cache group.
      *
-     * @param int $id
+     * @param int $id Unique identifier of the club to delete.
      *
-     * @return bool
+     * @return bool True if the delete query completed without error, false otherwise.
      */
     public function delete( int $id ): bool {
         $deleted = $this->wpdb->query(
@@ -338,17 +384,17 @@ class Club_Repository implements Club_Repository_Interface {
             )
         );
         wp_cache_flush_group( 'clubs' );
-        return $deleted !== false;
+        return false !== $deleted;
     }
 
     /**
-     * Gets all clubs for a specific competition and season with aggregated counts.
+     * Finds clubs participating in a competition for a given season, including team and player counts.
      *
-     * @param int $competition_id
-     * @param string $season (e.g., "2025/26")
-     * @param int $min_fixtures Minimum rubbers played to be 'active'.
+     * @param int    $competition_id Competition identifier to filter clubs by.
+     * @param string $season Season identifier to filter league team entries and fixtures by.
+     * @param int    $min_fixtures Minimum number of rubber player records required when counting players.
      *
-     * @return Club_Competition_DTO[]
+     * @return Club_Competition_DTO[] List of club competition data transfer objects.
      */
     public function find_clubs_by_competition_and_season( int $competition_id, string $season, int $min_fixtures = 1 ): array {
         $clubs_table          = $this->wpdb->prefix . 'racketmanager_clubs';
@@ -416,21 +462,21 @@ class Club_Repository implements Club_Repository_Interface {
     }
 
     /**
-     * Retrieves a list of clubs NOT participating in a specific competition for a given season.
+     * Finds affiliated clubs that have not entered any team in the specified competition and season.
      *
-     * @param int $competition_id
-     * @param string $season The season string from the league_teams table (e.g. "2025/26").
+     * @param int    $competition_id Competition identifier used to check league entries.
+     * @param string $season Season identifier used to check league team entries.
      *
-     * @return Club[] Array of Club domain objects.
+     * @return array List of club records ordered by club name.
      */
     public function find_clubs_not_entered( int $competition_id, string $season ): array {
-        $clubs_table        = $this->table_name; // wp_custom_clubs
+        $clubs_table        = $this->table_name; // wp_custom_clubs.
         $teams_table        = $this->wpdb->prefix . 'racketmanager_teams';
         $league_teams_table = $this->wpdb->prefix . 'racketmanager_league_teams';
         $leagues_table      = $this->wpdb->prefix . 'racketmanager_leagues';
         $events_table       = $this->wpdb->prefix . 'racketmanager_events';
 
-        // Query for clubs that do NOT have any team assigned to a league in this competition/season
+        // Query for clubs that do NOT have any team assigned to a league in this competition/season.
         $query = $this->wpdb->prepare(
             "SELECT * FROM `$clubs_table` c WHERE NOT EXISTS (SELECT 1 FROM `$teams_table` t INNER JOIN `$league_teams_table` lte ON t.id = lte.team_id INNER JOIN `$leagues_table` l ON lte.league_id = l.id INNER JOIN `$events_table` e ON l.event_id = e.id WHERE t.club_id = c.id AND e.competition_id = %d AND lte.season = %s) AND c.type = 'affiliated' ORDER BY c.name",
             $competition_id,
@@ -441,10 +487,11 @@ class Club_Repository implements Club_Repository_Interface {
     }
 
     /**
-     * Check if a player is in a club associated with a team or club id.
+     * Determines whether a player is associated with a club, optionally filtered by team, player, record type, and active status.
      *
-     * @param array $args
-     * @return bool
+     * @param array $args Optional arguments used to check club-player membership.
+     *
+     * @return bool True if a matching club-player record exists, false otherwise.
      */
     public function is_player_in_club( array $args = array() ): bool {
         $defaults = array(
@@ -453,11 +500,11 @@ class Club_Repository implements Club_Repository_Interface {
             'active' => false,
             'type'   => false,
         );
-        $args   = array_merge( $defaults, $args );
-        $team   = $args['team'];
-        $type   = $args['type'];
-        $player = $args['player'];
-        $active = $args['active'];
+        $args     = array_merge( $defaults, $args );
+        $team     = $args['team'];
+        $type     = $args['type'];
+        $player   = $args['player'];
+        $active   = $args['active'];
 
         $search_terms = array();
         if ( $team ) {
@@ -477,12 +524,11 @@ class Club_Repository implements Club_Repository_Interface {
             $search_terms[] = '`removed_date` IS NULL';
         }
 
-        $search = Util::search_string( $search_terms, true );
+        $search             = Util::search_string( $search_terms, true );
         $club_players_table = $this->wpdb->prefix . 'racketmanager_club_players';
-        $sql    = "SELECT COUNT(ID) FROM $club_players_table " . $search;
-        $count  = $this->wpdb->get_var( $sql );
+        $sql                = "SELECT COUNT(ID) FROM $club_players_table " . $search;
+        $count              = $this->wpdb->get_var( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
         return (int) $count > 0;
     }
-
 }

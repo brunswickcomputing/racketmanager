@@ -41,6 +41,7 @@ use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Application\Ports\View_Renderer_Interface;
+use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use Racketmanager\Tests\Helpers\Creates_Test_Container;
@@ -186,8 +187,7 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
         global $wp;
         $wp->query_vars['club_name']        = 'leigh-park';
         $GLOBALS['query_vars']['club_name'] = 'leigh-park';
-        $club                               = $this->createStub( Club::class );
-        $club->id                           = 42;
+        $club                               = Club_Test_Factory::create( id: 42 );
         $clubs                              = $this->createMock( Club_Repository_Interface::class );
         $clubs->expects( $this->once() )->method( 'find_by_id' )->with( 'leigh park', 'shortcode' )->willReturn( $club );
 

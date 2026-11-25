@@ -182,10 +182,10 @@ class Entry_And_Match_Templates_Test extends TestCase {
 
         $club = new class extends Club {
             public function __construct() {
-                $this->id        = 5;
-                $this->name      = 'Leigh Tennis Club';
-                $this->shortcode = 'Leigh TC';
-                $this->entry     = [];
+                $this->set_id( 5 );
+                $this->set_name( 'Leigh Tennis Club' );
+                $this->set_shortcode( 'Leigh TC' );
+                $this->set_entry( [] );
             }
             public function get_id(): int {
                 return 5;
@@ -303,10 +303,10 @@ class Entry_And_Match_Templates_Test extends TestCase {
 
         $club = new class extends Club {
             public function __construct() {
-                $this->id        = 5;
-                $this->name      = 'Leigh Tennis Club';
-                $this->shortcode = 'Leigh TC';
-                $this->entry     = [];
+                $this->set_id( 5 );
+                $this->set_name( 'Leigh Tennis Club' );
+                $this->set_shortcode( 'Leigh TC' );
+                $this->set_entry( [] );
             }
             public function get_id(): int {
                 return 5;
@@ -941,10 +941,11 @@ class Entry_And_Match_Templates_Test extends TestCase {
 
         $player = Player_Test_Factory::create( id: 42, display_name: 'Roger Federer' );
 
-        $club_active            = new Club();
-        $club_active->id        = 10;
-        $club_active->name      = 'Westcliff Hardcourt Tennis Club';
-        $club_active->shortcode = 'Westcliff Hardcourt';
+        $club_active = Club_Test_Factory::create(
+            id: 10,
+            name: 'Westcliff Hardcourt Tennis Club',
+            shortcode: 'Westcliff Hardcourt',
+        );
 
         $reg_active = Club_Player::from_object( (object) [
             'id'             => 101,
@@ -957,10 +958,11 @@ class Entry_And_Match_Templates_Test extends TestCase {
 
         $dto_active = new Club_Player_DTO( $player, $club_active, $reg_active );
 
-        $club_archive            = new Club();
-        $club_archive->id        = 20;
-        $club_archive->name      = 'Leigh Tennis Club';
-        $club_archive->shortcode = 'Leigh TC';
+        $club_archive = Club_Test_Factory::create(
+            id: 20,
+            name: 'Leigh Tennis Club',
+            shortcode: 'Leigh TC',
+        );
 
         $reg_archive = Club_Player::from_object( (object) [
             'id'             => 102,

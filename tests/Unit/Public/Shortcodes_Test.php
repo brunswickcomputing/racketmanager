@@ -17,6 +17,7 @@ use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
+use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use Racketmanager\Tests\Helpers\Creates_Test_Container;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
@@ -139,9 +140,8 @@ class Shortcodes_Test extends TestCase {
     public function test_show_latest_results_resolves_club_from_club_repository(): void {
         global $wp;
 
-        $club              = $this->createStub( Club::class );
-        $club->id          = 9;
-        $club_repository   = $this->createMock( Club_Repository_Interface::class );
+        $club            = Club_Test_Factory::create( id: 9 );
+        $club_repository = $this->createMock( Club_Repository_Interface::class );
         $club_repository->expects( self::once() )->method( 'find_by_id' )->with( 'park club', 'shortcode' )->willReturn( $club );
 
         $container = $this->create_test_container();

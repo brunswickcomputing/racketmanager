@@ -20,147 +20,147 @@ class Club {
      *
      * @var int|null
      */
-    public ?int $id = null;
+    public private(set) ?int $id = null;
 
     /**
      * Match secretary
      *
      * @var object|null
      */
-    public ?object $match_secretary = null;
+    public private(set) ?object $match_secretary = null;
 
     /**
      * Name
      *
      * @var string
      */
-    public string $name = '';
+    public private(set) string $name = '';
 
     /**
      * Short code
      *
      * @var string|null
      */
-    public ?string $shortcode = null;
+    public private(set) ?string $shortcode = null;
 
     /**
      * Type
      *
      * @var string|null
      */
-    public ?string $type = null;
+    public private(set) ?string $type = null;
 
     /**
      * Website
      *
      * @var string|null
      */
-    public ?string $website = null;
+    public private(set) ?string $website = null;
 
     /**
      * Contact number
      *
      * @var string|null
      */
-    public ?string $contactno = null;
+    public private(set) ?string $contactno = null;
 
     /**
      * Founded
      *
      * @var int|null
      */
-    public ?int $founded = null;
+    public private(set) ?int $founded = null;
 
     /**
      * Facilities
      *
      * @var string|null
      */
-    public ?string $facilities = null;
+    public private(set) ?string $facilities = null;
 
     /**
      * Address
      *
      * @var string|null
      */
-    public ?string $address = null;
+    public private(set) ?string $address = null;
 
     /**
      * Team count
      *
      * @var int
      */
-    public int $team_count = 0;
+    public private(set) int $team_count = 0;
 
     /**
      * Player count
      *
      * @var int
      */
-    public int $player_count = 0;
+    public private(set) int $player_count = 0;
 
     /**
      * Players variable
      *
      * @var array
      */
-    public array $players = [];
+    public private(set) array $players = [];
 
     /**
      * Teams variable
      *
      * @var array
      */
-    public array $teams = [];
+    public private(set) array $teams = [];
 
     /**
      * Matches variable
      *
      * @var array
      */
-    public array $matches = [];
+    public private(set) array $matches = [];
 
     /**
      * Result variable
      *
      * @var array
      */
-    public array $results = [];
+    public private(set) array $results = [];
 
     /**
      * Created date variable
      *
      * @var string|null
      */
-    public ?string $created_date = null;
+    public private(set) ?string $created_date = null;
 
     /**
      * Removed date variable
      *
      * @var string|null
      */
-    public ?string $removed_date = null;
+    public private(set) ?string $removed_date = null;
 
     /**
      * Single instance variable
      *
      * @var bool
      */
-    public bool $single = false;
+    public private(set) bool $single = false;
 
     /**
      * Entry
      *
      * @var array
      */
-    public array $entry = [];
+    public private(set) array $entry = [];
 
     /**
      * Competitions variable
      *
      * @var array
      */
-    public array $competitions = [];
+    public private(set) array $competitions = [];
 
     /**
      * Constructor
@@ -168,7 +168,7 @@ class Club {
      * @param Club_Hydration_DTO|null $dto Hydration DTO.
      */
     public function __construct( ?Club_Hydration_DTO $dto = null ) {
-        if ( is_null( $dto ) ) {
+        if ( null === $dto ) {
             return;
         }
 
@@ -198,7 +198,7 @@ class Club {
     /**
      * Create from a generic object (e.g. database row) via Club_Factory.
      *
-     * @param object $row
+     * @param object $row Database row object.
      * @return self
      */
     public static function from_object( object $row ): self {
@@ -208,7 +208,7 @@ class Club {
     /**
      * Create from an array via Club_Factory.
      *
-     * @param array $data
+     * @param array $data Raw data array.
      * @return self
      */
     public static function from_array( array $data ): self {
@@ -275,7 +275,7 @@ class Club {
      * @return string|int|null
      */
     public function get_founded(): string|int|null {
-        return $this->founded !== null ? (string) $this->founded : null;
+        return null !== $this->founded ? (string) $this->founded : null;
     }
 
     /**
@@ -299,7 +299,7 @@ class Club {
     /**
      * Set id
      *
-     * @param int $insert_id
+     * @param int $insert_id Insert ID.
      * @return void
      */
     public function set_id( int $insert_id ): void {
@@ -309,7 +309,7 @@ class Club {
     /**
      * Set name
      *
-     * @param string $name
+     * @param string $name Club name.
      * @return void
      */
     public function set_name( string $name ): void {
@@ -319,77 +319,207 @@ class Club {
     /**
      * Set website
      *
-     * @param string $website
+     * @param string|null $website Website URL.
      * @return void
      */
-    public function set_website( string $website ): void {
+    public function set_website( ?string $website ): void {
         $this->website = $website;
     }
 
     /**
      * Set type
      *
-     * @param string $type
+     * @param string|null $type Club type.
      * @return void
      */
-    public function set_type( string $type ): void {
+    public function set_type( ?string $type ): void {
         $this->type = $type;
     }
 
     /**
      * Set address
      *
-     * @param string $address
+     * @param string|null $address Address.
      * @return void
      */
-    public function set_address( string $address ): void {
+    public function set_address( ?string $address ): void {
         $this->address = $address;
     }
 
     /**
      * Set contact no
      *
-     * @param string $contactno
+     * @param string|null $contactno Contact number.
      * @return void
      */
-    public function set_contact_no( string $contactno ): void {
+    public function set_contact_no( ?string $contactno ): void {
         $this->contactno = $contactno;
+    }
+
+    /**
+     * Set contact number alias.
+     *
+     * @param string|null $contactno Contact number.
+     * @return void
+     */
+    public function set_contactno( ?string $contactno ): void {
+        $this->set_contact_no( $contactno );
     }
 
     /**
      * Set founded
      *
-     * @param string|int $founded
+     * @param string|int|null $founded Year founded.
      * @return void
      */
-    public function set_founded( string|int $founded ): void {
+    public function set_founded( string|int|null $founded ): void {
         $this->founded = is_numeric( $founded ) ? (int) $founded : null;
     }
 
     /**
      * Set facilities
      *
-     * @param string $facilities
+     * @param string|null $facilities Facilities description.
      * @return void
      */
-    public function set_facilities( string $facilities ): void {
+    public function set_facilities( ?string $facilities ): void {
         $this->facilities = $facilities;
     }
 
     /**
      * Set shortcode
      *
-     * @param string $shortcode
+     * @param string|null $shortcode Short code.
      * @return void
      */
-    public function set_shortcode( string $shortcode ): void {
+    public function set_shortcode( ?string $shortcode ): void {
         $this->shortcode = $shortcode;
+    }
+
+    /**
+     * Set single instance flag.
+     *
+     * @param bool $single Single instance flag.
+     * @return void
+     */
+    public function set_single( bool $single ): void {
+        $this->single = $single;
+    }
+
+    /**
+     * Set teams.
+     *
+     * @param array $teams Teams array.
+     * @return void
+     */
+    public function set_teams( array $teams ): void {
+        $this->teams = $teams;
+    }
+
+    /**
+     * Set matches.
+     *
+     * @param array $matches Matches array.
+     * @return void
+     */
+    public function set_matches( array $matches ): void {
+        $this->matches = $matches;
+    }
+
+    /**
+     * Set results.
+     *
+     * @param array $results Results array.
+     * @return void
+     */
+    public function set_results( array $results ): void {
+        $this->results = $results;
+    }
+
+    /**
+     * Set players.
+     *
+     * @param array $players Players array.
+     * @return void
+     */
+    public function set_players( array $players ): void {
+        $this->players = $players;
+    }
+
+    /**
+     * Set competitions.
+     *
+     * @param array $competitions Competitions array.
+     * @return void
+     */
+    public function set_competitions( array $competitions ): void {
+        $this->competitions = $competitions;
+    }
+
+    /**
+     * Set entry.
+     *
+     * @param array $entry Entry array.
+     * @return void
+     */
+    public function set_entry( array $entry ): void {
+        $this->entry = $entry;
+    }
+
+    /**
+     * Set match secretary.
+     *
+     * @param object|null $match_secretary Match secretary object.
+     * @return void
+     */
+    public function set_match_secretary( ?object $match_secretary ): void {
+        $this->match_secretary = $match_secretary;
+    }
+
+    /**
+     * Set team count.
+     *
+     * @param int $team_count Team count.
+     * @return void
+     */
+    public function set_team_count( int $team_count ): void {
+        $this->team_count = $team_count;
+    }
+
+    /**
+     * Set player count.
+     *
+     * @param int $player_count Player count.
+     * @return void
+     */
+    public function set_player_count( int $player_count ): void {
+        $this->player_count = $player_count;
+    }
+
+    /**
+     * Set created date.
+     *
+     * @param string|null $created_date Created date.
+     * @return void
+     */
+    public function set_created_date( ?string $created_date ): void {
+        $this->created_date = $created_date;
+    }
+
+    /**
+     * Set removed date.
+     *
+     * @param string|null $removed_date Removed date.
+     * @return void
+     */
+    public function set_removed_date( ?string $removed_date ): void {
+        $this->removed_date = $removed_date;
     }
 
     /**
      * Unserialize callback, safely ignoring stale dynamic properties from cache.
      *
-     * @param array $data
+     * @param array $data Serialized data.
      * @return void
      */
     public function __unserialize( array $data ): void {

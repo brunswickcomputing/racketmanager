@@ -54,6 +54,7 @@ use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
+use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
 use Racketmanager\Tests\Helpers\Creates_League_Query_Service;
 use Racketmanager\Tests\Helpers\Player_Test_Factory;
@@ -424,8 +425,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->attach_test_competition( $event_stub );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
-        $club_stub     = $this->createStub( Club::class );
-        $club_stub->id = 101;
+        $club_stub     = Club_Test_Factory::create( id: 101 );
         $club_service->method( 'get_club' )->willReturn( $club_stub );
 
         [ $low, $high, $stats ] = $this->build_stat_players( $event_stub, '2025', 'event' );
@@ -498,9 +498,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'clubs', $vm_all->template );
 
         // Specific club found by shortcode
-        $club_stub = $this->createStub( Club::class );
-        $club_stub->id = 101;
-        $club_stub->shortcode = 'ltc';
+        $club_stub = Club_Test_Factory::create( id: 101, shortcode: 'ltc' );
 
         $club_service->method( 'get_club_by_shortcode' )->willReturn( $club_stub );
 
@@ -1036,9 +1034,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'Club not found', $vm_club_404->error_message );
 
         // 4. Success path with age offset calculation (min_age 45 male, 40 female)
-        $club_stub = $this->createStub( Club::class );
-        $club_stub->id = 200;
-        $club_stub->method( 'get_id' )->willReturn( 200 );
+        $club_stub = Club_Test_Factory::create( id: 200 );
 
         $club_service_ok = $this->createStub( Club_Service::class );
         $club_service_ok->method( 'get_club' )->willReturn( $club_stub );
@@ -1078,9 +1074,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event );
 
-        $club_stub = $this->createStub( Club::class );
-        $club_stub->id = 50;
-        $club_stub->method( 'get_id' )->willReturn( 50 );
+        $club_stub = Club_Test_Factory::create( id: 50 );
         $club_service->method( 'get_club' )->willReturn( $club_stub );
         $club_service->method( 'can_user_update_as_captain' )->willReturn( true );
 
@@ -1157,9 +1151,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->attach_test_competition( $event_stub );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
-        $club_stub = $this->createStub( Club::class );
-        $club_stub->id = 200;
-        $club_stub->method( 'get_id' )->willReturn( 200 );
+        $club_stub = Club_Test_Factory::create( id: 200 );
         $club_service->method( 'get_club' )->willReturn( $club_stub );
         $club_service->method( 'can_user_update_as_captain' )->willReturn( true );
 
@@ -1348,9 +1340,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'Event not found for competition', $err->error_message );
 
         // 11. Get_Team_Order_Players_Handler
-        $club_stub = $this->createStub( Club::class );
-        $club_stub->id = 50;
-        $club_stub->method( 'get_id' )->willReturn( 50 );
+        $club_stub = Club_Test_Factory::create( id: 50 );
         $club_service->method( 'get_club' )->willReturn( $club_stub );
         $order_handler = new Get_Team_Order_Players_Handler( $comp_service, $club_service, $reg_service, $settings_service, $this->event_query_service() );
         $this->assertFalse( $order_handler->handle( new Get_Team_Order_Players_Query( event_id: 101, club_id: 50 ) )->is_error() );

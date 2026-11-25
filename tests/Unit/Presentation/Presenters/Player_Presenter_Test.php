@@ -13,6 +13,7 @@ use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\View_Models\Club_Membership_View_Model;
 use Racketmanager\Presentation\View_Models\Competition_List_Item_View_Model;
+use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Player_Test_Factory;
 
 class Player_Presenter_Test extends TestCase {
@@ -309,10 +310,11 @@ class Player_Presenter_Test extends TestCase {
             display_name: 'Andy Murray'
         );
 
-        $club                 = new Club();
-        $club->id             = 101;
-        $club->name           = 'Westcliff Hardcourt Tennis Club';
-        $club->shortcode      = 'Westcliff Hardcourt';
+        $club = Club_Test_Factory::create(
+            id: 101,
+            name: 'Westcliff Hardcourt Tennis Club',
+            shortcode: 'Westcliff Hardcourt'
+        );
 
         $registration = Club_Player::from_object( (object) [
             'id'             => 55,
@@ -355,8 +357,7 @@ class Player_Presenter_Test extends TestCase {
 
         $player = Player_Test_Factory::create( id: 42 );
 
-        $club = new Club();
-        $club->id = 101;
+        $club = Club_Test_Factory::create( id: 101 );
 
         $registration = Club_Player::from_object( (object) [
             'id'            => 57,
@@ -380,9 +381,10 @@ class Player_Presenter_Test extends TestCase {
             display_name: 'Andy Murray'
         );
 
-        $club                 = new Club();
-        $club->id             = 101;
-        $club->name           = 'Leigh TC';
+        $club = Club_Test_Factory::create(
+            id: 101,
+            name: 'Leigh TC'
+        );
 
         $registration = Club_Player::from_object( (object) [
             'id'             => 56,

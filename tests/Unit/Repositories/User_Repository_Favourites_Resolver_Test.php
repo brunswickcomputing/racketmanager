@@ -133,8 +133,8 @@ final class User_Repository_Favourites_Resolver_Test extends TestCase {
     public function test_club_favourite_uses_club_repository_find_by_id(): void {
         $this->set_favourites( 'club', [ 4 ] );
 
-        $club       = new Club();
-        $club->name = 'Leigh';
+        $club = new Club();
+        $club->set_name( 'Leigh' );
 
         $club_repository = $this->createMock( Club_Repository_Interface::class );
         $club_repository->expects( $this->once() )->method( 'find_by_id' )->with( 4 )->willReturn( $club );
@@ -221,8 +221,8 @@ final class User_Repository_Favourites_Resolver_Test extends TestCase {
         $this->set_favourites( 'team', [ 12 ] );
         $this->set_favourites( 'player', [ 7 ] );
 
-        $club       = new Club();
-        $club->name = 'Leigh';
+        $club = new Club();
+        $club->set_name( 'Leigh' );
         $team        = new Team();
         $team->set_title( 'Leigh A' );
 

@@ -14,6 +14,7 @@ use Racketmanager\Application\Player\Ports\Player_Service_Interface;
 use Racketmanager\Application\Player\Ports\Registration_Service_Interface;
 use Racketmanager\Application\Ports\Finance_Service_Interface;
 use Racketmanager\Application\Tournament\Ports\Tournament_Service_Interface;
+use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Tournament\Tournament;
@@ -25,6 +26,7 @@ use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function array_column;
 use function in_array;
+use function is_array;
 use function intval;
 use function is_object;
 use function method_exists;
@@ -238,6 +240,8 @@ final readonly class Get_Competition_Entry_Handler {
         $comp_id = method_exists( $competition, 'get_id' ) ? $competition->get_id() : ( $competition->id ?? null );
         $events  = $comp_id ? $this->competition_service->get_events_for_competition( (int) $comp_id ) : [];
         $club_id = method_exists( $club, 'get_id' ) ? $club->get_id() : ( $club->id ?? 0 );
+        $entry   = is_array( $club->entry ?? null ) ? $club->entry : [];
+        $initial = $entry;
 
         foreach ( $events as $i => $event ) {
             if ( ! ( $event instanceof Event ) ) {
@@ -264,9 +268,10 @@ final readonly class Get_Competition_Entry_Handler {
                 $event_team->team_info = $this->event_query_service->get_team_info( $event, (int) $event_team->team_id );
                 $event->set_team( $event_team );
                 $event->set_status( 'checked' );
-                $club->entry[ $event->id ] = $event;
+                $entry[ $event->id ] = $event;
             }
         }
+        $this->apply_club_entry( $club, $entry, $initial );
 
         $ladies_teams = $this->team_service->get_teams_for_club( (int) $club_id, 'WD' );
         $mens_teams   = $this->team_service->get_teams_for_club( (int) $club_id, 'MD' );
@@ -306,6 +311,8 @@ final readonly class Get_Competition_Entry_Handler {
         $comp_id = method_exists( $competition, 'get_id' ) ? $competition->get_id() : ( $competition->id ?? null );
         $events  = $comp_id ? $this->competition_service->get_events_for_competition( (int) $comp_id ) : [];
         $club_id = method_exists( $club, 'get_id' ) ? $club->get_id() : ( $club->id ?? 0 );
+        $entry   = is_array( $club->entry ?? null ) ? $club->entry : [];
+        $initial = $entry;
 
         foreach ( $events as $i => $event ) {
             if ( ! ( $event instanceof Event ) ) {
@@ -373,9 +380,10 @@ final readonly class Get_Competition_Entry_Handler {
             $event->set_teams( $teams );
             $events[ $i ] = $event;
             if ( ! empty( $event->status ) ) {
-                $club->entry[ $event->id ] = true;
+                $entry[ $event->id ] = true;
             }
         }
+        $this->apply_club_entry( $club, $entry, $initial );
 
         $filename = ( ! empty( $template ) ) ? 'entry-league-' . $template : 'entry-league';
 
@@ -390,6 +398,26 @@ final readonly class Get_Competition_Entry_Handler {
             date_closing: $this->resolve_closing_date( $competition_season ),
             template: $filename
         );
+    }
+
+    /**
+     * Applies collected event entries to the club when they changed.
+     *
+     * @param object $club Club aggregate or data object.
+     * @param array  $entry Collected entries keyed by event id.
+     * @param array  $initial Entries held by the club before collection.
+     *
+     * @return void
+     */
+    private function apply_club_entry( object $club, array $entry, array $initial ): void {
+        if ( $entry === $initial ) {
+            return;
+        }
+        if ( $club instanceof Club ) {
+            $club->set_entry( $entry );
+        } else {
+            $club->entry = $entry;
+        }
     }
 
     /**

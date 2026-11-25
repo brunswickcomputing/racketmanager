@@ -24,6 +24,7 @@ use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\User_Repository_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Registration_Service;
+use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use WP_Error;
 
 class Club_Ajax_Adapter_Test extends TestCase {
@@ -147,8 +148,7 @@ class Club_Ajax_Adapter_Test extends TestCase {
         $this->validator_players[44] = Player::from_array( array( 'ID' => 44, 'display_name' => 'Sec' ) );
 
         $this->club_service = $this->createMock( Club_Service::class );
-        $club               = $this->createStub( Club::class );
-        $club->id           = 12;
+        $club               = Club_Test_Factory::create( id: 12 );
         $this->club_service->method( 'get_club' )->willReturn( $club );
         $this->club_service->expects( $this->once() )
             ->method( 'update_club' )

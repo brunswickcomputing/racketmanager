@@ -38,6 +38,7 @@ use Racketmanager\Application\Competition\Queries\Get_Competitions_Handler;
 use Racketmanager\Application\Competition\Queries\Get_Competitions_Query;
 use Racketmanager\Application\Competition\Queries\Tournament_Entry_Access;
 use Racketmanager\Application\Ports\Query_Vars_Interface;
+use Racketmanager\Domain\Club\Club;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Service_Missing_Exception;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
@@ -596,8 +597,9 @@ readonly class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interf
             $tournament_presenter = $this->tournament_presenter;
             $club_id              = (int) ( $competition_club->id ?? 0 );
             if ( ! empty( $competition_club->matches ) && is_array( $competition_club->matches ) ) {
+                $presented_matches = [];
                 foreach ( $competition_club->matches as $key => $group_matches ) {
-                    $competition_club->matches[ $key ] = $tournament_presenter->present_match_group(
+                    $presented_matches[ $key ] = $tournament_presenter->present_match_group(
                         $key,
                         $group_matches,
                         $tournament_presenter->is_tournament_competition( $result->competition ),
@@ -608,10 +610,16 @@ readonly class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interf
                         ]
                     );
                 }
+                if ( $competition_club instanceof Club ) {
+                    $competition_club->set_matches( $presented_matches );
+                } else {
+                    $competition_club->matches = $presented_matches;
+                }
             }
-            if ( ! empty( $competition_club->results ) && is_array( $competition_club->results ) ) {
+            if ( ! empty( $competition_club->results ) ) {
+                $presented_results = [];
                 foreach ( $competition_club->results as $key => $group_matches ) {
-                    $competition_club->results[ $key ] = $tournament_presenter->present_match_group(
+                    $presented_results[ $key ] = $tournament_presenter->present_match_group(
                         $key,
                         $group_matches,
                         $tournament_presenter->is_tournament_competition( $result->competition ),
@@ -621,6 +629,11 @@ readonly class Competition_Shortcode_Adapter implements Shortcode_Adapter_Interf
                             'by_date'      => true,
                         ]
                     );
+                }
+                if ( $competition_club instanceof Club ) {
+                    $competition_club->set_results( $presented_results );
+                } else {
+                    $competition_club->results = $presented_results;
                 }
             }
         }

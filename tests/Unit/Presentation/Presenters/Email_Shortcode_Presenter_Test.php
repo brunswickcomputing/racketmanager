@@ -23,6 +23,7 @@ use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
+use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use stdClass;
 
@@ -153,18 +154,18 @@ class Email_Shortcode_Presenter_Test extends TestCase {
         if ( isset( $fixture_data['home_team_type'] ) ) {
             $home_team->method( 'get_team_type' )->willReturn( $fixture_data['home_team_type'] );
         }
-        $home_club = $this->createStub( Club::class );
-        $home_club->shortcode = $fixture_data['home_club_shortcode'] ?? 'CA';
-        $home_club->method( 'get_shortcode' )->willReturn( $fixture_data['home_club_shortcode'] ?? 'CA' );
+        $home_club = Club_Test_Factory::create(
+            shortcode: $fixture_data['home_club_shortcode'] ?? 'CA'
+        );
 
         $away_team = $this->createStub( Team::class );
         $away_team->method( 'get_name' )->willReturn( $fixture_data['away_name'] ?? 'Away Team' );
         if ( isset( $fixture_data['away_team_type'] ) ) {
             $away_team->method( 'get_team_type' )->willReturn( $fixture_data['away_team_type'] );
         }
-        $away_club = $this->createStub( Club::class );
-        $away_club->shortcode = $fixture_data['away_club_shortcode'] ?? 'CB';
-        $away_club->method( 'get_shortcode' )->willReturn( $fixture_data['away_club_shortcode'] ?? 'CB' );
+        $away_club = Club_Test_Factory::create(
+            shortcode: $fixture_data['away_club_shortcode'] ?? 'CB'
+        );
 
         $home_dto = new Team_Details_DTO( $home_team, $home_club, null );
         $home_dto->players      = $fixture_data['home_players'] ?? [];

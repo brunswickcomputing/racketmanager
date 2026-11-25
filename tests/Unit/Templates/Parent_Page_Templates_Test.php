@@ -33,6 +33,7 @@ use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
+use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Competition_Season_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
@@ -439,10 +440,11 @@ class Parent_Page_Templates_Test extends TestCase {
             id: 5
         );
 
-        $club = new Club();
-        $club->id = 1;
-        $club->name = 'County Lawn Tennis Club';
-        $club->shortcode = 'CLTC';
+        $club = Club_Test_Factory::create(
+            id: 1,
+            name: 'County Lawn Tennis Club',
+            shortcode: 'CLTC',
+        );
 
         $details = new Tournament_Details_DTO(
             tournament: $tournament,

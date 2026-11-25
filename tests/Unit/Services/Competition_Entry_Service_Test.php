@@ -1695,7 +1695,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $club->set_id( 1 );
         $club->set_name( 'Club One' );
         $club->set_shortcode( 'C1' );
-        $club->match_secretary = (object) [ 'display_name' => 'Sec One', 'email' => 'sec@test.local' ];
+        $club->set_match_secretary( (object) [ 'display_name' => 'Sec One', 'email' => 'sec@test.local' ] );
         $this->club_service->method( 'get_clubs_with_details' )->willReturn( [ $club ] );
 
         $captured_templates = [];

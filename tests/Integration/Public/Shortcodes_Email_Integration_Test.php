@@ -36,6 +36,7 @@ use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Application\Ports\View_Renderer_Interface;
+use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
@@ -188,8 +189,7 @@ class Shortcodes_Email_Integration_Test extends TestCase {
     private function create_team_details_dto( string $name, string $shortcode, string $captain, string $email, string $contact_no ): Team_Details_DTO {
         $team = $this->createMock( Team::class );
         $team->method( 'get_name' )->willReturn( $name );
-        $club = $this->createStub( Club::class );
-        $club->shortcode = $shortcode;
+        $club = Club_Test_Factory::create( shortcode: $shortcode );
         $dto = new Team_Details_DTO( $team, $club, null );
         $dto->captain      = $captain;
         $dto->contactemail = $email;

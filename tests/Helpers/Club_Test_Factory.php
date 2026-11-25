@@ -34,28 +34,42 @@ final class Club_Test_Factory {
         ?string $address = null,
         array $overrides = []
     ): Club {
-        $club_data = (object) array_filter(
-            [
-                'id'         => $id,
-                'name'       => $name,
-                'shortcode'  => $shortcode,
-                'type'       => $type,
-                'website'    => $website,
-                'contactno'  => $contactno,
-                'founded'    => $founded,
-                'facilities' => $facilities,
-                'address'    => $address,
-            ],
-            static fn( $value ) => null !== $value
+        $raw_data  = [
+            'id'         => $id,
+            'name'       => $name,
+            'shortcode'  => $shortcode,
+            'type'       => $type,
+            'website'    => $website,
+            'contactno'  => $contactno,
+            'founded'    => $founded,
+            'facilities' => $facilities,
+            'address'    => $address,
+        ];
+        $filtered  = array_filter(
+            $raw_data,
+            static function ( $value ): bool {
+                return null !== $value;
+            }
         );
+        $club_data = (object) $filtered;
 
         $club = Club::from_object( $club_data );
 
         foreach ( $overrides as $key => $value ) {
             if ( ! property_exists( Club::class, $key ) ) {
+                // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
                 throw new \InvalidArgumentException( sprintf( 'Unknown Club test property: %s', $key ) );
             }
-            $club->$key = $value;
+            $key_str = (string) $key;
+            $setter  = 'set_' . $key_str;
+
+            if ( method_exists( $club, $setter ) ) {
+                $club->$setter( $value );
+                continue;
+            }
+
+            $ref_prop = new \ReflectionProperty( Club::class, $key_str );
+            $ref_prop->setValue( $club, $value );
         }
 
         return $club;

@@ -70,6 +70,7 @@ use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
+use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
 use Racketmanager\Tests\Helpers\Creates_League_Query_Service;
@@ -881,12 +882,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event );
 
-        $club            = $this->createStub( Club::class );
-        $club->id        = 5;
-        $club->name      = 'Leigh';
-        $club->shortcode = 'Leigh Club';
-        $club->address   = '';
-        $club->method( 'get_id' )->willReturn( 5 );
+        $club = Club_Test_Factory::create( id: 5, name: 'Leigh', shortcode: 'Leigh Club', address: '' );
 
         $club_service = $this->createStub( Club_Service::class );
         $club_service->method( 'get_club' )->willReturn( $club );
@@ -926,12 +922,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $fixture->set_league( $league );
         $fixture->set_date( '2026-06-01 10:00:00' );
 
-        $club            = $this->createStub( Club::class );
-        $club->id        = 5;
-        $club->name      = 'Leigh';
-        $club->shortcode = 'Leigh Club';
-        $club->address   = '';
-        $club->method( 'get_id' )->willReturn( 5 );
+        $club = Club_Test_Factory::create( id: 5, name: 'Leigh', shortcode: 'Leigh Club', address: '' );
 
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_by_id' )->willReturn( $competition );

@@ -48,7 +48,7 @@ readonly class Get_Club_Handler {
             return Club_Overview_Result::error( $e->getMessage() );
         }
 
-        $club->single         = true;
+        $club->set_single( true );
         $club_details->single = true;
 
         $user_can_update_club = false;

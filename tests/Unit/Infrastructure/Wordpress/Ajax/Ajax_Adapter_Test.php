@@ -37,6 +37,7 @@ use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
+use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
@@ -418,9 +419,7 @@ class Ajax_Adapter_Test extends TestCase {
         $event_s->set_competition( $comp );
         $event_s->set_current_season( [ 'name' => '2026' ] );
 
-        $club = $this->createStub( Club::class );
-        $club->id = 100;
-        $club->method( 'get_id' )->willReturn( 100 );
+        $club = Club_Test_Factory::create( id: 100 );
         $club_service->method( 'get_club' )->willReturn( $club );
         $club_service->method( 'can_user_update_as_captain' )->willReturn( true );
 
@@ -465,9 +464,7 @@ class Ajax_Adapter_Test extends TestCase {
         $event_o->set_competition( $comp );
         $event_o->set_current_season( [ 'name' => '2026' ] );
 
-        $club = $this->createStub( Club::class );
-        $club->id = 100;
-        $club->method( 'get_id' )->willReturn( 100 );
+        $club = Club_Test_Factory::create( id: 100 );
         $club_service->method( 'get_club' )->willReturn( $club );
         $club_service->method( 'can_user_update_as_captain' )->willReturn( true );
 

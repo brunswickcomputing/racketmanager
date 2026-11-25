@@ -8,6 +8,7 @@ use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
 use Racketmanager\Application\Competition\Ports\Event_Query_Service_Interface;
 use Racketmanager\Application\Event\DTOs\Event_Clubs_Result;
 use Racketmanager\Application\Player\Ports\Player_Stats_Service_Interface;
+use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
@@ -117,13 +118,19 @@ readonly class Get_Event_Clubs_Handler {
                 ? $this->club_service->get_club( (int) $club_id )
                 : $this->club_service->get_club_by_shortcode( (string) $club_id );
 
-            $event_club          = $this->event_query_service->get_club( $event, $club );
-            $event_club->players = $this->player_stats_service->populate_players_stats(
+            $event_club = $this->event_query_service->get_club( $event, $club );
+            $players    = $this->player_stats_service->populate_players_stats(
                 $event_club->players,
                 $event,
                 $event->current_season['name'] ?? null,
                 'event'
             );
+
+            if ( $event_club instanceof Club ) {
+                $event_club->set_players( $players );
+            } else {
+                $event_club->players = $players;
+            }
 
             return $event_club;
         } catch ( Club_Not_Found_Exception ) {

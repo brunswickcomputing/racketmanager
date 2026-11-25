@@ -311,34 +311,42 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
         $captured_inputs = [];
         $club_service->expects( self::exactly( 2 ) )
             ->method( 'add_club' )
-            ->willReturnCallback( function ( object $input ) use ( &$captured_inputs ) {
-                $captured_inputs[] = $input;
-                return new Club( new Club_Hydration_DTO( id: 1, name: 'Test' ) );
-            } );
+            ->willReturnCallback(
+                function ( object $input ) use ( &$captured_inputs ) {
+                    $captured_inputs[] = $input;
+                    return new Club( new Club_Hydration_DTO( id: 1, name: 'Test' ) );
+                }
+            );
 
         $handler    = new Club_Handler( $club_service, $player_service, new Club_Validator_Factory() );
-        $dispatcher = new Club_Action_Dispatcher( $club_service, $player_service, $guard, $handler );
+        $dispatcher = new Club_Action_Dispatcher( $guard, $handler );
 
         // Empty founded string maps to null
-        $dispatcher->handle( [], [
-            'addClub' => 1,
-            'club'    => 'Test Club',
-            'type'    => 'tennis',
-            'shortcode' => 'TC',
-            'address' => '1 High St',
-            'founded' => '',
-        ] );
+        $dispatcher->handle(
+            [],
+            [
+                'addClub' => 1,
+                'club'    => 'Test Club',
+                'type'    => 'tennis',
+                'shortcode' => 'TC',
+                'address' => '1 High St',
+                'founded' => '',
+            ]
+        );
         self::assertNull( $captured_inputs[0]->founded );
 
         // Non-empty founded string maps to integer
-        $dispatcher->handle( [], [
-            'addClub' => 1,
-            'club'    => 'Test Club 2',
-            'type'    => 'tennis',
-            'shortcode' => 'TC2',
-            'address' => '2 High St',
-            'founded' => '1995',
-        ] );
+        $dispatcher->handle(
+            [],
+            [
+                'addClub' => 1,
+                'club'    => 'Test Club 2',
+                'type'    => 'tennis',
+                'shortcode' => 'TC2',
+                'address' => '2 High St',
+                'founded' => '1995',
+            ]
+        );
         self::assertSame( 1995, $captured_inputs[1]->founded );
     }
 
@@ -349,10 +357,13 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
 
         $dispatcher = new Competition_Action_Dispatcher( $comp_service, $guard, $event_repo, new Competition_Handler( $comp_service, $event_repo ) );
 
-        $result = $dispatcher->handle( [], [
-            'doActionEvent' => 1,
-            'action'        => '-1',
-        ] );
+        $result = $dispatcher->handle(
+            [],
+            [
+                'doActionEvent' => 1,
+                'action'        => '-1',
+            ]
+        );
 
         self::assertSame( Admin_Message_Type::WARNING, $result->message_type );
         self::assertSame( 'No action specified', $result->message );
@@ -440,10 +451,12 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
             ->method( 'update_season' )
             ->with(
                 $competition,
-                self::callback( function ( array $season ) use ( &$saved_season ) {
-                    $saved_season = $season;
-                    return 14 === $season['round_length'] && 2 === $season['home_away_diff'];
-                } )
+                self::callback(
+                    function ( array $season ) use ( &$saved_season ) {
+                        $saved_season = $season;
+                        return 14 === $season['round_length'] && 2 === $season['home_away_diff'];
+                    }
+                )
             )
             ->willReturn( true );
         $comp_service->method( 'get_events_for_competition' )->willReturn( [] );
@@ -500,10 +513,12 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
             ->method( 'update_season' )
             ->with(
                 $competition,
-                self::callback( function ( array $season ) use ( &$saved_season ) {
-                    $saved_season = $season;
-                    return true;
-                } )
+                self::callback(
+                    function ( array $season ) use ( &$saved_season ) {
+                        $saved_season = $season;
+                        return true;
+                    }
+                )
             )
             ->willReturn( true );
         $comp_service->method( 'get_events_for_competition' )->willReturn( [] );
@@ -594,10 +609,12 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
             ->method( 'update_season' )
             ->with(
                 $competition,
-                self::callback( function ( array $season ) use ( &$saved_season ) {
-                    $saved_season = $season;
-                    return true;
-                } )
+                self::callback(
+                    function ( array $season ) use ( &$saved_season ) {
+                        $saved_season = $season;
+                        return true;
+                    }
+                )
             )
             ->willReturn( true );
         $comp_service->method( 'get_events_for_competition' )->willReturn( [] );
@@ -670,11 +687,13 @@ final class Competition_Club_Admin_Commands_Test extends TestCase {
             ->method( 'update_seasons' )
             ->with(
                 101,
-                self::callback( function ( array $seasons ) use ( $season_year ) {
-                    return isset( $seasons[ $season_year ] )
+                self::callback(
+                    function ( array $seasons ) use ( $season_year ) {
+                        return isset( $seasons[ $season_year ] )
                         && true === $seasons[ $season_year ]['home_away']
                         && 2 === $seasons[ $season_year ]['num_match_days'];
-                } )
+                    }
+                )
             );
 
         $dispatcher = $this->create_season_dispatcher( $comp_service, $event_repo );

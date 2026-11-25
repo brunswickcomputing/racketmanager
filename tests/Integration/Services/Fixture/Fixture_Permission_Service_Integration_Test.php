@@ -192,9 +192,9 @@ class Fixture_Permission_Service_Integration_Test extends TestCase {
     public function test_match_secretary_can_update(): void {
         $this->setup_standard_fixture();
 
-        $home_club = $this->createStub( Club::class );
-        $home_club->match_secretary = (object)[ 'id' => 30 ];
-        $away_club = $this->createStub( Club::class );
+        $home_club = new Club();
+        $home_club->set_match_secretary( (object) [ 'id' => 30 ] );
+        $away_club = new Club();
         
         $this->club_repository->method( 'find_by_id' )->willReturnMap([
             [ 1000, 'id', $home_club ],

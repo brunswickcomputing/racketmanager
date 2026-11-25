@@ -28,6 +28,7 @@ use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Services\Player_Service;
+use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
 use Racketmanager\Tests\Helpers\Player_Test_Factory;
@@ -101,8 +102,7 @@ class Matches_Query_Handlers_Test extends TestCase {
     }
 
     public function test_latest_handler_resolves_club_shortcode_and_competition_name(): void {
-        $club     = $this->createStub( Club::class );
-        $club->id = 42;
+        $club     = Club_Test_Factory::create( id: 42 );
         $clubs    = $this->createMock( Club_Repository_Interface::class );
         $clubs->expects( $this->once() )->method( 'find_by_id' )->with( 'Leigh Park', 'shortcode' )->willReturn( $club );
 

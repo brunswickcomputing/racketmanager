@@ -43,6 +43,7 @@ use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
+use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
@@ -459,13 +460,13 @@ class Matches_Team_List_Template_Test extends TestCase {
 
         $team->set_info( $team_info );
 
-        $club = $this->createStub( Club::class );
-        $club->method( 'get_id' )->willReturn( 8 );
-        $club->method( 'get_name' )->willReturn( 'Westcliff Lawn Tennis Club' );
-        $club->shortcode = 'WLTC';
-        $club->name = 'Westcliff Lawn Tennis Club';
-        $club->address = 'The Ridgeway, Westcliff';
-        $club->website = 'https://westclifftennis.org.uk';
+        $club = Club_Test_Factory::create(
+            id: 8,
+            name: 'Westcliff Lawn Tennis Club',
+            shortcode: 'WLTC',
+            address: 'The Ridgeway, Westcliff',
+            website: 'https://westclifftennis.org.uk',
+        );
 
         $team_details = (object) [
             'team' => $team,
@@ -552,11 +553,13 @@ class Matches_Team_List_Template_Test extends TestCase {
 
         $team->set_players( [ $player ] );
 
-        $club = $this->createStub( Club::class );
-        $club->shortcode = 'WLTC';
-        $club->name = 'Westcliff Lawn Tennis Club';
-        $club->address = 'The Ridgeway, Westcliff';
-        $club->website = 'https://westclifftennis.org.uk';
+        $club = Club_Test_Factory::create(
+            id: 8,
+            name: 'Westcliff Lawn Tennis Club',
+            shortcode: 'WLTC',
+            address: 'The Ridgeway, Westcliff',
+            website: 'https://westclifftennis.org.uk',
+        );
 
         $team_details = new Team_Details_DTO(
             team: $team,
@@ -701,11 +704,13 @@ class Matches_Team_List_Template_Test extends TestCase {
 
         $team->set_players( [ $player ] );
 
-        $club = $this->createStub( Club::class );
-        $club->shortcode = 'WLTC';
-        $club->name = 'Westcliff Lawn Tennis Club';
-        $club->address = 'The Ridgeway, Westcliff';
-        $club->website = 'https://westclifftennis.org.uk';
+        $club = Club_Test_Factory::create(
+            id: 8,
+            name: 'Westcliff Lawn Tennis Club',
+            shortcode: 'WLTC',
+            address: 'The Ridgeway, Westcliff',
+            website: 'https://westclifftennis.org.uk',
+        );
 
         $team_details = new Team_Details_DTO(
             team: $team,

@@ -423,8 +423,8 @@ class Notification_Service_Test extends TestCase {
         $league_team->club_id = 10;
         $this->league_team_repository->expects( $this->once() )->method('find_by_id')->with(200)->willReturn($league_team);
 
-        $club = $this->createStub( Club::class);
-        $club->match_secretary = (object)['email' => 'secretary@example.com'];
+        $club = new Club();
+        $club->set_match_secretary( (object) [ 'email' => 'secretary@example.com' ] );
         $this->club_repository->expects( $this->once() )->method( 'find_by_id' )->with(10)->willReturn($club);
 
         $GLOBALS['wp_mail_calls'] = [];
@@ -510,8 +510,8 @@ class Notification_Service_Test extends TestCase {
         $this->assertEquals('admin@example.com', $GLOBALS['wp_mail_calls'][0]['to']);
 
         // Case 3: Club has no match secretary email
-        $club = $this->createStub( Club::class);
-        $club->match_secretary = null;
+        $club = new Club();
+        $club->set_match_secretary( null );
         $this->club_repository->method( 'find_by_id' )->willReturn($club);
         $GLOBALS['wp_mail_calls'] = [];
         $this->service->send_result_notification($fixture, 'P', 'Test', 'home');
@@ -800,11 +800,11 @@ class Notification_Service_Test extends TestCase {
         $this->player_repository->expects( $this->once() )->method( 'find' )->with( 5, 'id' )->willReturn( $captain );
 
         // Mock Match Secretary
-        $club = $this->getMockBuilder( Club::class )->disableOriginalConstructor()->getMock();
-        $club->match_secretary = (object)[
+        $club = new Club();
+        $club->set_match_secretary( (object) [
             'display_name' => 'Match Sec',
-            'email' => 'secretary@example.com'
-        ];
+            'email'        => 'secretary@example.com',
+        ] );
         $this->club_repository->expects( $this->once() )->method( 'find_by_id' )->with( 10 )->willReturn( $club );
 
         $GLOBALS['wp_mail_calls'] = [];
@@ -1036,11 +1036,16 @@ class Notification_Service_Test extends TestCase {
             ->with($this->identicalTo($fixture), 1)
             ->willReturn($row);
 
-        $club                   = Club_Test_Factory::create(id: 10, name: 'Leigh Tennis Club');
-        $club->match_secretary  = (object) [
-            'email'        => 'ms@example.com',
-            'display_name' => 'Match Sec',
-        ];
+        $club = Club_Test_Factory::create(
+            id: 10,
+            name: 'Leigh Tennis Club',
+            overrides: [
+                'match_secretary' => (object) [
+                    'email'        => 'ms@example.com',
+                    'display_name' => 'Match Sec',
+                ],
+            ]
+        );
         $this->club_repository->method('find_by_id')->willReturn($club);
 
         $event = \Racketmanager\Domain\Competition\Event::from_object( (object) [ 'id' => 93, 'name' => 'Summer League', 'type' => 'singles', 'competition_id' => 1, 'seasons' => '{"2026":{"name":"2026"}}' ] );

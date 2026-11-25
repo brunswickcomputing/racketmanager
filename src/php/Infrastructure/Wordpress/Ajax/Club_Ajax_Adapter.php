@@ -28,22 +28,42 @@ use function Racketmanager\show_club_role_modal;
  * Adapter for Club AJAX requests.
  */
 class Club_Ajax_Adapter {
-    private const NONCE_FIELD = 'racketmanager_nonce';
-    private const DEFAULT_NONCE_FIELD = 'security';
-    private const DEFAULT_NONCE_ACTION = 'ajax-nonce';
+    private const string NONCE_FIELD          = 'racketmanager_nonce';
+    private const string DEFAULT_NONCE_FIELD  = 'security';
+    private const string DEFAULT_NONCE_ACTION = 'ajax-nonce';
 
+    /**
+     * Initialises the service with required dependencies for security, response handling,
+     * club management, registration, user access, role access, and optional repositories.
+     *
+     * @param Security_Service_Interface       $security_service Security service used for authorization and authentication checks.
+     * @param Json_Response_Factory_Interface  $response_factory Factory used to create JSON responses.
+     * @param Club_Service                     $club_service Service used to manage club-related operations.
+     * @param Registration_Service             $registration_service Service used to handle registration workflows.
+     * @param User_Repository_Interface        $user_repository Repository used to access user data.
+     * @param Club_Role_Repository_Interface   $club_role_repository Repository used to access club role data.
+     * @param Club_Repository_Interface|null   $club_repository Optional repository used to access club data.
+     * @param Player_Repository_Interface|null $player_repository Optional repository used to access player data.
+     *
+     * @return void
+     */
     public function __construct(
-        private Security_Service_Interface $security_service,
-        private Json_Response_Factory_Interface $response_factory,
-        private Club_Service $club_service,
-        private Registration_Service $registration_service,
-        private User_Repository_Interface $user_repository,
-        private Club_Role_Repository_Interface $club_role_repository,
-        private ?Club_Repository_Interface $club_repository = null,
-        private ?Player_Repository_Interface $player_repository = null
+        private readonly Security_Service_Interface $security_service,
+        private readonly Json_Response_Factory_Interface $response_factory,
+        private readonly Club_Service $club_service,
+        private readonly Registration_Service $registration_service,
+        private readonly User_Repository_Interface $user_repository,
+        private readonly Club_Role_Repository_Interface $club_role_repository,
+        private readonly ?Club_Repository_Interface $club_repository = null,
+        private readonly ?Player_Repository_Interface $player_repository = null
     ) {
     }
 
+    /**
+     * Creates a club validator using the configured role, player, user, and club repositories.
+     *
+     * @return Validator_Club Validator instance used to validate club-related data and operations.
+     */
     private function create_validator(): Validator_Club {
         return new Validator_Club(
             $this->club_role_repository,
@@ -53,6 +73,11 @@ class Club_Ajax_Adapter {
         );
     }
 
+    /**
+     * Creates an unauthorised error response for requests made by users who are not logged in.
+     *
+     * @return Response Error response indicating that authentication is required.
+     */
     public function logged_out(): Response {
         $msg = __( 'Must be logged in to access this feature', 'racketmanager' );
 
@@ -66,6 +91,11 @@ class Club_Ajax_Adapter {
         );
     }
 
+    /**
+     * Creates an error response for unauthenticated access to a protected feature.
+     *
+     * @return Response Error response containing a logged-out alert message and HTTP 401 status.
+     */
     public function logged_out_modal(): Response {
         $msg    = __( 'Must be logged in to access this feature', 'racketmanager' );
         $output = show_alert( $msg, 'danger', 'modal' );
@@ -79,6 +109,13 @@ class Club_Ajax_Adapter {
         );
     }
 
+    /**
+     * Updates an existing club from request data after nonce verification and validation.
+     *
+     * @param array $request Request data containing the club identifier, contact details, facilities, founded year, website, address, and match secretary details.
+     *
+     * @return Response JSON response indicating whether the club was updated, nothing changed, or validation/security failed.
+     */
     public function update_club( array $request = [] ): Response {
         $security_error = $this->nonce_failure_response( self::NONCE_FIELD, 'club-update', __( 'Serious error in club update', 'racketmanager' ), $request );
         if ( $security_error ) {
@@ -87,7 +124,7 @@ class Club_Ajax_Adapter {
 
         $command   = Update_Club_Command::from_post( $request );
         $validator = $this->create_validator();
-        $validator = $validator->club( $command->club_id !== null ? (string) $command->club_id : null );
+        $validator = $validator->club( null !== $command->club_id ? (string) $command->club_id : null );
         $validator = $validator->address( $command->address );
         $validator = $validator->telephone( $command->match_secretary_contact_no, 'matchSecretaryContactNo', true );
         $validator = $validator->email( $command->match_secretary_email, $command->match_secretary_id, true, 'matchSecretaryEmail', true );
@@ -99,15 +136,15 @@ class Club_Ajax_Adapter {
             return $this->response_factory->create_error_response( $return, $return->status );
         }
 
-        $club                          = $this->club_service->get_club( $command->club_id );
-        $club_updated                  = clone $club;
-        $club_updated->contactno       = $command->contact_no;
-        $club_updated->facilities      = $command->facilities;
-        $club_updated->founded         = $command->founded;
-        $club_updated->website         = $command->website;
-        $club_updated->address         = $command->address;
-        $club_updated->match_secretary = $command->match_secretary();
-        $club_updated                  = $this->club_service->update_club( $club->id, $club_updated );
+        $club         = $this->club_service->get_club( $command->club_id );
+        $club_updated = clone $club;
+        $club_updated->set_contact_no( $command->contact_no );
+        $club_updated->set_facilities( $command->facilities );
+        $club_updated->set_founded( $command->founded );
+        $club_updated->set_website( $command->website );
+        $club_updated->set_address( $command->address );
+        $club_updated->set_match_secretary( $command->match_secretary() );
+        $club_updated = $this->club_service->update_club( $club->id, $club_updated );
 
         if ( $club_updated ) {
             $return = array(
@@ -124,13 +161,22 @@ class Club_Ajax_Adapter {
         return $this->response_factory->create_success_response( $return );
     }
 
+    /**
+     * Handles a club player registration request, validates security nonce data,
+     * attempts to register the current user as a player for the requested club,
+     * and returns a success or error response based on the registration outcome.
+     *
+     * @param array $request Request data used to create the club player registration command and perform validation.
+     *
+     * @return Response Response indicating whether the player registration request succeeded or failed.
+     */
     public function club_player_request( array $request = [] ): Response {
         $security_error = $this->nonce_failure_response( self::NONCE_FIELD, 'club-player-request', null, $request );
         if ( $security_error ) {
             return $security_error;
         }
 
-        $command   = Club_Player_Request_Command::from_post( $request, (int) wp_get_current_user()->ID );
+        $command   = Club_Player_Request_Command::from_post( $request, wp_get_current_user()->ID );
         $validator = $this->create_validator();
         try {
             $response = $this->registration_service->register_player_to_club( $command->club_id, $command->user_id, $request );
@@ -158,13 +204,20 @@ class Club_Ajax_Adapter {
         return $this->response_factory->create_error_response( $return, $return->status );
     }
 
+    /**
+     * Removes one or more players from a club registration request after validating the nonce.
+     *
+     * @param array $request Request data containing the nonce and player registration identifiers to remove.
+     *
+     * @return Response Success response indicating whether players were removed or no players were selected.
+     */
     public function club_player_remove( array $request = [] ): Response {
         $security_error = $this->nonce_failure_response( self::NONCE_FIELD, 'club-player-remove', null, $request );
         if ( $security_error ) {
             return $security_error;
         }
 
-        $command = Club_Players_Remove_Command::from_post( $request, (int) wp_get_current_user()->ID );
+        $command = Club_Players_Remove_Command::from_post( $request, wp_get_current_user()->ID );
         $deleted = 0;
         foreach ( $command->club_player_ids as $club_player_id ) {
             $this->registration_service->remove_registration( $club_player_id, $command->user_id );
@@ -180,6 +233,13 @@ class Club_Ajax_Adapter {
         return $this->response_factory->create_success_response( $msg );
     }
 
+    /**
+     * Displays a club role modal after validating the request nonce and preparing request data.
+     *
+     * @param array $request Request data containing the club role identifier and modal name.
+     *
+     * @return Response Raw response containing the rendered club role modal, or a security error response when nonce validation fails.
+     */
     public function show_club_role_modal( array $request = [] ): Response {
         $security_error = $this->nonce_failure_html_response( self::DEFAULT_NONCE_FIELD, self::DEFAULT_NONCE_ACTION, $request );
         if ( $security_error ) {
@@ -193,6 +253,14 @@ class Club_Ajax_Adapter {
         return $this->response_factory->create_raw_response( $output );
     }
 
+    /**
+     * Sets or updates a club role assignment from request data, including nonce validation,
+     * command validation, optional user reassignment, and contact detail updates.
+     *
+     * @param array $request Request data containing nonce, club role, club, user, contact number, and email values.
+     *
+     * @return Response JSON response indicating whether the club role was updated, no changes were made, or validation/security failed.
+     */
     public function set_club_role( array $request = [] ): Response {
         $security_error = $this->nonce_failure_response( self::NONCE_FIELD, 'racketmanager_club-role-update', null, $request );
         if ( $security_error ) {
@@ -201,7 +269,7 @@ class Club_Ajax_Adapter {
 
         $command   = Set_Club_Role_Command::from_post( $request );
         $validator = $this->create_validator();
-        $validator = $validator->club( $command->club_id !== null ? (string) $command->club_id : null );
+        $validator = $validator->club( null !== $command->club_id ? (string) $command->club_id : null );
         $validator = $validator->club_role( $command->club_role_id );
         $validator = $validator->user( $command->user_id );
         $validator = $validator->telephone( $command->contact_no, 'contactno', true );
@@ -227,8 +295,8 @@ class Club_Ajax_Adapter {
         if ( $user ) {
             $user_updates = $this->user_repository->update_contact(
                 $user,
-                (string) ( $command->contact_no ?? '' ),
-                (string) ( $command->email ?? '' )
+                $command->contact_no ?? '',
+                $command->email ?? ''
             );
             if ( $user_updates ) {
                 $updates = true;
@@ -242,21 +310,40 @@ class Club_Ajax_Adapter {
         return $this->response_factory->create_success_response( $return );
     }
 
+    /**
+     * Creates an error response for a failed nonce verification.
+     *
+     * @param string      $field The request field containing the nonce value.
+     * @param string      $action The nonce action to verify against.
+     * @param string|null $override_msg Optional message to use instead of the default failure message.
+     * @param array       $request Optional request data used during nonce verification.
+     *
+     * @return Response|null Error response when nonce verification fails, or null when verification succeeds.
+     */
     private function nonce_failure_response( string $field, string $action, ?string $override_msg = null, array $request = [] ): ?Response {
         $details = $this->verify_nonce_details( $field, $action, $request );
-        if ( $details === null ) {
+        if ( null === $details ) {
             return null;
         }
-        if ( $override_msg !== null ) {
+        if ( null !== $override_msg ) {
             $details->msg = $override_msg;
         }
 
         return $this->response_factory->create_error_response( $details, $details->status );
     }
 
+    /**
+     * Creates an HTML alert response for a failed nonce verification.
+     *
+     * @param string $field The request field containing the nonce value.
+     * @param string $action The nonce action to verify against.
+     * @param array  $request Optional request data used during nonce verification.
+     *
+     * @return Response|null Raw HTML response when nonce verification fails, or null when verification succeeds.
+     */
     private function nonce_failure_html_response( string $field, string $action, array $request = [] ): ?Response {
         $details = $this->verify_nonce_details( $field, $action, $request );
-        if ( $details === null ) {
+        if ( null === $details ) {
             return null;
         }
 
@@ -265,11 +352,20 @@ class Club_Ajax_Adapter {
         return $this->response_factory->create_raw_response( $output, (int) $details->status );
     }
 
+    /**
+     * Verifies nonce request details and builds failure information when validation fails.
+     *
+     * @param string $field The request field expected to contain the nonce value.
+     * @param string $action The nonce action to validate against.
+     * @param array  $request Optional request data containing the nonce field.
+     *
+     * @return stdClass|null Failure details when the nonce is missing or invalid, or null when verification succeeds.
+     */
     private function verify_nonce_details( string $field, string $action, array $request = [] ): ?stdClass {
         $nonce_set = isset( $request[ $field ] );
         $nonce     = $request[ $field ] ?? '';
         $nonce     = is_string( $nonce ) ? sanitize_text_field( wp_unslash( $nonce ) ) : '';
-        if ( $nonce !== '' && $this->security_service->verify_nonce( $nonce, $action ) ) {
+        if ( '' !== $nonce && $this->security_service->verify_nonce( $nonce, $action ) ) {
             return null;
         }
 

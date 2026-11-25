@@ -3,8 +3,10 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Services\Admin\Club;
 
+use Exception;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Admin\Commands\Club_Handler;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
@@ -12,7 +14,8 @@ use Racketmanager\Services\Admin\Club\Club_Action_Dispatcher;
 use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Player_Service;
-use stdClass;
+use Racketmanager\Services\Validator\Club_Validator_Factory;
+use WP_Error;
 
 require_once __DIR__ . '/../../../../wp-stubs.php';
 
@@ -25,7 +28,7 @@ final class Club_Action_Dispatcher_Test extends TestCase {
         $guard          = $this->createMock( Action_Guard_Interface::class );
         $guard->expects( self::never() )->method( 'assert_allowed' );
 
-        $dispatcher = new Club_Action_Dispatcher( $club_service, $player_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Handler( $club_service, $player_service, new \Racketmanager\Services\Validator\Club_Validator_Factory() ) );
+        $dispatcher = new Club_Action_Dispatcher( $guard, new Club_Handler( $club_service, $player_service, new Club_Validator_Factory() ) );
         $result     = $dispatcher->handle( array(), array() );
 
         self::assertNull( $result->message );
@@ -41,7 +44,7 @@ final class Club_Action_Dispatcher_Test extends TestCase {
             ->with( 'racketmanager_nonce', 'racketmanager_add-club', 'edit_teams' )
             ->willThrowException( new Invalid_Status_Exception( 'Invalid token' ) );
 
-        $dispatcher = new Club_Action_Dispatcher( $club_service, $player_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Handler( $club_service, $player_service, new \Racketmanager\Services\Validator\Club_Validator_Factory() ) );
+        $dispatcher = new Club_Action_Dispatcher( $guard, new Club_Handler( $club_service, $player_service, new Club_Validator_Factory() ) );
         $result     = $dispatcher->handle( array(), array( 'addClub' => '1' ) );
 
         self::assertSame( 'Invalid token', $result->message );
@@ -53,7 +56,7 @@ final class Club_Action_Dispatcher_Test extends TestCase {
         $player_service = $this->createMock( Player_Service::class );
         $guard          = $this->createStub( Action_Guard_Interface::class );
 
-        $dispatcher = new Club_Action_Dispatcher( $club_service, $player_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Handler( $club_service, $player_service, new \Racketmanager\Services\Validator\Club_Validator_Factory() ) );
+        $dispatcher = new Club_Action_Dispatcher( $guard, new Club_Handler( $club_service, $player_service, new Club_Validator_Factory() ) );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -72,14 +75,14 @@ final class Club_Action_Dispatcher_Test extends TestCase {
         $player_service = $this->createMock( Player_Service::class );
         $guard          = $this->createStub( Action_Guard_Interface::class );
 
-        $new_club     = $this->createStub( Club::class );
-        $new_club->id = 42;
+        $new_club = new Club();
+        $new_club->set_id( 42 );
 
         $club_service->expects( self::once() )
             ->method( 'add_club' )
             ->willReturn( $new_club );
 
-        $dispatcher = new Club_Action_Dispatcher( $club_service, $player_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Handler( $club_service, $player_service, new \Racketmanager\Services\Validator\Club_Validator_Factory() ) );
+        $dispatcher = new Club_Action_Dispatcher( $guard, new Club_Handler( $club_service, $player_service, new Club_Validator_Factory() ) );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -107,7 +110,7 @@ final class Club_Action_Dispatcher_Test extends TestCase {
             ->with( 'racketmanager_nonce', 'racketmanager_manage-club', 'edit_teams' )
             ->willThrowException( new Invalid_Status_Exception( 'Permission denied' ) );
 
-        $dispatcher = new Club_Action_Dispatcher( $club_service, $player_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Handler( $club_service, $player_service, new \Racketmanager\Services\Validator\Club_Validator_Factory() ) );
+        $dispatcher = new Club_Action_Dispatcher( $guard, new Club_Handler( $club_service, $player_service, new Club_Validator_Factory() ) );
         $result     = $dispatcher->handle( array(), array( 'editClub' => '1' ) );
 
         self::assertSame( 'Permission denied', $result->message );
@@ -119,7 +122,7 @@ final class Club_Action_Dispatcher_Test extends TestCase {
         $player_service = $this->createMock( Player_Service::class );
         $guard          = $this->createStub( Action_Guard_Interface::class );
 
-        $dispatcher = new Club_Action_Dispatcher( $club_service, $player_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Handler( $club_service, $player_service, new \Racketmanager\Services\Validator\Club_Validator_Factory() ) );
+        $dispatcher = new Club_Action_Dispatcher( $guard, new Club_Handler( $club_service, $player_service, new Club_Validator_Factory() ) );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -141,7 +144,7 @@ final class Club_Action_Dispatcher_Test extends TestCase {
         $club_service->expects( self::exactly( 2 ) )
             ->method( 'remove_club' );
 
-        $dispatcher = new Club_Action_Dispatcher( $club_service, $player_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Handler( $club_service, $player_service, new \Racketmanager\Services\Validator\Club_Validator_Factory() ) );
+        $dispatcher = new Club_Action_Dispatcher( $guard, new Club_Handler( $club_service, $player_service, new Club_Validator_Factory() ) );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -163,7 +166,7 @@ final class Club_Action_Dispatcher_Test extends TestCase {
             ->method( 'schedule_global_player_ratings' )
             ->willReturn( true );
 
-        $dispatcher = new Club_Action_Dispatcher( $club_service, $player_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Handler( $club_service, $player_service, new \Racketmanager\Services\Validator\Club_Validator_Factory() ) );
+        $dispatcher = new Club_Action_Dispatcher( $guard, new Club_Handler( $club_service, $player_service, new Club_Validator_Factory() ) );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -184,7 +187,7 @@ final class Club_Action_Dispatcher_Test extends TestCase {
             ->method( 'schedule_global_player_ratings' )
             ->willReturn( false );
 
-        $dispatcher = new Club_Action_Dispatcher( $club_service, $player_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Handler( $club_service, $player_service, new \Racketmanager\Services\Validator\Club_Validator_Factory() ) );
+        $dispatcher = new Club_Action_Dispatcher( $guard, new Club_Handler( $club_service, $player_service, new Club_Validator_Factory() ) );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -203,9 +206,9 @@ final class Club_Action_Dispatcher_Test extends TestCase {
 
         $player_service->expects( self::once() )
             ->method( 'schedule_global_player_ratings' )
-            ->willReturn( new \WP_Error( 'error', 'Failed' ) );
+            ->willReturn( new WP_Error( 'error', 'Failed' ) );
 
-        $dispatcher = new Club_Action_Dispatcher( $club_service, $player_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Handler( $club_service, $player_service, new \Racketmanager\Services\Validator\Club_Validator_Factory() ) );
+        $dispatcher = new Club_Action_Dispatcher( $guard, new Club_Handler( $club_service, $player_service, new Club_Validator_Factory() ) );
         $result     = $dispatcher->handle(
             array(),
             array(
@@ -224,9 +227,9 @@ final class Club_Action_Dispatcher_Test extends TestCase {
 
         $player_service->expects( self::once() )
             ->method( 'schedule_global_player_ratings' )
-            ->willThrowException( new \Exception( 'DB connection failure' ) );
+            ->willThrowException( new Exception( 'DB connection failure' ) );
 
-        $dispatcher = new Club_Action_Dispatcher( $club_service, $player_service, $guard, new \Racketmanager\Application\Admin\Commands\Club_Handler( $club_service, $player_service, new \Racketmanager\Services\Validator\Club_Validator_Factory() ) );
+        $dispatcher = new Club_Action_Dispatcher( $guard, new Club_Handler( $club_service, $player_service, new Club_Validator_Factory() ) );
         $result     = $dispatcher->handle(
             array(),
             array(

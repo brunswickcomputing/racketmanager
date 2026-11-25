@@ -7,13 +7,18 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Controllers\Club_Admin_Controller;
 use Racketmanager\Admin\View_Models\Club_Page_View_Model;
+use Racketmanager\Application\Admin\Commands\Club_Handler;
+use Racketmanager\Domain\Club\Club;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Services\Admin\Club\Club_Action_Dispatcher;
 use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Player_Service;
+use Racketmanager\Services\Validator\Club_Validator_Factory;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 
 require_once __DIR__ . '/../../../wp-stubs.php';
 
@@ -21,29 +26,25 @@ require_once __DIR__ . '/../../../wp-stubs.php';
 final class Club_Admin_Controller_Test extends TestCase {
 
     private Club_Service $club_service;
-    private Player_Service $player_service;
     private Action_Guard_Interface $guard;
-    private Club_Action_Dispatcher $dispatcher;
     private Club_Admin_Controller $controller;
 
     protected function setUp(): void {
-        $this->club_service   = $this->createMock( Club_Service::class );
-        $this->player_service = $this->createMock( Player_Service::class );
-        $this->guard          = $this->createMock( Action_Guard_Interface::class );
+        $this->club_service = $this->createMock( Club_Service::class );
+        $player_service     = $this->createMock( Player_Service::class );
+        $this->guard        = $this->createMock( Action_Guard_Interface::class );
 
-        $player_repo = $this->createStub( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class );
-        $player_repo->method( 'find' )->willReturn( \Racketmanager\Tests\Helpers\Player_Test_Factory::create_sparse( array( 'id' => 7 ) ) );
+        $player_repo = $this->createStub( Player_Repository_Interface::class );
+        $player_repo->method( 'find' )->willReturn( Player_Test_Factory::create_sparse( array( 'id' => 7 ) ) );
 
-        $this->dispatcher = new Club_Action_Dispatcher(
-            $this->club_service,
-            $this->player_service,
+        $dispatcher = new Club_Action_Dispatcher(
             $this->guard,
-            new \Racketmanager\Application\Admin\Commands\Club_Handler( $this->club_service, $this->player_service, new \Racketmanager\Services\Validator\Club_Validator_Factory( player_repository: $player_repo ) )
+            new Club_Handler( $this->club_service, $player_service, new Club_Validator_Factory( player_repository: $player_repo ) )
         );
 
         $this->controller = new Club_Admin_Controller(
             $this->club_service,
-            $this->dispatcher,
+            $dispatcher,
             $this->guard
         );
     }
@@ -139,7 +140,7 @@ final class Club_Admin_Controller_Test extends TestCase {
 
         $this->club_service->expects( self::once() )
             ->method( 'update_club' )
-            ->with( 1, self::isInstanceOf( \Racketmanager\Domain\Club\Club::class ) )
+            ->with( 1, self::isInstanceOf( Club::class ) )
             ->willReturn( true );
 
         $result = $this->controller->club_page(

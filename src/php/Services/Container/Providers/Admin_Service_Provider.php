@@ -502,8 +502,6 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
         $container->set(
             'club_action_dispatcher',
             fn( Simple_Container $c ) => new Club_Action_Dispatcher(
-                $c->get( 'club_service' ),
-                $c->get( 'player_service' ),
                 $c->get( 'action_guard' ),
                 commands: $c->get( 'club_handler' )
             )

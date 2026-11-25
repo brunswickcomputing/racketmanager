@@ -11,7 +11,7 @@ final class Club_Factory {
     /**
      * Create a Club entity from a hydration DTO.
      *
-     * @param Club_Hydration_DTO $dto
+     * @param Club_Hydration_DTO $dto Hydration DTO.
      * @return Club
      */
     public static function create_from_dto( Club_Hydration_DTO $dto ): Club {
@@ -21,7 +21,7 @@ final class Club_Factory {
     /**
      * Create a Club entity from a generic object (e.g. database row).
      *
-     * @param object $row
+     * @param object $row Database row object.
      * @return Club
      */
     public static function from_object( object $row ): Club {
@@ -32,7 +32,7 @@ final class Club_Factory {
     /**
      * Create a Club entity from an array.
      *
-     * @param array $data
+     * @param array $data Raw data array.
      * @return Club
      */
     public static function from_array( array $data ): Club {

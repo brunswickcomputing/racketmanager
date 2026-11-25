@@ -110,12 +110,13 @@ final class Admin_Club_Templates_Render_Test extends TestCase {
             facilities: '6 courts',
             address: '123 Tennis Lane'
         );
-        $club->match_secretary = (object) array(
+        $match_secretary = (object) array(
             'id'           => 42,
             'display_name' => 'Jane Secretary',
             'contactno'    => '07700900123',
             'email'        => 'sec@example.com',
         );
+        $club->set_match_secretary( $match_secretary );
 
         $vm = new Club_Page_View_Model(
             club: $club,

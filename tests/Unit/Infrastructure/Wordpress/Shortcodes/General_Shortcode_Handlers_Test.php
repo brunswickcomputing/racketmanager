@@ -56,6 +56,7 @@ use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
+use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Test_Container;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use Racketmanager\Tests\Helpers\Player_Test_Factory;
@@ -697,10 +698,11 @@ class General_Shortcode_Handlers_Test extends TestCase {
             display_name: 'John Doe',
         );
 
-        $club_active               = new Club();
-        $club_active->id           = 1;
-        $club_active->name         = 'Current Club Display';
-        $club_active->shortcode    = 'Current Club';
+        $club_active = Club_Test_Factory::create(
+            id: 1,
+            name: 'Current Club Display',
+            shortcode: 'Current Club',
+        );
 
         $reg_active = Club_Player::from_object(
             (object) [
@@ -712,10 +714,11 @@ class General_Shortcode_Handlers_Test extends TestCase {
         );
         $dto_active = new Club_Player_DTO( $player_entity, $club_active, $reg_active );
 
-        $club_removed            = new Club();
-        $club_removed->id        = 2;
-        $club_removed->name      = 'Old Club Display';
-        $club_removed->shortcode = 'Old Club';
+        $club_removed = Club_Test_Factory::create(
+            id: 2,
+            name: 'Old Club Display',
+            shortcode: 'Old Club',
+        );
 
         $reg_removed = Club_Player::from_object(
             (object) [
@@ -791,10 +794,11 @@ class General_Shortcode_Handlers_Test extends TestCase {
             display_name: 'John Doe',
         );
 
-        $club_active            = new Club();
-        $club_active->id        = 1;
-        $club_active->name      = 'Current Club Display';
-        $club_active->shortcode = 'Current Club';
+        $club_active = Club_Test_Factory::create(
+            id: 1,
+            name: 'Current Club Display',
+            shortcode: 'Current Club',
+        );
 
         $reg_active = Club_Player::from_object(
             (object) [

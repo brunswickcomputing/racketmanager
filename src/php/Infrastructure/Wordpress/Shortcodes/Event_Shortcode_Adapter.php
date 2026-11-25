@@ -38,6 +38,7 @@ use Racketmanager\Application\Event\Queries\Get_Event_Teams_Query;
 use Racketmanager\Application\Event\Queries\Get_Team_Order_Players_Handler;
 use Racketmanager\Application\Event\Queries\Get_Team_Order_Players_Query;
 use Racketmanager\Application\Ports\Query_Vars_Interface;
+use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
@@ -57,27 +58,27 @@ use function str_replace;
 /**
  * Driving adapter for Event shortcodes.
  */
-class Event_Shortcode_Adapter implements Shortcode_Adapter_Interface {
+readonly class Event_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     public function __construct(
-        private readonly Competition_Shortcode_Presenter $competition_shortcode_presenter,
-        private readonly Tournament_Presenter $tournament_presenter,
-        private readonly Player_Presenter $player_presenter,
-        private readonly Team_Details_Presenter $team_details_presenter,
-        private readonly ?RacketManager $racketmanager = null,
-        private readonly ?Shortcode_View_Presenter $view_presenter = null,
-        private readonly ?Get_Event_Handler $event_handler = null,
-        private readonly ?Get_Event_Standings_Handler $standings_handler = null,
-        private readonly ?Get_Event_Draw_Handler $draw_handler = null,
-        private readonly ?Get_Event_Matches_Handler $matches_handler = null,
-        private readonly ?Get_Event_Clubs_Handler $clubs_handler = null,
-        private readonly ?Get_Event_Teams_Handler $teams_handler = null,
-        private readonly ?Get_Event_Players_Handler $players_handler = null,
-        private readonly ?Get_Event_Partner_Handler $partner_handler = null,
-        private readonly ?Get_Event_Team_Matches_Handler $team_matches_handler = null,
-        private readonly ?Get_Team_Order_Players_Handler $team_order_players_handler = null,
-        private readonly ?Get_Event_Dropdown_Handler $dropdown_handler = null,
-        private readonly ?Shortcode_Template_Renderer $template_renderer = null,
-        private readonly ?Query_Vars_Interface $query_vars = null
+        private Competition_Shortcode_Presenter $competition_shortcode_presenter,
+        private Tournament_Presenter            $tournament_presenter,
+        private Player_Presenter                $player_presenter,
+        private Team_Details_Presenter          $team_details_presenter,
+        private ?RacketManager                  $racketmanager = null,
+        private ?Shortcode_View_Presenter       $view_presenter = null,
+        private ?Get_Event_Handler              $event_handler = null,
+        private ?Get_Event_Standings_Handler    $standings_handler = null,
+        private ?Get_Event_Draw_Handler         $draw_handler = null,
+        private ?Get_Event_Matches_Handler      $matches_handler = null,
+        private ?Get_Event_Clubs_Handler        $clubs_handler = null,
+        private ?Get_Event_Teams_Handler        $teams_handler = null,
+        private ?Get_Event_Players_Handler      $players_handler = null,
+        private ?Get_Event_Partner_Handler      $partner_handler = null,
+        private ?Get_Event_Team_Matches_Handler $team_matches_handler = null,
+        private ?Get_Team_Order_Players_Handler $team_order_players_handler = null,
+        private ?Get_Event_Dropdown_Handler     $dropdown_handler = null,
+        private ?Shortcode_Template_Renderer    $template_renderer = null,
+        private ?Query_Vars_Interface           $query_vars = null
     ) {}
 
     public function show_event( array|string $atts = [] ): string {
@@ -355,8 +356,9 @@ class Event_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         if ( $event && $event_club ) {
             $event_club_id = method_exists( $event_club, 'get_id' ) ? $event_club->get_id() : ( $event_club->id ?? null );
             if ( ! empty( $event_club->matches ) && is_array( $event_club->matches ) ) {
+                $presented_matches = [];
                 foreach ( $event_club->matches as $key => $group_matches ) {
-                    $event_club->matches[ $key ] = $tourn_presenter->present_match_group(
+                    $presented_matches[ $key ] = $tourn_presenter->present_match_group(
                         $key,
                         $group_matches,
                         $tourn_presenter->is_tournament_competition( $event->competition ?? null ),
@@ -367,10 +369,16 @@ class Event_Shortcode_Adapter implements Shortcode_Adapter_Interface {
                         ]
                     );
                 }
+                if ( $event_club instanceof Club ) {
+                    $event_club->set_matches( $presented_matches );
+                } else {
+                    $event_club->matches = $presented_matches;
+                }
             }
             if ( ! empty( $event_club->results ) && is_array( $event_club->results ) ) {
+                $presented_results = [];
                 foreach ( $event_club->results as $key => $group_matches ) {
-                    $event_club->results[ $key ] = $tourn_presenter->present_match_group(
+                    $presented_results[ $key ] = $tourn_presenter->present_match_group(
                         $key,
                         $group_matches,
                         $tourn_presenter->is_tournament_competition( $event->competition ?? null ),
@@ -380,6 +388,11 @@ class Event_Shortcode_Adapter implements Shortcode_Adapter_Interface {
                             'by_date'      => true,
                         ]
                     );
+                }
+                if ( $event_club instanceof Club ) {
+                    $event_club->set_results( $presented_results );
+                } else {
+                    $event_club->results = $presented_results;
                 }
             }
         }

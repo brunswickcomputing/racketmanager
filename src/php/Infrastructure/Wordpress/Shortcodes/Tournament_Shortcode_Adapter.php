@@ -125,7 +125,7 @@ class Tournament_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             'menu_options'        => $result->menu_options,
             'post_id'             => $post_id,
             'form_action'         => $post_id ? (string) get_permalink( (int) $post_id ) : '',
-            'tournament_seo_name'  => $tournament_seo_name,
+            'tournament_seo_name' => $tournament_seo_name,
             'season'              => $tournament?->season,
             'entry_option'        => true,
             'tournament_header'   => $tournament ? $this->tournament_presenter->present_header( $tournament, true ) : null,
@@ -404,15 +404,15 @@ class Tournament_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             return Shortcode_View_Model::for_template(
                 'player',
                 [
-                    'tournament'         => $tournament,
-                    'tournament_player'  => $tournament_player,
-                    'player_vm'          => $player_vm,
-                    'player_entry_rows'  => $this->tournament_presenter->present_player_entry_rows(
+                    'tournament'        => $tournament,
+                    'tournament_player' => $tournament_player,
+                    'player_vm'         => $player_vm,
+                    'player_entry_rows' => $this->tournament_presenter->present_player_entry_rows(
                         $tournament,
                         is_array( $tournament_player->teams ?? null ) ? $tournament_player->teams : []
                     ),
-                    'tournament_link'    => $this->tournament_presenter->get_link( $tournament ),
-                    'tab'                => 'players',
+                    'tournament_link'   => $this->tournament_presenter->get_link( $tournament ),
+                    'tab'               => 'players',
                 ],
                 'tournament'
             );
@@ -476,7 +476,7 @@ class Tournament_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             $this->extract_get_params()
         );
 
-        $result = $this->matches_handler ? $this->matches_handler->handle( $query ) : null;
+        $result = $this->matches_handler?->handle( $query );
         if ( ! $result ) {
             return '';
         }
@@ -589,6 +589,13 @@ class Tournament_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         );
     }
 
+    /**
+     * Displays the latest tournament output generated from the provided attributes.
+     *
+     * @param array|string $atts Tournament display attributes or shortcode attribute string.
+     *
+     * @return string Rendered latest tournament markup, or an empty string when unavailable.
+     */
     public function show_latest_tournament( array|string $atts = [] ): string {
         $query = Get_Latest_Tournament_Query::from_atts(
             $this->normalize_atts( $atts ),
@@ -604,6 +611,13 @@ class Tournament_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         return $this->view_presenter ? $this->view_presenter->render( $this->present_latest_tournament( $result ) ) : '';
     }
 
+    /**
+     * Builds a shortcode view model for the latest tournament result.
+     *
+     * @param Latest_Tournament_Result $result Latest tournament lookup result.
+     *
+     * @return Shortcode_View_Model View model containing either an error message or redirect script.
+     */
     public function present_latest_tournament( Latest_Tournament_Result $result ): Shortcode_View_Model {
         if ( $result->is_error() ) {
             return Shortcode_View_Model::for_error( $result->error_message ?? __( 'Tournament not found', 'racketmanager' ) );
@@ -614,6 +628,13 @@ class Tournament_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         return Shortcode_View_Model::for_html( $script );
     }
 
+    /**
+     * Renders the tournament withdrawal modal for the supplied attributes.
+     *
+     * @param array|string $atts Shortcode or render attributes used to build the withdrawal query.
+     *
+     * @return string Rendered withdrawal modal markup, or an empty string when unavailable.
+     */
     public function show_tournament_withdrawal_modal( array|string $atts = [] ): string {
         $query = Get_Tournament_Withdrawal_Query::from_atts(
             $this->normalize_atts( $atts )
@@ -627,6 +648,13 @@ class Tournament_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         return $this->view_presenter ? $this->view_presenter->render( $this->present_withdrawal( $result ) ) : '';
     }
 
+    /**
+     * Builds the shortcode view model for a tournament withdrawal result.
+     *
+     * @param Tournament_Withdrawal_Result $result Withdrawal result data to present.
+     *
+     * @return Shortcode_View_Model View model for either an error response or the withdrawal modal template.
+     */
     public function present_withdrawal( Tournament_Withdrawal_Result $result ): Shortcode_View_Model {
         if ( $result->is_error() ) {
             return Shortcode_View_Model::for_error( $result->error_message ?? __( 'Tournament id not found', 'racketmanager' ), $result->error_type );
@@ -645,28 +673,60 @@ class Tournament_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         );
     }
 
+    /**
+     * Retrieves the tournament withdrawal modal view model.
+     *
+     * @param array|string $atts
+     *
+     * @return string
+     */
     public function show_tournament_withdrawal( array|string $atts = [] ): string {
         return $this->show_tournament_withdrawal_modal( $atts );
     }
 
+    /**
+     * Retrieves all available query variables.
+     *
+     * @return array<string, mixed>
+     */
     private function extract_query_vars(): array {
         return $this->query_vars?->all() ?? [];
     }
 
+    /**
+     * Retrieves the current GET query parameters.
+     *
+     * @return array<string, mixed>
+     */
     private function extract_get_params(): array {
         return $_GET ?? [];
     }
 
+    /**
+     * Extracts the current request referrer when available.
+     *
+     * @return string|null Non-empty referrer URL, or null when unavailable.
+     */
     private function extract_referrer(): ?string {
         $referrer = wp_get_referer();
 
         return is_string( $referrer ) && '' !== $referrer ? $referrer : null;
     }
 
+    /**
+     * @param array|string $atts
+     *
+     * @return array
+     */
     private function normalize_atts( array|string $atts ): array {
         return is_array( $atts ) ? $atts : [];
     }
 
+    /**
+     * @param string $id
+     *
+     * @return mixed
+     */
     private function resolve_service( string $id ): mixed {
         return $this->racketmanager?->container->get( $id );
     }

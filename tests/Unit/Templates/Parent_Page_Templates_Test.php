@@ -423,15 +423,15 @@ class Parent_Page_Templates_Test extends TestCase {
 
     public function test_tournament_handler_to_page_render_with_real_entity_and_no_post(): void {
         $tournament = new Tournament();
-        $tournament->id = 99;
-        $tournament->name = 'County Open 2026';
-        $tournament->competition_id = 5;
-        $tournament->season = '2026';
-        $tournament->date_start = '2026-07-01';
-        $tournament->date_end = '2026-07-10';
-        $tournament->is_open = true;
-        $tournament->is_started = true;
-        $tournament->order_of_play = null;
+        $tournament->set_id( 99 );
+        $tournament->set_name( 'County Open 2026' );
+        $tournament->set_competition_id( 5 );
+        $tournament->set_season( '2026' );
+        $tournament->set_start_date( '2026-07-01' );
+        $tournament->set_end_date( '2026-07-10' );
+        $tournament->set_is_open( true );
+        $tournament->set_is_started( true );
+        $tournament->set_order_of_play( null );
 
         $competition = new Competition(
             name: 'County Open',
@@ -488,13 +488,13 @@ class Parent_Page_Templates_Test extends TestCase {
 
     public function test_tournament_handler_routing_variants(): void {
         $tournament = new Tournament();
-        $tournament->id = 88;
-        $tournament->name = 'Autumn Trophy';
-        $tournament->competition_id = 7;
-        $tournament->season = '2026';
-        $tournament->date_start = '2026-11-01';
-        $tournament->date_end = gmdate( 'Y-m-d', strtotime( '+30 days' ) );
-        $tournament->order_of_play = '1';
+        $tournament->set_id( 88 );
+        $tournament->set_name( 'Autumn Trophy' );
+        $tournament->set_competition_id( 7 );
+        $tournament->set_season( '2026' );
+        $tournament->set_start_date( '2026-11-01' );
+        $tournament->set_end_date( gmdate( 'Y-m-d', strtotime( '+30 days' ) ) );
+        $tournament->set_order_of_play( '1' );
 
         $competition = new Competition(
             name: 'Autumn Trophy',
@@ -538,12 +538,12 @@ class Parent_Page_Templates_Test extends TestCase {
         $this->assertSame( 55, $vm4->vars['post_id'] );
 
         // 5. Empty end date hides order of play (HEAD behaviour)
-        $tournament->date_end = '';
+        $tournament->set_end_date( '' );
         $vm5 = $adapter->present_tournament( $handler->handle( new Get_Tournament_Query( tournament: 88 ) ) );
         $this->assertFalse( $vm5->vars['menu_options']['order_of_play']['available'] );
 
         // 6. Elapsed end date hides order of play
-        $tournament->date_end = gmdate( 'Y-m-d', strtotime( '-2 days' ) );
+        $tournament->set_end_date( gmdate( 'Y-m-d', strtotime( '-2 days' ) ) );
         $vm6 = $adapter->present_tournament( $handler->handle( new Get_Tournament_Query( tournament: 88 ) ) );
         $this->assertFalse( $vm6->vars['menu_options']['order_of_play']['available'] );
     }

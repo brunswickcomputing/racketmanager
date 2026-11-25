@@ -121,9 +121,9 @@ class Request_State_Presentation_Test extends TestCase {
 
     public function test_tournament_handler_supplies_selection_form_target(): void {
         $tournament = new Tournament();
-        $tournament->id = 8;
-        $tournament->name = 'Summer Open';
-        $tournament->season = '2026';
+        $tournament->set_id( 8 );
+        $tournament->set_name( 'Summer Open' );
+        $tournament->set_season( '2026' );
         $competition = Competition_Test_Factory::create();
         $competition->set_age_group( 'seniors' );
         $service = $this->createStub( Tournament_Service::class );

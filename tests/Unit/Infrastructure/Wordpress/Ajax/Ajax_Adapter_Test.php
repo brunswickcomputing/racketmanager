@@ -85,13 +85,15 @@ class Ajax_Adapter_Test extends TestCase {
             return 'should not be called';
         };
 
-        $response = $adapter->tab_data( [
-            'security' => 'valid_nonce',
-            'target'   => 'competition',
-            'targetId' => 10,
-            'tab'      => 'clubs',
-            'link_id'  => '<script>alert(1)</script>',
-        ] );
+        $response = $adapter->tab_data(
+            [
+                'security' => 'valid_nonce',
+                'target'   => 'competition',
+                'targetId' => 10,
+                'tab'      => 'clubs',
+                'link_id'  => '<script>alert(1)</script>',
+            ]
+        );
 
         $this->assertSame( 200, $response->get_status_code() );
         $this->assertSame( 'Invalid link ID', $response->get_content() );
@@ -115,14 +117,16 @@ class Ajax_Adapter_Test extends TestCase {
             return 'clubs content';
         };
 
-        $response = $adapter->tab_data( [
-            'security' => 'valid_nonce',
-            'target'   => 'competition',
-            'targetId' => 10,
-            'tab'      => 'clubs',
-            'link_id'  => 'valid-club_123',
-            'season'   => '2026',
-        ] );
+        $response = $adapter->tab_data(
+            [
+                'security' => 'valid_nonce',
+                'target'   => 'competition',
+                'targetId' => 10,
+                'tab'      => 'clubs',
+                'link_id'  => 'valid-club_123',
+                'season'   => '2026',
+            ]
+        );
 
         $this->assertSame( 200, $response->get_status_code() );
         $this->assertSame( 'clubs content', $response->get_content() );
@@ -146,13 +150,15 @@ class Ajax_Adapter_Test extends TestCase {
             return 'clubs content';
         };
 
-        $response = $adapter->tab_data( [
-            'security' => 'valid_nonce',
-            'target'   => 'competition',
-            'targetId' => 10,
-            'tab'      => 'clubs',
-            'season'   => '1999', // Not in allowed seasons
-        ] );
+        $response = $adapter->tab_data(
+            [
+                'security' => 'valid_nonce',
+                'target'   => 'competition',
+                'targetId' => 10,
+                'tab'      => 'clubs',
+                'season'   => '1999', // Not in allowed seasons
+            ]
+        );
 
         $this->assertSame( 200, $response->get_status_code() );
         $this->assertSame( 'clubs content', $response->get_content() );
@@ -176,26 +182,30 @@ class Ajax_Adapter_Test extends TestCase {
         };
 
         // Valid season matches
-        $adapter->tab_data( [
-            'security' => 'valid_nonce',
-            'target'   => 'event',
-            'targetId' => 20,
-            'tab'      => 'draw',
-            'link_id'  => 'draw_link',
-            'season'   => '2026',
-        ] );
+        $adapter->tab_data(
+            [
+                'security' => 'valid_nonce',
+                'target'   => 'event',
+                'targetId' => 20,
+                'tab'      => 'draw',
+                'link_id'  => 'draw_link',
+                'season'   => '2026',
+            ]
+        );
         $this->assertSame( '2026', $passed_args['season'] ?? null );
 
         // Forged season fails closed and is omitted
         $passed_args = null;
-        $adapter->tab_data( [
-            'security' => 'valid_nonce',
-            'target'   => 'event',
-            'targetId' => 20,
-            'tab'      => 'draw',
-            'link_id'  => 'draw_link',
-            'season'   => 'forged_season',
-        ] );
+        $adapter->tab_data(
+            [
+                'security' => 'valid_nonce',
+                'target'   => 'event',
+                'targetId' => 20,
+                'tab'      => 'draw',
+                'link_id'  => 'draw_link',
+                'season'   => 'forged_season',
+            ]
+        );
         $this->assertArrayNotHasKey( 'season', $passed_args );
     }
 
@@ -220,25 +230,29 @@ class Ajax_Adapter_Test extends TestCase {
             return 'league overview content';
         };
 
-        $adapter->tab_data( [
-            'security' => 'valid_nonce',
-            'target'   => 'league',
-            'targetId' => 50,
-            'tab'      => 'overview',
-            'link_id'  => 'league_link',
-            'season'   => '2026',
-        ] );
+        $adapter->tab_data(
+            [
+                'security' => 'valid_nonce',
+                'target'   => 'league',
+                'targetId' => 50,
+                'tab'      => 'overview',
+                'link_id'  => 'league_link',
+                'season'   => '2026',
+            ]
+        );
         $this->assertSame( '2026', $passed_args['season'] ?? null );
 
         $passed_args = null;
-        $adapter->tab_data( [
-            'security' => 'valid_nonce',
-            'target'   => 'league',
-            'targetId' => 50,
-            'tab'      => 'overview',
-            'link_id'  => 'league_link',
-            'season'   => '2025',
-        ] );
+        $adapter->tab_data(
+            [
+                'security' => 'valid_nonce',
+                'target'   => 'league',
+                'targetId' => 50,
+                'tab'      => 'overview',
+                'link_id'  => 'league_link',
+                'season'   => '2025',
+            ]
+        );
         $this->assertArrayNotHasKey( 'season', $passed_args );
     }
 
@@ -261,26 +275,30 @@ class Ajax_Adapter_Test extends TestCase {
         };
 
         // Valid season
-        $adapter->tab_data( [
-            'security' => 'valid_nonce',
-            'target'   => 'league',
-            'targetId' => 50,
-            'tab'      => 'overview',
-            'link_id'  => 'league_link',
-            'season'   => '2026',
-        ] );
+        $adapter->tab_data(
+            [
+                'security' => 'valid_nonce',
+                'target'   => 'league',
+                'targetId' => 50,
+                'tab'      => 'overview',
+                'link_id'  => 'league_link',
+                'season'   => '2026',
+            ]
+        );
         $this->assertSame( '2026', $passed_args['season'] ?? null );
 
         // Forged season
         $passed_args = null;
-        $adapter->tab_data( [
-            'security' => 'valid_nonce',
-            'target'   => 'league',
-            'targetId' => 50,
-            'tab'      => 'overview',
-            'link_id'  => 'league_link',
-            'season'   => 'forged',
-        ] );
+        $adapter->tab_data(
+            [
+                'security' => 'valid_nonce',
+                'target'   => 'league',
+                'targetId' => 50,
+                'tab'      => 'overview',
+                'link_id'  => 'league_link',
+                'season'   => 'forged',
+            ]
+        );
         $this->assertArrayNotHasKey( 'season', $passed_args );
     }
 
@@ -288,8 +306,8 @@ class Ajax_Adapter_Test extends TestCase {
         $adapter = $this->create_frontend_adapter();
 
         $tournament = $this->createStub( Tournament::class );
-        $tournament->id = 5;
-        $tournament->season = '2026';
+        $tournament->set_id( 5 );
+        $tournament->set_season( '2026' );
         $tournament->method( 'get_id' )->willReturn( 5 );
         $tournament->method( 'get_season' )->willReturn( 2026 );
         $GLOBALS['test_tournament_obj'] = $tournament;
@@ -301,25 +319,29 @@ class Ajax_Adapter_Test extends TestCase {
         };
 
         // Matching season passes
-        $response = $adapter->tab_data( [
-            'security' => 'valid_nonce',
-            'target'   => 'tournament',
-            'targetId' => 5,
-            'tab'      => 'overview',
-            'season'   => '2026',
-        ] );
+        $response = $adapter->tab_data(
+            [
+                'security' => 'valid_nonce',
+                'target'   => 'tournament',
+                'targetId' => 5,
+                'tab'      => 'overview',
+                'season'   => '2026',
+            ]
+        );
         $this->assertSame( 'tournament overview', $response->get_content() );
         $this->assertSame( '2026', $passed_args['season'] ?? null );
 
         // Mismatched season is filtered out
         $passed_args = null;
-        $response = $adapter->tab_data( [
-            'security' => 'valid_nonce',
-            'target'   => 'tournament',
-            'targetId' => 5,
-            'tab'      => 'overview',
-            'season'   => '2024',
-        ] );
+        $response = $adapter->tab_data(
+            [
+                'security' => 'valid_nonce',
+                'target'   => 'tournament',
+                'targetId' => 5,
+                'tab'      => 'overview',
+                'season'   => '2024',
+            ]
+        );
         $this->assertSame( 'tournament overview', $response->get_content() );
         $this->assertArrayNotHasKey( 'season', $passed_args );
     }
@@ -327,26 +349,32 @@ class Ajax_Adapter_Test extends TestCase {
     public function test_tab_data_handles_unknown_target_and_invalid_tab(): void {
         $adapter = $this->create_frontend_adapter();
 
-        $res1 = $adapter->tab_data( [
-            'security' => 'valid_nonce',
-            'target'   => 'unknown_target',
-        ] );
+        $res1 = $adapter->tab_data(
+            [
+                'security' => 'valid_nonce',
+                'target'   => 'unknown_target',
+            ]
+        );
         $this->assertSame( 'Invalid target', $res1->get_content() );
 
-        $res_no_target = $adapter->tab_data( [
-            'security' => 'valid_nonce',
-        ] );
+        $res_no_target = $adapter->tab_data(
+            [
+                'security' => 'valid_nonce',
+            ]
+        );
         $this->assertSame( 'Target ref not found', $res_no_target->get_content() );
 
         $comp = Competition_Test_Factory::create( id: 10 );
         $GLOBALS['test_competition_obj'] = $comp;
 
-        $res2 = $adapter->tab_data( [
-            'security' => 'valid_nonce',
-            'target'   => 'competition',
-            'targetId' => 10,
-            'tab'      => 'invalid_tab_name',
-        ] );
+        $res2 = $adapter->tab_data(
+            [
+                'security' => 'valid_nonce',
+                'target'   => 'competition',
+                'targetId' => 10,
+                'tab'      => 'invalid_tab_name',
+            ]
+        );
         $this->assertSame( 'Tab not valid', $res2->get_content() );
     }
 
@@ -381,12 +409,14 @@ class Ajax_Adapter_Test extends TestCase {
             tournament_service: $tournament_service
         );
 
-        $response = $adapter->tournament_entry_request( [
-            'racketmanager_nonce' => 'valid_nonce',
-            'tournament_id'       => 8,
-            'playerId'            => 3,
-            'season'              => '2025',
-        ] );
+        $response = $adapter->tournament_entry_request(
+            [
+                'racketmanager_nonce' => 'valid_nonce',
+                'tournament_id'       => 8,
+                'playerId'            => 3,
+                'season'              => '2025',
+            ]
+        );
 
         $this->assertSame( 400, $response->get_status_code() );
         $details = $response->get_content();
@@ -423,9 +453,11 @@ class Ajax_Adapter_Test extends TestCase {
         $club_service->method( 'get_club' )->willReturn( $club );
         $club_service->method( 'can_user_update_as_captain' )->willReturn( true );
 
-        $comp_service->method( 'get_event_by_id' )->willReturnCallback( function ( $id ) use ( $event_s ) {
-            return $event_s;
-        } );
+        $comp_service->method( 'get_event_by_id' )->willReturnCallback(
+            function ( $id ) use ( $event_s ) {
+                return $event_s;
+            }
+        );
 
         // Expect gender = null, min_age = 45 for 'S' event
         $reg_service->expects( $this->once() )
@@ -525,31 +557,37 @@ class Ajax_Adapter_Test extends TestCase {
         );
 
         $comp_service = $this->createStub( Competition_Service::class );
-        $comp_service->method( 'get_by_id' )->willReturnCallback( function ( $id ) {
-            if ( isset( $GLOBALS['test_competition_obj'] ) ) {
-                return $GLOBALS['test_competition_obj'];
+        $comp_service->method( 'get_by_id' )->willReturnCallback(
+            function ( $id ) {
+                if ( isset( $GLOBALS['test_competition_obj'] ) ) {
+                      return $GLOBALS['test_competition_obj'];
+                }
+                throw new Competition_Not_Found_Exception( 'Competition not found' );
             }
-            throw new Competition_Not_Found_Exception( 'Competition not found' );
-        } );
-        $comp_service->method( 'get_event_by_id' )->willReturnCallback( function ( $id ) {
-            if ( isset( $GLOBALS['test_event_obj'] ) ) {
-                return $GLOBALS['test_event_obj'];
+        );
+        $comp_service->method( 'get_event_by_id' )->willReturnCallback(
+            function ( $id ) {
+                if ( isset( $GLOBALS['test_event_obj'] ) ) {
+                      return $GLOBALS['test_event_obj'];
+                }
+                throw new Event_Not_Found_Exception( 'Event not found' );
             }
-            throw new Event_Not_Found_Exception( 'Event not found' );
-        } );
+        );
 
         $entry_service = $this->createStub( Competition_Entry_Service::class );
         $team_service  = $this->createStub( Team_Service::class );
-        $player_service= $this->createStub( Player_Service::class );
+        $player_service = $this->createStub( Player_Service::class );
         $reg_service   = $this->createStub( Registration_Service::class );
         $club_service  = $this->createStub( Club_Service::class );
         $tourn_service = $this->createStub( Tournament_Service::class );
-        $tourn_service->method( 'get_tournament' )->willReturnCallback( function ( $id ) {
-            if ( isset( $GLOBALS['test_tournament_obj'] ) ) {
-                return $GLOBALS['test_tournament_obj'];
+        $tourn_service->method( 'get_tournament' )->willReturnCallback(
+            function ( $id ) {
+                if ( isset( $GLOBALS['test_tournament_obj'] ) ) {
+                      return $GLOBALS['test_tournament_obj'];
+                }
+                throw new Tournament_Not_Found_Exception( 'Tournament not found' );
             }
-            throw new Tournament_Not_Found_Exception( 'Tournament not found' );
-        } );
+        );
 
         $fixture_repo = $this->createStub( Fixture_Repository_Interface::class );
 

@@ -21,6 +21,7 @@ use Racketmanager\Application\Matches\DTOs\Match_Score_Result;
 use Racketmanager\Application\Matches\Queries\Get_Match_Detail_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Match_Header_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Match_Score_Handler;
+use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Presentation\Presenters\Match_Shortcode_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
@@ -924,8 +925,8 @@ class Shortcode_Adapters_Bootstrap_Test extends TestCase {
     }
 
     private function tournament_adapter_forwarding( string $method_name, string $dummy_output ): Tournament_Shortcode_Adapter {
-        $tournament = $this->createStub( \Racketmanager\Domain\Tournament\Tournament::class );
-        $tournament->id = 123;
+        $tournament = new Tournament();
+        $tournament->set_id( 123 );
         $map = [
             'show_tournament'                  => [ 'tournament_handler', Get_Tournament_Handler::class, new \Racketmanager\Application\Tournament\DTOs\Tournament_Result( tournament: $tournament, template: '' ) ],
             'show_tournament_overview'         => [ 'overview_handler', Get_Tournament_Overview_Handler::class, new \Racketmanager\Application\Tournament\DTOs\Tournament_Overview_Result( tournament: $tournament, template: '' ) ],

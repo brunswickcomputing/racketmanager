@@ -14,6 +14,7 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
     use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
     use PHPUnit\Framework\MockObject\MockObject;
     use PHPUnit\Framework\TestCase;
+    use Racketmanager\Domain\Competition\Competition;
     use Racketmanager\Domain\Competition\Competition_Type;
     use Racketmanager\Domain\Fixture\Fixture;
     use Racketmanager\Domain\Tournament\Tournament;
@@ -24,7 +25,6 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
     use Racketmanager\Services\Competition_Service;
     use Racketmanager\Services\Team_Service;
     use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
-    use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
     use Racketmanager\Domain\Competition\League;
     use Racketmanager\Domain\Competition\Event;
     use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
@@ -34,6 +34,7 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
     use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
     use Racketmanager\Repositories\Interfaces\Tournament_Repository_Interface;
     use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
+    use stdClass;
 
     class Notification_Presenter_Test extends TestCase {
         use Manages_Wordpress_Globals;
@@ -74,7 +75,7 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
             }
             $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
 
-            $competition = $this->createStub( \Racketmanager\Domain\Competition\Competition::class );
+            $competition = $this->createStub( Competition::class );
             $competition->method( 'get_name' )->willReturn( $competition_name );
             $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
 
@@ -83,10 +84,12 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
             $away_team_details = new Team_Details_DTO( $this->createStub( Team::class ), null, null );
             $away_team_details->team->method( 'get_name' )->willReturn( 'Away Team' );
 
-            $this->team_service->method( 'get_team_details' )->willReturnMap( [
-                [ 101, $home_team_details ],
-                [ 102, $away_team_details ],
-            ] );
+            $this->team_service->method( 'get_team_details' )->willReturnMap(
+                [
+                    [ 101, $home_team_details ],
+                    [ 102, $away_team_details ],
+                ]
+            );
         }
 
         public function test_present_match_notification(): void {
@@ -94,18 +97,18 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
             $fixture->method( 'get_id' )->willReturn( 1 );
             $fixture->method( 'get_season' )->willReturn( '2024' );
             $fixture->method( 'get_host' )->willReturn( 'home' );
-            $fixture->method( 'get_home_team' )->willReturn( "101" );
-            $fixture->method( 'get_away_team' )->willReturn( "102" );
+            $fixture->method( 'get_home_team' )->willReturn( '101' );
+            $fixture->method( 'get_away_team' )->willReturn( '102' );
             $fixture->method( 'get_league_id' )->willReturn( 10 );
 
             $args = [
                 'competition_type'  => 'tournament',
                 'tournament'        => '123,2024',
-                'tournament_search' => 'shortcode'
+                'tournament_search' => 'shortcode',
             ];
 
-            $tournament       = $this->createStub( Tournament::class );
-            $tournament->name = 'Mock Tournament';
+            $tournament = new Tournament();
+            $tournament->set_name( 'Mock Tournament' );
             $this->tournament_repository->expects( $this->once() )->method( 'find_by_id' )->with( '123,2024', 'shortcode' )->willReturn( $tournament );
 
             $this->setup_notification_services();
@@ -127,12 +130,12 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
             $fixture->method( 'get_id' )->willReturn( 2 );
             $fixture->method( 'get_league_id' )->willReturn( 10 );
             $fixture->method( 'get_season' )->willReturn( '2024' );
-            $fixture->method( 'get_home_team' )->willReturn( "101" );
-            $fixture->method( 'get_away_team' )->willReturn( "102" );
+            $fixture->method( 'get_home_team' )->willReturn( '101' );
+            $fixture->method( 'get_away_team' )->willReturn( '102' );
 
             $args = [
                 'competition_type' => 'league',
-                'competition'      => 'League Name'
+                'competition'      => 'League Name',
             ];
 
             $this->setup_notification_services( competition_name: 'League Name', event_id: null, competition_id: null, event_name: null, event_type: null );
@@ -187,14 +190,14 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
             $fixture->method( 'get_id' )->willReturn( 3 );
             $fixture->method( 'get_league_id' )->willReturn( 10 );
             $fixture->method( 'get_season' )->willReturn( '2024' );
-            $fixture->method( 'get_home_team' )->willReturn( "101" );
-            $fixture->method( 'get_away_team' )->willReturn( "102" );
+            $fixture->method( 'get_home_team' )->willReturn( '101' );
+            $fixture->method( 'get_away_team' )->willReturn( '102' );
             $fixture->method( 'get_date' )->willReturn( '2026-10-15 18:30:00' );
             $fixture->method( 'get_start_time' )->willReturn( '18:30' );
 
             $args = [
                 'competition_type' => 'cup',
-                'competition'      => 'Cup Name'
+                'competition'      => 'Cup Name',
             ];
 
             $this->setup_notification_services( competition_name: 'Cup Name', event_id: null, competition_id: null, event_name: null, event_type: null );
@@ -235,9 +238,12 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
 
             $this->setup_notification_services( competition_name: 'Division 1' );
 
-            $vars = $this->presenter->present_date_change_notification( $fixture, [
-                'competition_type' => 'league',
-            ] );
+            $vars = $this->presenter->present_date_change_notification(
+                $fixture,
+                [
+                    'competition_type' => 'league',
+                ]
+            );
 
             $this->assertSame( 'Test League', $vars['competition_name'] );
             $this->assertSame( 'https://example.com', $vars['site_url'] );
@@ -260,9 +266,12 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
 
             $this->setup_notification_services( competition_name: 'Division 1' );
 
-            $vars = $this->presenter->present_date_change_notification( $fixture, [
-                'competition_type' => 'league',
-            ] );
+            $vars = $this->presenter->present_date_change_notification(
+                $fixture,
+                [
+                    'competition_type' => 'league',
+                ]
+            );
 
             $this->assertSame( '25/06/2026', $vars['match_date'] );
             $this->assertSame( '18/06/2026', $vars['original_date'] );
@@ -283,21 +292,27 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
             $this->setup_notification_services( competition_name: 'Division 1' );
 
             // Old timed -> New date-only (midnight)
-            $vars_to_untimed = $this->presenter->present_date_change_notification( $fixture, [
-                'competition_type' => 'league',
-                'new_date'         => '2026-06-25 00:00:00',
-                'original_date'    => '2026-06-18 19:00:00',
-            ] );
+            $vars_to_untimed = $this->presenter->present_date_change_notification(
+                $fixture,
+                [
+                    'competition_type' => 'league',
+                    'new_date'         => '2026-06-25 00:00:00',
+                    'original_date'    => '2026-06-18 19:00:00',
+                ]
+            );
 
             $this->assertSame( '25/06/2026', $vars_to_untimed['match_date'] );
             $this->assertSame( '18 June 2026 19:00', $vars_to_untimed['original_date'] );
 
             // Old date-only -> New timed
-            $vars_to_timed = $this->presenter->present_date_change_notification( $fixture, [
-                'competition_type' => 'league',
-                'new_date'         => '2026-06-25 19:30:00',
-                'original_date'    => '2026-06-18 00:00:00',
-            ] );
+            $vars_to_timed = $this->presenter->present_date_change_notification(
+                $fixture,
+                [
+                    'competition_type' => 'league',
+                    'new_date'         => '2026-06-25 19:30:00',
+                    'original_date'    => '2026-06-18 00:00:00',
+                ]
+            );
 
             $this->assertSame( '25 June 2026 19:30', $vars_to_timed['match_date'] );
             $this->assertSame( '18/06/2026', $vars_to_timed['original_date'] );
@@ -334,7 +349,7 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
 
         #[AllowMockObjectsWithoutExpectations]
         public function test_present_event_constitution_builds_league_urls_without_extra_collaborators(): void {
-            $event                 = new \stdClass();
+            $event                 = new stdClass();
             $event->name           = 'Cup Event';
             $event->is_box         = true;
             $event->current_season = [ 'name' => '2024' ];
@@ -361,8 +376,8 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
                 'tournament_search' => 'shortcode',
             ];
 
-            $tournament       = $this->createStub( Tournament::class );
-            $tournament->name = 'Championship Tournament';
+            $tournament = new Tournament();
+            $tournament->set_name( 'Championship Tournament' );
             $this->tournament_repository->expects( $this->once() )
                 ->method( 'find_by_id' )
                 ->with( '123,2026', 'shortcode' )
@@ -394,8 +409,8 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
                 'tournament'       => 50,
             ];
 
-            $tournament       = $this->createStub( Tournament::class );
-            $tournament->name = 'Championship Tournament';
+            $tournament = new Tournament();
+            $tournament->set_name( 'Championship Tournament' );
             $this->tournament_repository->expects( $this->once() )
                 ->method( 'find_by_id' )
                 ->with( 50 )
@@ -434,7 +449,7 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
                 $this->permission_service,
                 'https://example.com',
                 'Test Site',
-                $this->createStub( \Racketmanager\Services\Competition\League_Query_Service::class )
+                $this->createStub( League_Query_Service::class )
             );
         }
 

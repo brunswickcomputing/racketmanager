@@ -85,9 +85,8 @@ final class Tournament_Service_Draw_View_Model_Test extends TestCase {
             league_repository: $league_repository,
         );
 
-        $tournament     = $this->createStub( Tournament::class );
-        $tournament->id = 99;
-        $tournament->method( 'get_id' )->willReturn( 99 );
+        $tournament = new Tournament();
+        $tournament->set_id( 99 );
 
         $championship = $this->createStub( Championship::class );
         $championship->method( 'get_finals' )->willReturn(

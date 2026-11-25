@@ -21,7 +21,7 @@ final class Get_Tournament_Handler_Test extends TestCase {
         $query_vars         = $this->createMock( Query_Vars_Interface::class );
 
         $tournament = $this->createMock( Tournament::class );
-        $tournament->season = '2026';
+        $tournament->method( 'get_season' )->willReturn( 2026 );
         $tournament->method( 'get_end_date' )->willReturn( '2026-08-01' );
 
         $competition = Competition_Test_Factory::create();
@@ -59,7 +59,7 @@ final class Get_Tournament_Handler_Test extends TestCase {
         $tournament_service = $this->createMock( Tournament_Service::class );
 
         $tournament = $this->createMock( Tournament::class );
-        $tournament->season = '2026';
+        $tournament->method( 'get_season' )->willReturn( 2026 );
         $tournament->method( 'get_end_date' )->willReturn( '2026-08-01' );
 
         $competition = Competition_Test_Factory::create();

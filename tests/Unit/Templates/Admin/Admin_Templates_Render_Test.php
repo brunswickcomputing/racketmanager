@@ -1153,19 +1153,19 @@ final class Admin_Templates_Render_Test extends TestCase {
 
     public function test_render_tournament_edit_template_prefers_form_values_including_date_withdraw(): void {
         $tournament                   = new Tournament();
-        $tournament->id               = 10;
-        $tournament->name             = 'Entity Tournament';
-        $tournament->competition_id   = 1;
-        $tournament->season           = '2025';
-        $tournament->venue            = 2;
-        $tournament->competition_code = 'ORIG-CODE';
-        $tournament->grade            = '4';
-        $tournament->num_entries      = 16;
-        $tournament->date_start       = '2025-06-01';
-        $tournament->date_end         = '2025-06-07';
-        $tournament->date_open        = '2025-05-01';
-        $tournament->date_closing     = '2025-05-20';
-        $tournament->date_withdrawal  = '2025-05-25';
+        $tournament->set_id( 10 );
+        $tournament->set_name( 'Entity Tournament' );
+        $tournament->set_competition_id( 1 );
+        $tournament->set_season( '2025' );
+        $tournament->set_venue( 2 );
+        $tournament->set_competition_code( 'ORIG-CODE' );
+        $tournament->set_grade( '4' );
+        $tournament->set_num_entries( 16 );
+        $tournament->set_start_date( '2025-06-01' );
+        $tournament->set_end_date( '2025-06-07' );
+        $tournament->set_opening_date( '2025-05-01' );
+        $tournament->set_closing_date( '2025-05-20' );
+        $tournament->set_withdrawal_date( '2025-05-25' );
 
         $fees = (object) array(
             'competition' => 10,

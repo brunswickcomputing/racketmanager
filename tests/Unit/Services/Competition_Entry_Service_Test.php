@@ -193,16 +193,22 @@ class Competition_Entry_Service_Test extends TestCase {
             id: 1,
             name: 'Summer League',
             type: Competition_Type::LEAGUE,
-            seasons: Competition_Test_Factory::season_map( '2026', [
-                'date_open'    => gmdate( 'Y-m-d', strtotime( '-7 days' ) ),
-                'date_closing' => gmdate( 'Y-m-d', strtotime( '+30 days' ) ),
-                'date_start'   => gmdate( 'Y-m-d', strtotime( '+60 days' ) ),
-                'date_end'     => gmdate( 'Y-m-d', strtotime( '+180 days' ) ),
-            ] ),
-            settings: array_merge( [
-                'match_day_restriction' => '1',
-                'match_day_weekends' => '1',
-            ], $settings )
+            seasons: Competition_Test_Factory::season_map(
+                '2026',
+                [
+                    'date_open'    => gmdate( 'Y-m-d', strtotime( '-7 days' ) ),
+                    'date_closing' => gmdate( 'Y-m-d', strtotime( '+30 days' ) ),
+                    'date_start'   => gmdate( 'Y-m-d', strtotime( '+60 days' ) ),
+                    'date_end'     => gmdate( 'Y-m-d', strtotime( '+180 days' ) ),
+                ]
+            ),
+            settings: array_merge(
+                [
+                    'match_day_restriction' => '1',
+                    'match_day_weekends' => '1',
+                ],
+                $settings
+            )
         );
         $this->competition_to_return = $competition;
         return $competition;
@@ -238,45 +244,51 @@ class Competition_Entry_Service_Test extends TestCase {
     }
 
     private function create_league_entry_data( array $overrides = [] ): array {
-        return array_replace( [
-            'competitionId'        => '1',
-            'season'               => '2026',
-            'clubId'               => '1',
-            'acceptance'           => '1',
-            'numCourtsAvailable'   => '4',
-            'competition_events'   => '10',
-            'event'                => [ 10 ],
-            'event_teams'          => [ 10 => '101,102' ],
-            'teamEvent'            => [ 10 => [ 101, 102 ] ],
-            'teamEventTitle'       => [ 10 => [ 101 => 'Club Team 1', 102 => 'Club Team 2' ] ],
-            'captain'              => [ 10 => [ 101 => 'John', 102 => 'Jane' ] ],
-            'captainId'            => [ 10 => [ 101 => '1', 102 => '2' ] ],
-            'contactno'            => [ 10 => [ 101 => '0123456789', 102 => '0987654321' ] ],
-            'contactemail'         => [ 10 => [ 101 => 'john@test.local', 102 => 'jane@test.local' ] ],
-            'matchday'             => [ 10 => [ 101 => '1', 102 => '2' ] ],
-            'matchtime'            => [ 10 => [ 101 => '19:00:00', 102 => '19:00:00' ] ],
-        ], $overrides );
+        return array_replace(
+            [
+                'competitionId'        => '1',
+                'season'               => '2026',
+                'clubId'               => '1',
+                'acceptance'           => '1',
+                'numCourtsAvailable'   => '4',
+                'competition_events'   => '10',
+                'event'                => [ 10 ],
+                'event_teams'          => [ 10 => '101,102' ],
+                'teamEvent'            => [ 10 => [ 101, 102 ] ],
+                'teamEventTitle'       => [ 10 => [ 101 => 'Club Team 1', 102 => 'Club Team 2' ] ],
+                'captain'              => [ 10 => [ 101 => 'John', 102 => 'Jane' ] ],
+                'captainId'            => [ 10 => [ 101 => '1', 102 => '2' ] ],
+                'contactno'            => [ 10 => [ 101 => '0123456789', 102 => '0987654321' ] ],
+                'contactemail'         => [ 10 => [ 101 => 'john@test.local', 102 => 'jane@test.local' ] ],
+                'matchday'             => [ 10 => [ 101 => '1', 102 => '2' ] ],
+                'matchtime'            => [ 10 => [ 101 => '19:00:00', 102 => '19:00:00' ] ],
+            ],
+            $overrides
+        );
     }
 
     private function create_single_team_league_entry_data( int $team_id = 101, string $team_title = 'Club Team 1', array $overrides = [] ): array {
-        return array_replace( [
-            'competitionId'        => '1',
-            'season'               => '2026',
-            'clubId'               => '1',
-            'acceptance'           => '1',
-            'numCourtsAvailable'   => '4',
-            'competition_events'   => '10',
-            'event'                => [ 10 ],
-            'event_teams'          => [ 10 => (string) $team_id ],
-            'teamEvent'            => [ 10 => [ $team_id ] ],
-            'teamEventTitle'       => [ 10 => [ $team_id => $team_title ] ],
-            'captain'              => [ 10 => [ $team_id => 'John' ] ],
-            'captainId'            => [ 10 => [ $team_id => '1' ] ],
-            'contactno'            => [ 10 => [ $team_id => '0123456789' ] ],
-            'contactemail'         => [ 10 => [ $team_id => 'john@test.local' ] ],
-            'matchday'             => [ 10 => [ $team_id => '1' ] ],
-            'matchtime'            => [ 10 => [ $team_id => '19:00:00' ] ],
-        ], $overrides );
+        return array_replace(
+            [
+                'competitionId'        => '1',
+                'season'               => '2026',
+                'clubId'               => '1',
+                'acceptance'           => '1',
+                'numCourtsAvailable'   => '4',
+                'competition_events'   => '10',
+                'event'                => [ 10 ],
+                'event_teams'          => [ 10 => (string) $team_id ],
+                'teamEvent'            => [ 10 => [ $team_id ] ],
+                'teamEventTitle'       => [ 10 => [ $team_id => $team_title ] ],
+                'captain'              => [ 10 => [ $team_id => 'John' ] ],
+                'captainId'            => [ 10 => [ $team_id => '1' ] ],
+                'contactno'            => [ 10 => [ $team_id => '0123456789' ] ],
+                'contactemail'         => [ 10 => [ $team_id => 'john@test.local' ] ],
+                'matchday'             => [ 10 => [ $team_id => '1' ] ],
+                'matchtime'            => [ 10 => [ $team_id => '19:00:00' ] ],
+            ],
+            $overrides
+        );
     }
 
     private function setup_mock_teams( Team ...$teams ): void {
@@ -296,18 +308,21 @@ class Competition_Entry_Service_Test extends TestCase {
     }
 
     private function create_tournament_entry_request( array $overrides = [] ): Tournament_Entry_Request_DTO {
-        $data = array_merge( [
-            'tournament_id'    => '1',
-            'season'           => '2026',
-            'playerId'         => '10',
-            'clubId'           => '1',
-            'contactemail'     => 'player@test.local',
-            'contactno'        => '0123456789',
-            'btm'              => '12345',
-            'acceptance'       => '1',
-            'tournamentEvents' => '10',
-            'event'            => [ '10' ],
-        ], $overrides );
+        $data = array_merge(
+            [
+                'tournament_id'    => '1',
+                'season'           => '2026',
+                'playerId'         => '10',
+                'clubId'           => '1',
+                'contactemail'     => 'player@test.local',
+                'contactno'        => '0123456789',
+                'btm'              => '12345',
+                'acceptance'       => '1',
+                'tournamentEvents' => '10',
+                'event'            => [ '10' ],
+            ],
+            $overrides
+        );
         return new Tournament_Entry_Request_DTO( $data );
     }
 
@@ -316,16 +331,18 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->competition_service->method( 'get_event_by_id' )->willReturn( $this->create_event( 10 ) );
         $this->setup_mock_teams( $this->create_mock_team( 101, 'Club Team 1' ), $this->create_mock_team( 102, 'Club Team 2' ) );
 
-        $post_data = $this->create_league_entry_data( [
-            'teamEvent'      => [ 10 => [ 102 ] ], // Withdrawing Team 1, keeping Team 2
-            'teamEventTitle' => [ 10 => [ 102 => 'Club Team 2' ] ],
-            'captain'        => [ 10 => [ 102 => 'John Doe' ] ],
-            'captainId'      => [ 10 => [ 102 => '1' ] ],
-            'contactno'      => [ 10 => [ 102 => '0123456789' ] ],
-            'contactemail'   => [ 10 => [ 102 => 'john@test.local' ] ],
-            'matchday'       => [ 10 => [ 102 => '1' ] ],
-            'matchtime'      => [ 10 => [ 102 => '19:00:00' ] ],
-        ] );
+        $post_data = $this->create_league_entry_data(
+            [
+                'teamEvent'      => [ 10 => [ 102 ] ], // Withdrawing Team 1, keeping Team 2
+                'teamEventTitle' => [ 10 => [ 102 => 'Club Team 2' ] ],
+                'captain'        => [ 10 => [ 102 => 'John Doe' ] ],
+                'captainId'      => [ 10 => [ 102 => '1' ] ],
+                'contactno'      => [ 10 => [ 102 => '0123456789' ] ],
+                'contactemail'   => [ 10 => [ 102 => 'john@test.local' ] ],
+                'matchday'       => [ 10 => [ 102 => '1' ] ],
+                'matchtime'      => [ 10 => [ 102 => '19:00:00' ] ],
+            ]
+        );
 
         $result = $this->service->request_league_entry( new League_Entry_Request_DTO( $post_data ) );
 
@@ -342,10 +359,12 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->setup_mock_teams( $this->create_mock_team( 101, 'Club Team 1' ), $this->create_mock_team( 102, 'Club Team 2' ) );
 
         // Team 1 is playing on weekend (day 5 / Sat), but Team 2 is on weekday (day 1 / Mon)
-        $post_data = $this->create_league_entry_data( [
-            'matchday'  => [ 10 => [ 101 => '5', 102 => '1' ] ],
-            'matchtime' => [ 10 => [ 101 => '14:00:00', 102 => '19:00:00' ] ],
-        ] );
+        $post_data = $this->create_league_entry_data(
+            [
+                'matchday'  => [ 10 => [ 101 => '5', 102 => '1' ] ],
+                'matchtime' => [ 10 => [ 101 => '14:00:00', 102 => '19:00:00' ] ],
+            ]
+        );
 
         $result = $this->service->request_league_entry( new League_Entry_Request_DTO( $post_data ) );
 
@@ -362,10 +381,12 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->setup_mock_teams( $this->create_mock_team( 101, 'Club Team 1' ), $this->create_mock_team( 102, 'Club Team 2' ) );
 
         // Two teams on the same day with overlapping times (19:00 vs 19:30)
-        $post_data = $this->create_league_entry_data( [
-            'matchday'  => [ 10 => [ 101 => '1', 102 => '1' ] ],
-            'matchtime' => [ 10 => [ 101 => '19:00:00', 102 => '19:30:00' ] ],
-        ] );
+        $post_data = $this->create_league_entry_data(
+            [
+                'matchday'  => [ 10 => [ 101 => '1', 102 => '1' ] ],
+                'matchtime' => [ 10 => [ 101 => '19:00:00', 102 => '19:30:00' ] ],
+            ]
+        );
 
         $result = $this->service->request_league_entry( new League_Entry_Request_DTO( $post_data ) );
 
@@ -378,10 +399,14 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->setup_mock_teams( $this->create_mock_team( 101, 'Club Team 1' ) );
 
         // 1 team playing on weekend (day 5), but weekdays (days 1, 2) have 0 teams (underfilled capacity)
-        $post_data = $this->create_single_team_league_entry_data( 101, 'Club Team 1', [
-            'matchday'  => [ 10 => [ 101 => '5' ] ],
-            'matchtime' => [ 10 => [ 101 => '14:00:00' ] ],
-        ] );
+        $post_data = $this->create_single_team_league_entry_data(
+            101,
+            'Club Team 1',
+            [
+                'matchday'  => [ 10 => [ 101 => '5' ] ],
+                'matchtime' => [ 10 => [ 101 => '14:00:00' ] ],
+            ]
+        );
 
         $result = $this->service->request_league_entry( new League_Entry_Request_DTO( $post_data ) );
 
@@ -397,11 +422,13 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->competition_service->method( 'get_event_by_id' )->willReturn( $this->create_event( 10 ) );
         $this->setup_mock_teams( $this->create_mock_team( 101, 'Club Team 1' ), $this->create_mock_team( 102, 'Club Team 2' ) );
 
-        $post_data = $this->create_league_entry_data( [
-            'teamEventTitle' => [ 10 => [ 101 => 'Club Team 99', 102 => 'Club Team 2' ] ], // Forged title attempting bypass
-            'matchday'       => [ 10 => [ 101 => '5', 102 => '1' ] ],
-            'matchtime'      => [ 10 => [ 101 => '14:00:00', 102 => '19:00:00' ] ],
-        ] );
+        $post_data = $this->create_league_entry_data(
+            [
+                'teamEventTitle' => [ 10 => [ 101 => 'Club Team 99', 102 => 'Club Team 2' ] ], // Forged title attempting bypass
+                'matchday'       => [ 10 => [ 101 => '5', 102 => '1' ] ],
+                'matchtime'      => [ 10 => [ 101 => '14:00:00', 102 => '19:00:00' ] ],
+            ]
+        );
 
         $result = $this->service->request_league_entry( new League_Entry_Request_DTO( $post_data ) );
 
@@ -419,12 +446,14 @@ class Competition_Entry_Service_Test extends TestCase {
         $league_team = $this->createMock( League_Team::class );
         $league_team->method( 'get_profile_enum' )->willReturn( Team_Profile::ACTIVE );
         $this->league_team_repository->method( 'find_by_event_id' )
-            ->willReturnCallback( function( $event_id, $season, $team_id ) use ( $league_team ) {
-                $this->assertSame( 10, $event_id );
-                $this->assertSame( 2026, $season );
-                $this->assertContains( (int) $team_id, [ 101, 102 ] );
-                return [ $league_team ];
-            } );
+            ->willReturnCallback(
+                function ( $event_id, $season, $team_id ) use ( $league_team ) {
+                    $this->assertSame( 10, $event_id );
+                    $this->assertSame( 2026, $season );
+                    $this->assertContains( (int) $team_id, [ 101, 102 ] );
+                    return [ $league_team ];
+                }
+            );
         $this->league_team_repository->expects( $this->exactly( 2 ) )->method( 'save' );
         $this->competition_service->expects( $this->once() )->method( 'set_court_availability' )->with( 1, 1, 4 );
         $this->setup_match_secretary_and_notifications();
@@ -464,13 +493,15 @@ class Competition_Entry_Service_Test extends TestCase {
         $event1 = $this->create_event( 10, 'MD' );
         $event2 = $this->create_event( 20, 'MD' );
 
-        $this->competition_service->method( 'get_event_by_id' )->willReturnCallback( function( $id ) use ( $event1, $event2 ) {
-            return match ( (int) $id ) {
-                10 => $event1,
-                20 => $event2,
-                default => null,
-            };
-        } );
+        $this->competition_service->method( 'get_event_by_id' )->willReturnCallback(
+            function ( $id ) use ( $event1, $event2 ) {
+                return match ( (int) $id ) {
+                      10 => $event1,
+                      20 => $event2,
+                      default => null,
+                };
+            }
+        );
 
         $this->setup_mock_teams( $this->create_mock_team( 101, 'Club Team 1' ), $this->create_mock_team( 102, 'Club Team 2' ) );
 
@@ -515,28 +546,32 @@ class Competition_Entry_Service_Test extends TestCase {
             $this->create_mock_team( 103, 'Club Team 3' )
         );
 
-        $post_data = $this->create_league_entry_data( [
-            'numCourtsAvailable' => '8',
-            'event_teams'        => [ 10 => '101,102,103' ],
-            'teamEvent'          => [ 10 => [ 101, 102, 103 ] ],
-            'teamEventTitle'     => [ 10 => [ 101 => 'Club Team 1', 102 => 'Club Team 2', 103 => 'Club Team 3' ] ],
-            'captain'            => [ 10 => [ 101 => 'John', 102 => 'Jane', 103 => 'Alex' ] ],
-            'captainId'          => [ 10 => [ 101 => '1', 102 => '2', 103 => '3' ] ],
-            'contactno'          => [ 10 => [ 101 => '0123456789', 102 => '0987654321', 103 => '0111222333' ] ],
-            'contactemail'       => [ 10 => [ 101 => 'john@test.local', 102 => 'jane@test.local', 103 => 'alex@test.local' ] ],
-            'matchday'           => [ 10 => [ 101 => '1', 102 => '1', 103 => '5' ] ],
-            'matchtime'          => [ 10 => [ 101 => '19:00:00', 102 => '19:00:00', 103 => '14:00:00' ] ],
-        ] );
+        $post_data = $this->create_league_entry_data(
+            [
+                'numCourtsAvailable' => '8',
+                'event_teams'        => [ 10 => '101,102,103' ],
+                'teamEvent'          => [ 10 => [ 101, 102, 103 ] ],
+                'teamEventTitle'     => [ 10 => [ 101 => 'Club Team 1', 102 => 'Club Team 2', 103 => 'Club Team 3' ] ],
+                'captain'            => [ 10 => [ 101 => 'John', 102 => 'Jane', 103 => 'Alex' ] ],
+                'captainId'          => [ 10 => [ 101 => '1', 102 => '2', 103 => '3' ] ],
+                'contactno'          => [ 10 => [ 101 => '0123456789', 102 => '0987654321', 103 => '0111222333' ] ],
+                'contactemail'       => [ 10 => [ 101 => 'john@test.local', 102 => 'jane@test.local', 103 => 'alex@test.local' ] ],
+                'matchday'           => [ 10 => [ 101 => '1', 102 => '1', 103 => '5' ] ],
+                'matchtime'          => [ 10 => [ 101 => '19:00:00', 102 => '19:00:00', 103 => '14:00:00' ] ],
+            ]
+        );
 
         $league_team = $this->createMock( League_Team::class );
         $league_team->method( 'get_profile_enum' )->willReturn( Team_Profile::ACTIVE );
         $this->league_team_repository->method( 'find_by_event_id' )
-            ->willReturnCallback( function( $event_id, $season, $team_id ) use ( $league_team ) {
-                $this->assertSame( 10, $event_id );
-                $this->assertSame( 2026, $season );
-                $this->assertContains( (int) $team_id, [ 101, 102, 103 ] );
-                return [ $league_team ];
-            } );
+            ->willReturnCallback(
+                function ( $event_id, $season, $team_id ) use ( $league_team ) {
+                    $this->assertSame( 10, $event_id );
+                    $this->assertSame( 2026, $season );
+                    $this->assertContains( (int) $team_id, [ 101, 102, 103 ] );
+                    return [ $league_team ];
+                }
+            );
         $this->league_team_repository->expects( $this->exactly( 3 ) )->method( 'save' );
         $this->competition_service->expects( $this->once() )->method( 'set_court_availability' )->with( 1, 1, 8 );
         $this->setup_match_secretary_and_notifications();
@@ -750,17 +785,19 @@ class Competition_Entry_Service_Test extends TestCase {
 
         $this->league_team_repository->expects( $this->exactly( 2 ) )
             ->method( 'find_by_event_id' )
-            ->willReturnCallback( function( $event_id, $season, $team_id ) use ( $prior_season_div1, $prior_season_div2, $current_season_team ) {
-                $this->assertSame( 10, $event_id );
-                $this->assertSame( 101, (int) $team_id );
-                if ( 2025 === $season ) {
-                    return [ $prior_season_div1, $prior_season_div2 ];
+            ->willReturnCallback(
+                function ( $event_id, $season, $team_id ) use ( $prior_season_div1, $prior_season_div2, $current_season_team ) {
+                    $this->assertSame( 10, $event_id );
+                    $this->assertSame( 101, (int) $team_id );
+                    if ( 2025 === $season ) {
+                          return [ $prior_season_div1, $prior_season_div2 ];
+                    }
+                    if ( 2026 === $season ) {
+                        return [ $current_season_team ];
+                    }
+                    return [];
                 }
-                if ( 2026 === $season ) {
-                    return [ $current_season_team ];
-                }
-                return [];
-            } );
+            );
 
         $this->league_team_repository->expects( $this->once() )
             ->method( 'save' )
@@ -786,10 +823,12 @@ class Competition_Entry_Service_Test extends TestCase {
         // Post data: team 101 (Team 1, day 5 weekend) and team 102 (Team 2, day 1 weekday).
         // Missed team 100 (Team 0) was withdrawn while team 101 is active.
         // Also team 101 has active rows in 2 divisions (duplicate).
-        $post_data = $this->create_league_entry_data( [
-            'missed_teams' => [ 10 => [ '100' ] ],
-            'matchday'     => [ 10 => [ 101 => '5', 102 => '1' ] ],
-        ] );
+        $post_data = $this->create_league_entry_data(
+            [
+                'missed_teams' => [ 10 => [ '100' ] ],
+                'matchday'     => [ 10 => [ 101 => '5', 102 => '1' ] ],
+            ]
+        );
 
         $active_div1 = $this->createMock( League_Team::class );
         $active_div1->method( 'get_profile_enum' )->willReturn( Team_Profile::ACTIVE );
@@ -800,12 +839,14 @@ class Competition_Entry_Service_Test extends TestCase {
         $active_div2->method( 'get_league_id' )->willReturn( 1002 );
 
         $this->league_team_repository->method( 'find_by_event_id' )
-            ->willReturnCallback( function( $event_id, $season, $team_id ) use ( $active_div1, $active_div2 ) {
-                if ( (int) $team_id === 101 ) {
-                    return [ $active_div1, $active_div2 ];
+            ->willReturnCallback(
+                function ( $event_id, $season, $team_id ) use ( $active_div1, $active_div2 ) {
+                    if ( 101 === (int) $team_id ) {
+                          return [ $active_div1, $active_div2 ];
+                    }
+                    return [ $active_div1 ];
                 }
-                return [ $active_div1 ];
-            } );
+            );
 
         $result = $this->service->request_league_entry( new League_Entry_Request_DTO( $post_data ) );
 
@@ -837,21 +878,23 @@ class Competition_Entry_Service_Test extends TestCase {
         $raw->link = '/tournament/summer-2026';
         $raw->entry_link = '/tournament/summer-2026/entry';
         $tournament = Tournament::from_object( $raw );
-        $tournament->is_open = true;
+        $tournament->set_is_open( true );
         $this->tournament_repository->method( 'find_by_id' )->willReturnCallback( fn( $tid ) => (int) $tid === $id ? $tournament : null );
         return $tournament;
     }
 
     private function create_tournament_player( int $id, string $gender, int $yob, string $email = 'player@test.local' ): Player {
-        return Player::from_array( [
-            'ID'            => $id,
-            'gender'        => $gender,
-            'year_of_birth' => (string) $yob,
-            'display_name'  => 'Player ' . $id,
-            'email'         => $email,
-            'contactno'     => '0123456789',
-            'opt_ins'       => [],
-        ] );
+        return Player::from_array(
+            [
+                'ID'            => $id,
+                'gender'        => $gender,
+                'year_of_birth' => (string) $yob,
+                'display_name'  => 'Player ' . $id,
+                'email'         => $email,
+                'contactno'     => '0123456789',
+                'opt_ins'       => [],
+            ]
+        );
     }
 
     private function create_tournament_event( int $id, string $type, ?int $age_limit = null, int $age_offset = 0 ): Event {
@@ -875,16 +918,18 @@ class Competition_Entry_Service_Test extends TestCase {
     public function test_tournament_entry_rejects_man_41_in_senior_45_event(): void {
         $tournament = $this->create_tournament( 1, '2026', '2026-08-30' );
         $player = $this->create_tournament_player( 10, 'M', 1985 ); // age 41 in 2026
-        $this->player_service->method( 'get_player' )->willReturnCallback( fn( $pid ) => (int) $pid === 10 ? $player : null );
+        $this->player_service->method( 'get_player' )->willReturnCallback( fn( $pid ) => 10 === (int) $pid ? $player : null );
 
         $event = $this->create_tournament_event( 10, 'SS', 45, 0 ); // Senior Singles 45+
         $this->tournament_service->method( 'get_events_for_tournament' )->willReturn( [ $event ] );
         $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'     => '10',
-            'contactemail' => 'man@test.local',
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'     => '10',
+                'contactemail' => 'man@test.local',
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -896,7 +941,7 @@ class Competition_Entry_Service_Test extends TestCase {
     public function test_tournament_entry_accepts_woman_41_in_senior_45_event_with_5y_offset(): void {
         $tournament = $this->create_tournament( 1, '2026', '2026-08-30' );
         $player = $this->create_tournament_player( 20, 'F', 1985 ); // age 41 in 2026
-        $this->player_service->method( 'get_player' )->willReturnCallback( fn( $pid ) => (int) $pid === 20 ? $player : null );
+        $this->player_service->method( 'get_player' )->willReturnCallback( fn( $pid ) => 20 === (int) $pid ? $player : null );
 
         $event = $this->create_tournament_event( 10, 'SS', 45, 5 ); // Senior Singles 45+ with 5y offset (min age 40 <= 41)
         $this->tournament_service->method( 'get_events_for_tournament' )->willReturn( [ $event ] );
@@ -907,10 +952,12 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
         $this->team_repository->method( 'find_team_by_players' )->willReturn( 1 );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'     => '20',
-            'contactemail' => 'woman@test.local',
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'     => '20',
+                'contactemail' => 'woman@test.local',
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -932,30 +979,36 @@ class Competition_Entry_Service_Test extends TestCase {
         // 1. Male age 42 (born 1984) enters Open and Senior
         $male_player = $this->create_tournament_player( 30, 'M', 1984, 'male@test.local' );
         $female_player = $this->create_tournament_player( 31, 'F', 1984, 'female@test.local' );
-        $this->player_service->method( 'get_player' )->willReturnCallback( function( $pid ) use ( $male_player, $female_player ) {
-            return match( (int) $pid ) {
-                30 => $male_player,
-                31 => $female_player,
-                default => null,
-            };
-        } );
+        $this->player_service->method( 'get_player' )->willReturnCallback(
+            function ( $pid ) use ( $male_player, $female_player ) {
+                return match ( (int) $pid ) {
+                      30 => $male_player,
+                      31 => $female_player,
+                      default => null,
+                };
+            }
+        );
 
-        $dto_male = $this->create_tournament_entry_request( [
-            'playerId'         => '30',
-            'contactemail'     => 'male@test.local',
-            'tournamentEvents' => '10,11',
-            'event'            => [ '10', '11' ],
-        ] );
+        $dto_male = $this->create_tournament_entry_request(
+            [
+                'playerId'         => '30',
+                'contactemail'     => 'male@test.local',
+                'tournamentEvents' => '10,11',
+                'event'            => [ '10', '11' ],
+            ]
+        );
         $res_male = $this->service->request_tournament_entry( $dto_male );
         $this->assertInstanceOf( Tournament_Entry_Response_DTO::class, $res_male );
 
         // 2. Female age 42 (born 1984) enters Open and Senior
-        $dto_female = $this->create_tournament_entry_request( [
-            'playerId'         => '31',
-            'contactemail'     => 'female@test.local',
-            'tournamentEvents' => '10,11',
-            'event'            => [ '10', '11' ],
-        ] );
+        $dto_female = $this->create_tournament_entry_request(
+            [
+                'playerId'         => '31',
+                'contactemail'     => 'female@test.local',
+                'tournamentEvents' => '10,11',
+                'event'            => [ '10', '11' ],
+            ]
+        );
         $res_female = $this->service->request_tournament_entry( $dto_female );
         $this->assertInstanceOf( Tournament_Entry_Response_DTO::class, $res_female );
     }
@@ -971,30 +1024,36 @@ class Competition_Entry_Service_Test extends TestCase {
         // 1. Male entering Women Singles -> rejected
         $male_player = $this->create_tournament_player( 40, 'M', 1990 );
         $female_player = $this->create_tournament_player( 41, 'F', 1990 );
-        $this->player_service->method( 'get_player' )->willReturnCallback( function( $pid ) use ( $male_player, $female_player ) {
-            return match( (int) $pid ) {
-                40 => $male_player,
-                41 => $female_player,
-                default => null,
-            };
-        } );
+        $this->player_service->method( 'get_player' )->willReturnCallback(
+            function ( $pid ) use ( $male_player, $female_player ) {
+                return match ( (int) $pid ) {
+                      40 => $male_player,
+                      41 => $female_player,
+                      default => null,
+                };
+            }
+        );
 
-        $dto_male = $this->create_tournament_entry_request( [
-            'playerId'     => '40',
-            'contactemail' => 'male@test.local',
-            'event'        => [ '10' ],
-        ] );
+        $dto_male = $this->create_tournament_entry_request(
+            [
+                'playerId'     => '40',
+                'contactemail' => 'male@test.local',
+                'event'        => [ '10' ],
+            ]
+        );
         $res_male = $this->service->request_tournament_entry( $dto_male );
         $this->assertInstanceOf( WP_Error::class, $res_male );
         $this->assertContains( 'event', $res_male->get_error_codes() );
 
         // 2. Female entering Men Singles -> rejected
-        $dto_female = $this->create_tournament_entry_request( [
-            'playerId'         => '41',
-            'contactemail'     => 'female@test.local',
-            'tournamentEvents' => '11',
-            'event'            => [ '11' ],
-        ] );
+        $dto_female = $this->create_tournament_entry_request(
+            [
+                'playerId'         => '41',
+                'contactemail'     => 'female@test.local',
+                'tournamentEvents' => '11',
+                'event'            => [ '11' ],
+            ]
+        );
         $res_female = $this->service->request_tournament_entry( $dto_female );
         $this->assertInstanceOf( WP_Error::class, $res_female );
         $this->assertContains( 'event', $res_female->get_error_codes() );
@@ -1009,10 +1068,12 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->player_service->method( 'get_player' )->willReturnCallback( fn( $pid ) => (int) $pid === 50 ? $player : null );
 
         // Submits foreign event ID 999
-        $dto = $this->create_tournament_entry_request( [
-            'playerId' => '50',
-            'event'    => [ '999' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId' => '50',
+                'event'    => [ '999' ],
+            ]
+        );
 
         $res = $this->service->request_tournament_entry( $dto );
         $this->assertInstanceOf( WP_Error::class, $res );
@@ -1030,23 +1091,27 @@ class Competition_Entry_Service_Test extends TestCase {
         $partner_underage = $this->create_tournament_player( 61, 'M', 1995 ); // age 31 in 2026 (< 45, ineligible)
         $partner_eligible = $this->create_tournament_player( 62, 'M', 1978 ); // age 48 in 2026 (eligible)
 
-        $this->player_service->method( 'get_player' )->willReturnCallback( function( $id ) use ( $player, $partner_underage, $partner_eligible ) {
-            return match ( (int) $id ) {
-                60 => $player,
-                61 => $partner_underage,
-                62 => $partner_eligible,
-                default => null,
-            };
-        } );
+        $this->player_service->method( 'get_player' )->willReturnCallback(
+            function ( $id ) use ( $player, $partner_underage, $partner_eligible ) {
+                return match ( (int) $id ) {
+                      60 => $player,
+                      61 => $partner_underage,
+                      62 => $partner_eligible,
+                      default => null,
+                };
+            }
+        );
 
         $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
 
         // 1. Submit with underage partner -> fails with partner-10 error
-        $dto_underage = $this->create_tournament_entry_request( [
-            'playerId'  => '60',
-            'partnerId' => [ 10 => '61' ],
-            'partner'   => [ 10 => 'Partner Underage' ],
-        ] );
+        $dto_underage = $this->create_tournament_entry_request(
+            [
+                'playerId'  => '60',
+                'partnerId' => [ 10 => '61' ],
+                'partner'   => [ 10 => 'Partner Underage' ],
+            ]
+        );
 
         $res_underage = $this->service->request_tournament_entry( $dto_underage );
         $this->assertInstanceOf( WP_Error::class, $res_underage );
@@ -1058,11 +1123,13 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15.0 );
         $this->team_repository->method( 'find_team_by_players' )->willReturn( 1 );
 
-        $dto_eligible = $this->create_tournament_entry_request( [
-            'playerId'  => '60',
-            'partnerId' => [ 10 => '62' ],
-            'partner'   => [ 10 => 'Partner Eligible' ],
-        ] );
+        $dto_eligible = $this->create_tournament_entry_request(
+            [
+                'playerId'  => '60',
+                'partnerId' => [ 10 => '62' ],
+                'partner'   => [ 10 => 'Partner Eligible' ],
+            ]
+        );
 
         $res_eligible = $this->service->request_tournament_entry( $dto_eligible );
         $this->assertInstanceOf( Tournament_Entry_Response_DTO::class, $res_eligible );
@@ -1082,11 +1149,13 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->team_repository->method( 'find_team_by_players' )->willReturn( 1 );
 
         // Forged tournamentEvents containing foreign event 999
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'         => '70',
-            'tournamentEvents' => '10,999',
-            'event'            => [ '10' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'         => '70',
+                'tournamentEvents' => '10,999',
+                'event'            => [ '10' ],
+            ]
+        );
 
         // We expect find_player_teams_by_player_for_events to NEVER be called with 999
         $this->league_team_repository->expects( $this->never() )
@@ -1102,10 +1171,12 @@ class Competition_Entry_Service_Test extends TestCase {
         $event10 = $this->create_tournament_event( 10, 'MS' );
         $event11 = $this->create_tournament_event( 11, 'MD' );
         $this->tournament_service->method( 'get_events_for_tournament' )->willReturn( [ $event10, $event11 ] );
-        $this->competition_service->method( 'get_event_by_id' )->willReturnMap([
-            [10, $event10],
-            [11, $event11]
-        ]);
+        $this->competition_service->method( 'get_event_by_id' )->willReturnMap(
+            [
+                [ 10, $event10 ],
+                [ 11, $event11 ],
+            ]
+        );
 
         $player = $this->create_tournament_player( 70, 'M', 1990 );
         $this->player_service->method( 'get_player' )->willReturn( $player );
@@ -1115,16 +1186,18 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->team_repository->method( 'find_team_by_players' )->willReturn( 170 );
 
         // Only enter event 10
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'         => '70',
-            'tournamentEvents' => '10,11',
-            'event'            => [ '10' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'         => '70',
+                'tournamentEvents' => '10,11',
+                'event'            => [ '10' ],
+            ]
+        );
 
         // We expect find_player_teams_by_player_for_events to be called with 11
         $this->league_team_repository->expects( $this->once() )
             ->method( 'find_player_teams_by_player_for_events' )
-            ->with( 70, [11], '2026' )
+            ->with( 70, [ 11 ], '2026' )
             ->willReturn( [] );
 
         $this->service->request_tournament_entry( $dto );
@@ -1140,9 +1213,11 @@ class Competition_Entry_Service_Test extends TestCase {
         $player_unknown = $this->create_tournament_player( 80, '', 1990 );
         $this->player_service->method( 'get_player' )->willReturn( $player_unknown );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId' => '80',
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId' => '80',
+            ]
+        );
 
         $res = $this->service->request_tournament_entry( $dto );
         $this->assertInstanceOf( WP_Error::class, $res );
@@ -1152,8 +1227,8 @@ class Competition_Entry_Service_Test extends TestCase {
     public function test_tournament_entry_fails_closed_when_tournament_end_year_missing(): void {
         // Tournament with empty date_end, date_start, date_closing
         $tournament = $this->create_tournament( 1, '2026', '' );
-        $tournament->date_start = '';
-        $tournament->date_closing = '';
+        $tournament->set_start_date( '' );
+        $tournament->set_closing_date( '' );
 
         $event_junior = $this->create_tournament_event( 10, 'BS', 18, 0 );
         $this->tournament_service->method( 'get_events_for_tournament' )->willReturn( [ $event_junior ] );
@@ -1162,9 +1237,11 @@ class Competition_Entry_Service_Test extends TestCase {
         $player = $this->create_tournament_player( 90, 'M', 2012 );
         $this->player_service->method( 'get_player' )->willReturn( $player );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId' => '90',
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId' => '90',
+            ]
+        );
 
         $res = $this->service->request_tournament_entry( $dto );
         $this->assertInstanceOf( WP_Error::class, $res );
@@ -1189,11 +1266,13 @@ class Competition_Entry_Service_Test extends TestCase {
             ->with( 95, '1' )
             ->willReturn( true );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'         => '95',
-            'tournamentEvents' => '10',
-            'event'            => [ '10' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'         => '95',
+                'tournamentEvents' => '10',
+                'event'            => [ '10' ],
+            ]
+        );
 
         $res = $this->service->request_tournament_entry( $dto );
         $this->assertInstanceOf( Tournament_Entry_Response_DTO::class, $res );
@@ -1202,9 +1281,9 @@ class Competition_Entry_Service_Test extends TestCase {
 
     public function test_tournament_entry_rejects_closed_tournament(): void {
         $tournament = $this->create_tournament( 1, '2026', '2026-08-30' );
-        $tournament->is_open = false;
-        $tournament->is_closed = false;
-        $tournament->is_started = false;
+        $tournament->set_is_open( false );
+        $tournament->set_is_closed( false );
+        $tournament->set_is_started( false );
         $GLOBALS['wp_stubs_current_user_can'] = false;
 
         $dto = $this->create_tournament_entry_request();
@@ -1217,10 +1296,10 @@ class Competition_Entry_Service_Test extends TestCase {
 
     public function test_tournament_entry_allows_admin_when_tournament_started_but_not_open(): void {
         $tournament               = $this->create_tournament( 1, '2026', '2026-08-30' );
-        $tournament->is_open      = false;
-        $tournament->is_closed    = false;
-        $tournament->is_started   = true;
-        $tournament->date_closing = '2026-10-31';
+        $tournament->set_is_open( false );
+        $tournament->set_is_closed( false );
+        $tournament->set_is_started( true );
+        $tournament->set_closing_date( '2026-10-31' );
 
         $event = $this->create_tournament_event( 10, 'MS' );
         $this->tournament_service->method( 'get_events_for_tournament' )->willReturn( [ $event ] );
@@ -1235,10 +1314,12 @@ class Competition_Entry_Service_Test extends TestCase {
 
         $GLOBALS['wp_stubs_current_user_can'] = true;
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId' => '10',
-            'event'    => [ '10' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId' => '10',
+                'event'    => [ '10' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1248,9 +1329,11 @@ class Competition_Entry_Service_Test extends TestCase {
     public function test_tournament_entry_rejects_season_mismatch(): void {
         $tournament = $this->create_tournament( 1, '2026', '2026-08-30' );
 
-        $dto = $this->create_tournament_entry_request( [
-            'season' => '2025',
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'season' => '2025',
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1262,9 +1345,11 @@ class Competition_Entry_Service_Test extends TestCase {
     public function test_tournament_entry_rejects_nonexistent_tournament_id(): void {
         $this->tournament_repository->method( 'find_by_id' )->willReturn( null );
 
-        $dto = $this->create_tournament_entry_request( [
-            'tournament_id' => '999',
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'tournament_id' => '999',
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1275,7 +1360,7 @@ class Competition_Entry_Service_Test extends TestCase {
 
     public function test_tournament_entry_rejects_season_not_in_competition_seasons(): void {
         $tournament = $this->create_tournament( 1, '2026', '2026-08-30' );
-        $tournament->competition_id = 1;
+        $tournament->set_competition_id( 1 );
 
         $competition = Competition_Test_Factory::create(
             id: 1,
@@ -1283,9 +1368,11 @@ class Competition_Entry_Service_Test extends TestCase {
         );
         $this->competition_to_return = $competition;
 
-        $dto = $this->create_tournament_entry_request( [
-            'season' => '2026',
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'season' => '2026',
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1298,9 +1385,11 @@ class Competition_Entry_Service_Test extends TestCase {
         $tournament = $this->create_tournament( 1, '2026', '2026-08-30' );
         $this->player_service->method( 'get_player' )->willThrowException( new Player_Not_Found_Exception( 'Player 999 not found' ) );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId' => '999',
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId' => '999',
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1314,10 +1403,12 @@ class Competition_Entry_Service_Test extends TestCase {
         $tournament = $this->create_tournament( 1, '2026', '2026-08-30' );
         $this->player_service->method( 'get_player' )->willThrowException( new Player_Not_Found_Exception( 'Player 999 not found' ) );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId' => '999',
-            'event'    => [ '10' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId' => '999',
+                'event'    => [ '10' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1339,10 +1430,12 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->club_service->method( 'get_club' )->willThrowException( new Club_Not_Found_Exception( 'Club 888 not found' ) );
         $GLOBALS['wp_stubs_current_user_can'] = false;
 
-        $dto = $this->create_tournament_entry_request( [
-            'contactno' => '',
-            'clubId'    => '888',
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'contactno' => '',
+                'clubId'    => '888',
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1365,9 +1458,11 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->player_service->method( 'get_player' )->willReturn( $player );
         $this->club_service->method( 'get_club' )->willThrowException( new Club_Not_Found_Exception( 'Club 888 not found' ) );
 
-        $dto = $this->create_tournament_entry_request( [
-            'clubId' => '888',
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'clubId' => '888',
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1383,9 +1478,11 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->player_service->method( 'get_player' )->willReturn( $player );
         $GLOBALS['wp_stubs_current_user_can'] = false;
 
-        $dto = $this->create_tournament_entry_request( [
-            'contactno' => '',
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'contactno' => '',
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1409,9 +1506,11 @@ class Competition_Entry_Service_Test extends TestCase {
 
         $GLOBALS['wp_stubs_current_user_can'] = true;
 
-        $dto = $this->create_tournament_entry_request( [
-            'contactno' => '',
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'contactno' => '',
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1423,9 +1522,11 @@ class Competition_Entry_Service_Test extends TestCase {
         $player = $this->create_tournament_player( 10, 'M', 1990 );
         $this->player_service->method( 'get_player' )->willReturn( $player );
 
-        $dto = $this->create_tournament_entry_request( [
-            'contactemail' => '',
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'contactemail' => '',
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1439,9 +1540,11 @@ class Competition_Entry_Service_Test extends TestCase {
         $player = $this->create_tournament_player( 10, 'M', 1990 );
         $this->player_service->method( 'get_player' )->willReturn( $player );
 
-        $dto = $this->create_tournament_entry_request( [
-            'contactemail' => 'invalid-email-format',
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'contactemail' => 'invalid-email-format',
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1457,9 +1560,11 @@ class Competition_Entry_Service_Test extends TestCase {
 
         $this->validator_players['email']['taken@test.local'] = Player::from_array( [ 'ID' => 99, 'display_name' => 'Taken Player' ] );
 
-        $dto = $this->create_tournament_entry_request( [
-            'contactemail' => 'taken@test.local',
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'contactemail' => 'taken@test.local',
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1470,26 +1575,30 @@ class Competition_Entry_Service_Test extends TestCase {
 
     public function test_tournament_entry_rejects_exceeding_max_entries(): void {
         $tournament = $this->create_tournament( 1, '2026', '2026-08-30' );
-        $tournament->num_entries = 2;
+        $tournament->set_num_entries( 2 );
 
         $event1 = $this->create_tournament_event( 10, 'MS' );
         $event2 = $this->create_tournament_event( 11, 'MD' );
         $event3 = $this->create_tournament_event( 12, 'XD' );
 
         $this->tournament_service->method( 'get_events_for_tournament' )->willReturn( [ $event1, $event2, $event3 ] );
-        $this->competition_service->method( 'get_event_by_id' )->willReturnMap( [
-            [ 10, $event1 ],
-            [ 11, $event2 ],
-            [ 12, $event3 ],
-        ] );
+        $this->competition_service->method( 'get_event_by_id' )->willReturnMap(
+            [
+                [ 10, $event1 ],
+                [ 11, $event2 ],
+                [ 12, $event3 ],
+            ]
+        );
 
         $player = $this->create_tournament_player( 10, 'M', 1990 );
         $this->player_service->method( 'get_player' )->willReturn( $player );
 
-        $dto = $this->create_tournament_entry_request( [
-            'tournamentEvents' => '10,11,12',
-            'event'            => [ '10', '11', '12' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'tournamentEvents' => '10,11,12',
+                'event'            => [ '10', '11', '12' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1503,9 +1612,11 @@ class Competition_Entry_Service_Test extends TestCase {
         $player = $this->create_tournament_player( 10, 'M', 1990 );
         $this->player_service->method( 'get_player' )->willReturn( $player );
 
-        $dto = $this->create_tournament_entry_request( [
-            'event' => [],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'event' => [],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1524,9 +1635,11 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->player_service->method( 'get_player' )->willReturn( $player );
         $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
 
-        $dto = $this->create_tournament_entry_request( [
-            'partnerId' => [ 10 => '' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'partnerId' => [ 10 => '' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1542,18 +1655,22 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
 
         $player = $this->create_tournament_player( 10, 'M', 1990 );
-        $this->player_service->method( 'get_player' )->willReturnCallback( function( $pid ) use ( $player ) {
-            if ( (int) $pid === 10 ) {
-                return $player;
+        $this->player_service->method( 'get_player' )->willReturnCallback(
+            function ( $pid ) use ( $player ) {
+                if ( (int) $pid === 10 ) {
+                      return $player;
+                }
+                throw new Player_Not_Found_Exception( 'Partner 999 not found' );
             }
-            throw new Player_Not_Found_Exception( 'Partner 999 not found' );
-        } );
+        );
         $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
 
-        $dto = $this->create_tournament_entry_request( [
-            'partnerId' => [ 10 => '999' ],
-            'partner'   => [ 10 => 'Unknown Partner' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'partnerId' => [ 10 => '999' ],
+                'partner'   => [ 10 => 'Unknown Partner' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1576,10 +1693,12 @@ class Competition_Entry_Service_Test extends TestCase {
         $partner_team = (object) [ 'team_id' => 101, 'league_team_id' => 501 ];
         $this->league_team_repository->method( 'player_already_entered_league' )->willReturnCallback( fn( $pid ) => (int) $pid === 20 ? $partner_team : null );
 
-        $dto = $this->create_tournament_entry_request( [
-            'partnerId' => [ 10 => '20' ],
-            'partner'   => [ 10 => 'Partner 20' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'partnerId' => [ 10 => '20' ],
+                'partner'   => [ 10 => 'Partner 20' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1599,10 +1718,12 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->player_service->method( 'get_player' )->willReturnCallback( fn( $pid ) => (int) $pid === 10 ? $player : ( (int) $pid === 20 ? $partner : null ) );
         $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
 
-        $dto = $this->create_tournament_entry_request( [
-            'partnerId' => [ 10 => '20' ],
-            'partner'   => [ 10 => 'Partner 20' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'partnerId' => [ 10 => '20' ],
+                'partner'   => [ 10 => 'Partner 20' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1622,10 +1743,12 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->player_service->method( 'get_player' )->willReturnCallback( fn( $pid ) => (int) $pid === 10 ? $player : ( (int) $pid === 20 ? $partner : null ) );
         $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
 
-        $dto = $this->create_tournament_entry_request( [
-            'partnerId' => [ 10 => '20' ],
-            'partner'   => [ 10 => 'Partner 20' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'partnerId' => [ 10 => '20' ],
+                'partner'   => [ 10 => 'Partner 20' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1645,11 +1768,13 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->player_service->method( 'get_player' )->willReturnCallback( fn( $pid ) => (int) $pid === 10 ? $player : ( (int) $pid === 20 ? $partner : null ) );
         $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'  => '10',
-            'partnerId' => [ 10 => '20' ],
-            'partner'   => [ 10 => 'Partner 20' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'  => '10',
+                'partnerId' => [ 10 => '20' ],
+                'partner'   => [ 10 => 'Partner 20' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1669,11 +1794,13 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->player_service->method( 'get_player' )->willReturnCallback( fn( $pid ) => (int) $pid === 10 ? $player : ( (int) $pid === 20 ? $partner : null ) );
         $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'  => '10',
-            'partnerId' => [ 10 => '20' ],
-            'partner'   => [ 10 => 'Partner 20' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'  => '10',
+                'partnerId' => [ 10 => '20' ],
+                'partner'   => [ 10 => 'Partner 20' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1700,10 +1827,12 @@ class Competition_Entry_Service_Test extends TestCase {
 
         $captured_templates = [];
         $shortcodes = $this->createStub( \Racketmanager\Public\Shortcodes::class );
-        $shortcodes->method( 'load_template' )->willReturnCallback( function( $tpl, $args ) use ( &$captured_templates ) {
-            $captured_templates[] = [ 'tpl' => $tpl, 'args' => $args ];
-            return 'email-body';
-        } );
+        $shortcodes->method( 'load_template' )->willReturnCallback(
+            function ( $tpl, $args ) use ( &$captured_templates ) {
+                $captured_templates[] = [ 'tpl' => $tpl, 'args' => $args ];
+                return 'email-body';
+            }
+        );
         $this->plugin->shortcodes = $shortcodes;
 
         $sent = $this->service->notify_tournament_entry_open( 1 );
@@ -1742,10 +1871,12 @@ class Competition_Entry_Service_Test extends TestCase {
 
         $captured_template = null;
         $shortcodes = $this->createStub( \Racketmanager\Public\Shortcodes::class );
-        $shortcodes->method( 'load_template' )->willReturnCallback( function( $tpl, $args ) use ( &$captured_template ) {
-            $captured_template = [ 'tpl' => $tpl, 'args' => $args ];
-            return 'withdrawal-body';
-        } );
+        $shortcodes->method( 'load_template' )->willReturnCallback(
+            function ( $tpl, $args ) use ( &$captured_template ) {
+                $captured_template = [ 'tpl' => $tpl, 'args' => $args ];
+                return 'withdrawal-body';
+            }
+        );
         $this->plugin->shortcodes = $shortcodes;
 
         $refund = $this->service->confirm_tournament_withdrawal( 1, 50 );
@@ -1802,24 +1933,30 @@ class Competition_Entry_Service_Test extends TestCase {
 
         $saved_team = null;
         $saved_player_ids = null;
-        $this->team_repository->expects( $this->once() )->method( 'save_with_players' )->willReturnCallback( function( $team, $p_ids ) use ( &$saved_team, &$saved_player_ids ) {
-            $saved_team       = $team;
-            $saved_player_ids = $p_ids;
-            return 501;
-        } );
+        $this->team_repository->expects( $this->once() )->method( 'save_with_players' )->willReturnCallback(
+            function ( $team, $p_ids ) use ( &$saved_team, &$saved_player_ids ) {
+                $saved_team       = $team;
+                $saved_player_ids = $p_ids;
+                return 501;
+            }
+        );
 
         $saved_league_team = null;
-        $this->league_team_repository->expects( $this->once() )->method( 'save' )->willReturnCallback( function( $lt ) use ( &$saved_league_team ) {
-            if ( $lt instanceof League_Team ) {
-                $saved_league_team = $lt;
+        $this->league_team_repository->expects( $this->once() )->method( 'save' )->willReturnCallback(
+            function ( $lt ) use ( &$saved_league_team ) {
+                if ( $lt instanceof League_Team ) {
+                      $saved_league_team = $lt;
+                }
+                return 1;
             }
-            return 1;
-        } );
+        );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId' => '10',
-            'event'    => [ 10 ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId' => '10',
+                'event'    => [ 10 ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1828,8 +1965,8 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->assertSame( 'Player 10', $saved_team->get_name() );
         $this->assertSame( 'MS', $saved_team->get_type() );
         $this->assertSame( 'P', $saved_team->get_team_type() );
-        $this->assertSame( [ 10 ], $saved_player_ids );
-        $this->assertSame( [ 10 ], $saved_player_ids );
+        $this->assertSame( $saved_player_ids, [ 10 ] );
+        $this->assertSame( $saved_player_ids, [ 10 ] );
 
         $this->assertInstanceOf( League_Team::class, $saved_league_team );
         $this->assertSame( 501, $saved_league_team->get_team_id() );
@@ -1856,17 +1993,21 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->team_repository->expects( $this->never() )->method( 'save_team_players' );
 
         $saved_league_team = null;
-        $this->league_team_repository->expects( $this->once() )->method( 'save' )->willReturnCallback( function( $lt ) use ( &$saved_league_team ) {
-            if ( $lt instanceof League_Team ) {
-                $saved_league_team = $lt;
+        $this->league_team_repository->expects( $this->once() )->method( 'save' )->willReturnCallback(
+            function ( $lt ) use ( &$saved_league_team ) {
+                if ( $lt instanceof League_Team ) {
+                      $saved_league_team = $lt;
+                }
+                return 1;
             }
-            return 1;
-        } );
+        );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId' => '10',
-            'event'    => [ 10 ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId' => '10',
+                'event'    => [ 10 ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1899,10 +2040,12 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->team_repository->expects( $this->never() )->method( 'save_team_players' );
         $this->league_team_repository->expects( $this->never() )->method( 'save' );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId' => '10',
-            'event'    => [ 10 ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId' => '10',
+                'event'    => [ 10 ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1929,19 +2072,23 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->team_repository->expects( $this->never() )->method( 'save_team_players' );
 
         $saved_league_team = null;
-        $this->league_team_repository->expects( $this->once() )->method( 'save' )->willReturnCallback( function( $lt ) use ( &$saved_league_team ) {
-            if ( $lt instanceof League_Team ) {
-                $saved_league_team = $lt;
+        $this->league_team_repository->expects( $this->once() )->method( 'save' )->willReturnCallback(
+            function ( $lt ) use ( &$saved_league_team ) {
+                if ( $lt instanceof League_Team ) {
+                      $saved_league_team = $lt;
+                }
+                return 1;
             }
-            return 1;
-        } );
+        );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'  => '10',
-            'event'     => [ 10 ],
-            'partnerId' => [ 10 => '20' ],
-            'partner'   => [ 10 => 'Partner 20' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'  => '10',
+                'event'     => [ 10 ],
+                'partnerId' => [ 10 => '20' ],
+                'partner'   => [ 10 => 'Partner 20' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1969,10 +2116,12 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->team_repository->expects( $this->once() )->method( 'find_team_by_players' )->with( [ 10, 30 ] )->willReturn( null );
 
         $saved_team = null;
-        $this->team_repository->expects( $this->once() )->method( 'save_with_players' )->with( $this->isInstanceOf( Team::class ), [ 10, 30 ] )->willReturnCallback( function( $team ) use ( &$saved_team ) {
-            $saved_team = $team;
-            return 201;
-        } );
+        $this->team_repository->expects( $this->once() )->method( 'save_with_players' )->with( $this->isInstanceOf( Team::class ), [ 10, 30 ] )->willReturnCallback(
+            function ( $team ) use ( &$saved_team ) {
+                $saved_team = $team;
+                return 201;
+            }
+        );
 
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
         $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15.0 );
@@ -1980,19 +2129,23 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->league_team_repository->expects( $this->once() )->method( 'delete' )->with( 800 )->willReturn( true );
 
         $saved_league_team = null;
-        $this->league_team_repository->expects( $this->once() )->method( 'save' )->willReturnCallback( function( $lt ) use ( &$saved_league_team ) {
-            if ( $lt instanceof League_Team ) {
-                $saved_league_team = $lt;
+        $this->league_team_repository->expects( $this->once() )->method( 'save' )->willReturnCallback(
+            function ( $lt ) use ( &$saved_league_team ) {
+                if ( $lt instanceof League_Team ) {
+                      $saved_league_team = $lt;
+                }
+                return 1;
             }
-            return 1;
-        } );
+        );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'  => '10',
-            'event'     => [ 10 ],
-            'partnerId' => [ 10 => '30' ],
-            'partner'   => [ 10 => 'Partner 30' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'  => '10',
+                'event'     => [ 10 ],
+                'partnerId' => [ 10 => '30' ],
+                'partner'   => [ 10 => 'Partner 30' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -2030,19 +2183,23 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->team_repository->expects( $this->never() )->method( 'save_team_players' );
 
         $saved_league_team = null;
-        $this->league_team_repository->expects( $this->once() )->method( 'save' )->willReturnCallback( function( $lt ) use ( &$saved_league_team ) {
-            if ( $lt instanceof League_Team ) {
-                $saved_league_team = $lt;
+        $this->league_team_repository->expects( $this->once() )->method( 'save' )->willReturnCallback(
+            function ( $lt ) use ( &$saved_league_team ) {
+                if ( $lt instanceof League_Team ) {
+                      $saved_league_team = $lt;
+                }
+                return 1;
             }
-            return 1;
-        } );
+        );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'  => '10',
-            'event'     => [ 10 ],
-            'partnerId' => [ 10 => '30' ],
-            'partner'   => [ 10 => 'Partner 30' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'  => '10',
+                'event'     => [ 10 ],
+                'partnerId' => [ 10 => '30' ],
+                'partner'   => [ 10 => 'Partner 30' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -2076,12 +2233,14 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->team_repository->expects( $this->never() )->method( 'save_team_players' );
         $this->league_team_repository->expects( $this->never() )->method( 'save' );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'  => '10',
-            'event'     => [ 10 ],
-            'partnerId' => [ 10 => '20' ],
-            'partner'   => [ 10 => 'Partner 20' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'  => '10',
+                'event'     => [ 10 ],
+                'partnerId' => [ 10 => '20' ],
+                'partner'   => [ 10 => 'Partner 20' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -2106,10 +2265,12 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->team_repository->expects( $this->once() )->method( 'save_with_players' )->willReturn( false );
         $this->league_team_repository->expects( $this->never() )->method( 'save' );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId' => '10',
-            'event'    => [ 10 ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId' => '10',
+                'event'    => [ 10 ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -2127,10 +2288,12 @@ class Competition_Entry_Service_Test extends TestCase {
 
         $player = $this->create_tournament_player( 10, 'M', 1990 );
         $new_partner = $this->create_tournament_player( 30, 'M', 1992 );
-        $this->player_service->method( 'get_player' )->willReturnMap( [
-            [ 10, $player ],
-            [ 30, $new_partner ],
-        ] );
+        $this->player_service->method( 'get_player' )->willReturnMap(
+            [
+                [ 10, $player ],
+                [ 30, $new_partner ],
+            ]
+        );
 
         // Existing entry with partner 20 (team 200, league_team 800)
         $existing_league_team = (object) [
@@ -2157,12 +2320,14 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->finance_service->expects( $this->never() )->method( 'add_player_invoice_for_tournament' );
         $this->player_service->expects( $this->never() )->method( 'handle_tournament_entry_personal_information' );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'   => '10',
-            'event'      => [ 20 ],
-            'partnerId'  => [ 20 => '30' ],
-            'partner'    => [ 20 => 'New Partner' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'   => '10',
+                'event'      => [ 20 ],
+                'partnerId'  => [ 20 => '30' ],
+                'partner'    => [ 20 => 'New Partner' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -2178,27 +2343,33 @@ class Competition_Entry_Service_Test extends TestCase {
         $event20 = $this->create_tournament_event( 20, 'MD' );
         $event30 = $this->create_tournament_event( 30, 'XD' );
         $this->tournament_service->method( 'get_events_for_tournament' )->willReturn( [ $event10, $event20, $event30 ] );
-        $this->competition_service->method( 'get_event_by_id' )->willReturnMap( [
-            [ 10, $event10 ],
-            [ 20, $event20 ],
-            [ 30, $event30 ],
-        ] );
+        $this->competition_service->method( 'get_event_by_id' )->willReturnMap(
+            [
+                [ 10, $event10 ],
+                [ 20, $event20 ],
+                [ 30, $event30 ],
+            ]
+        );
 
         $player = $this->create_tournament_player( 10, 'M', 1990 );
         $partner = $this->create_tournament_player( 20, 'M', 1992 );
-        $this->player_service->method( 'get_player' )->willReturnMap( [
-            [ 10, $player ],
-            [ 20, $partner ],
-        ] );
+        $this->player_service->method( 'get_player' )->willReturnMap(
+            [
+                [ 10, $player ],
+                [ 20, $partner ],
+            ]
+        );
 
         $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
-        $this->league_team_repository->method( 'find_player_teams_by_player_for_events' )->willReturn( [ $this->createMock(\Racketmanager\Domain\Competition\League_Team::class) ] );
+        $this->league_team_repository->method( 'find_player_teams_by_player_for_events' )->willReturn( [ $this->createMock( \Racketmanager\Domain\Competition\League_Team::class ) ] );
         $this->player_service->expects( $this->never() )->method( 'handle_tournament_entry_personal_information' );
 
-        $this->team_repository->method( 'find_team_by_players' )->willReturnMap( [
-            [ [ 10 ], null ],
-            [ [ 10, 20 ], null ],
-        ] );
+        $this->team_repository->method( 'find_team_by_players' )->willReturnMap(
+            [
+                [ [ 10 ], null ],
+                [ [ 10, 20 ], null ],
+            ]
+        );
 
         // Event 10 succeeds creating team 501, Event 20 fails returning 0
         $this->team_repository->expects( $this->exactly( 2 ) )
@@ -2211,13 +2382,15 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->tournament_entry_repository->expects( $this->never() )->method( 'save' );
         $this->finance_service->expects( $this->never() )->method( 'add_player_invoice_for_tournament' );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'         => '10',
-            'tournamentEvents' => '10,20,30',
-            'event'            => [ 10, 20 ],
-            'partnerId'        => [ 20 => '20' ],
-            'partner'          => [ 20 => 'Partner 20' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'         => '10',
+                'tournamentEvents' => '10,20,30',
+                'event'            => [ 10, 20 ],
+                'partnerId'        => [ 20 => '20' ],
+                'partner'          => [ 20 => 'Partner 20' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -2235,32 +2408,40 @@ class Competition_Entry_Service_Test extends TestCase {
         $event20->set_primary_league( 200 );
 
         $this->tournament_service->method( 'get_events_for_tournament' )->willReturn( [ $event10, $event20 ] );
-        $this->competition_service->method( 'get_event_by_id' )->willReturnMap( [
-            [ 10, $event10 ],
-            [ 20, $event20 ],
-        ] );
+        $this->competition_service->method( 'get_event_by_id' )->willReturnMap(
+            [
+                [ 10, $event10 ],
+                [ 20, $event20 ],
+            ]
+        );
 
         $player = $this->create_tournament_player( 10, 'M', 1990 );
         $new_partner = $this->create_tournament_player( 30, 'M', 1990 );
-        $this->player_service->method( 'get_player' )->willReturnMap( [
-            [ 10, $player ],
-            [ 30, $new_partner ],
-        ] );
+        $this->player_service->method( 'get_player' )->willReturnMap(
+            [
+                [ 10, $player ],
+                [ 30, $new_partner ],
+            ]
+        );
 
         $old_player_team = (object) [ 'team_id' => 200, 'league_team_id' => 800 ];
         $this->league_team_repository->method( 'player_already_entered_league' )
-            ->willReturnCallback( function( $pid, $lid, $season ) use ( $old_player_team ) {
-                if ( (int) $pid === 10 && (int) $lid === 200 ) {
-                    return $old_player_team;
+            ->willReturnCallback(
+                function ( $pid, $lid, $season ) use ( $old_player_team ) {
+                    if ( (int) $pid === 10 && (int) $lid === 200 ) {
+                          return $old_player_team;
+                    }
+                    return null;
                 }
-                return null;
-            } );
+            );
 
         // Preflight: event 10 (MS) creates new team 501; event 20 (MD) reuses existing team 450
-        $this->team_repository->method( 'find_team_by_players' )->willReturnMap( [
-            [ [ 10 ], null ],
-            [ [ 10, 30 ], 450 ],
-        ] );
+        $this->team_repository->method( 'find_team_by_players' )->willReturnMap(
+            [
+                [ [ 10 ], null ],
+                [ [ 10, 30 ], 450 ],
+            ]
+        );
         $this->team_repository->expects( $this->once() )->method( 'save_with_players' )->with( $this->isInstanceOf( Team::class ), [ 10 ] )->willReturn( 501 );
 
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
@@ -2272,34 +2453,40 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->league_team_repository->expects( $this->once() )
             ->method( 'delete' )
             ->with( 800 )
-            ->willReturnCallback( function( $id ) use ( &$operations ) {
-                $operations[] = [
-                    'type' => 'delete',
-                    'id'   => $id,
-                ];
-                return true;
-            } );
+            ->willReturnCallback(
+                function ( $id ) use ( &$operations ) {
+                    $operations[] = [
+                        'type' => 'delete',
+                        'id'   => $id,
+                    ];
+                    return true;
+                }
+            );
 
         $this->league_team_repository->expects( $this->exactly( 2 ) )
             ->method( 'save' )
-            ->willReturnCallback( function( $lt ) use ( &$operations, &$saved_league_teams ) {
-                if ( $lt instanceof League_Team ) {
-                    $saved_league_teams[] = $lt;
-                    $operations[] = [
-                        'type'      => 'save_league_team',
-                        'team_id'   => $lt->get_team_id(),
-                        'league_id' => $lt->get_league_id(),
-                    ];
+            ->willReturnCallback(
+                function ( $lt ) use ( &$operations, &$saved_league_teams ) {
+                    if ( $lt instanceof League_Team ) {
+                          $saved_league_teams[] = $lt;
+                          $operations[] = [
+                              'type'      => 'save_league_team',
+                              'team_id'   => $lt->get_team_id(),
+                              'league_id' => $lt->get_league_id(),
+                          ];
+                    }
+                    return 1;
                 }
-                return 1;
-            } );
+            );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'  => '10',
-            'event'     => [ 10, 20 ],
-            'partnerId' => [ 20 => '30' ],
-            'partner'   => [ 20 => 'Partner 30' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'  => '10',
+                'event'     => [ 10, 20 ],
+                'partnerId' => [ 20 => '30' ],
+                'partner'   => [ 20 => 'Partner 30' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -2321,20 +2508,29 @@ class Competition_Entry_Service_Test extends TestCase {
 
         // Verify delete(800) occurred before the second league team save
         $this->assertCount( 3, $operations );
-        $this->assertSame( [
-            'type'      => 'save_league_team',
-            'team_id'   => 501,
-            'league_id' => 100,
-        ], $operations[0] );
-        $this->assertSame( [
-            'type' => 'delete',
-            'id'   => 800,
-        ], $operations[1] );
-        $this->assertSame( [
-            'type'      => 'save_league_team',
-            'team_id'   => 450,
-            'league_id' => 200,
-        ], $operations[2] );
+        $this->assertSame(
+            [
+                'type'      => 'save_league_team',
+                'team_id'   => 501,
+                'league_id' => 100,
+            ],
+            $operations[0]
+        );
+        $this->assertSame(
+            [
+                'type' => 'delete',
+                'id'   => 800,
+            ],
+            $operations[1]
+        );
+        $this->assertSame(
+            [
+                'type'      => 'save_league_team',
+                'team_id'   => 450,
+                'league_id' => 200,
+            ],
+            $operations[2]
+        );
     }
 
     public function test_add_team_with_players_builds_team_and_delegates_to_save_with_players(): void {
@@ -2345,10 +2541,12 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->team_repository->expects( $this->once() )
             ->method( 'save_with_players' )
             ->with( $this->isInstanceOf( Team::class ), [ 10, 20 ] )
-            ->willReturnCallback( function( Team $team ) use ( &$saved_team ) {
-                $saved_team = $team;
-                return 777;
-            } );
+            ->willReturnCallback(
+                function ( Team $team ) use ( &$saved_team ) {
+                    $saved_team = $team;
+                    return 777;
+                }
+            );
         $this->team_repository->expects( $this->never() )->method( 'save' );
         $this->team_repository->expects( $this->never() )->method( 'save_team_players' );
 
@@ -2392,10 +2590,12 @@ class Competition_Entry_Service_Test extends TestCase {
         $event20 = $this->create_tournament_event( 20, 'OS', null, 0 );
 
         $this->tournament_service->method( 'get_events_for_tournament' )->willReturn( [ $event10, $event20 ] );
-        $this->competition_service->method( 'get_event_by_id' )->willReturnMap( [
-            [ 10, $event10 ],
-            [ 20, $event20 ],
-        ] );
+        $this->competition_service->method( 'get_event_by_id' )->willReturnMap(
+            [
+                [ 10, $event10 ],
+                [ 20, $event20 ],
+            ]
+        );
 
         $player = $this->create_tournament_player( 10, 'M', 1990 );
         $this->player_service->method( 'get_player' )->willReturn( $player );
@@ -2414,26 +2614,35 @@ class Competition_Entry_Service_Test extends TestCase {
             ->with( 10, $tournament );
         $this->finance_service->expects( $this->once() )
             ->method( 'add_player_invoice_for_tournament' )
-            ->with( $tournament, $this->callback( function( $invoice ) use ( &$captured_invoice ) {
-                $captured_invoice = $invoice;
-                return true;
-            } ) );
+            ->with(
+                $tournament,
+                $this->callback(
+                    function ( $invoice ) use ( &$captured_invoice ) {
+                        $captured_invoice = $invoice;
+                        return true;
+                    }
+                )
+            );
 
         /** @var Tournament_Entry|null $captured_entry */
         $captured_entry = null;
         $this->tournament_entry_repository->method( 'find_by_tournament_and_player' )->willReturn( null );
         $this->tournament_entry_repository->expects( $this->once() )
             ->method( 'save' )
-            ->willReturnCallback( function( $entry ) use ( &$captured_entry ) {
-                $captured_entry = $entry;
-                return 1;
-            } );
+            ->willReturnCallback(
+                function ( $entry ) use ( &$captured_entry ) {
+                    $captured_entry = $entry;
+                    return 1;
+                }
+            );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'         => '10',
-            'tournamentEvents' => '10,20',
-            'event'            => [ '10', '20' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'         => '10',
+                'tournamentEvents' => '10,20',
+                'event'            => [ '10', '20' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -2490,27 +2699,36 @@ class Competition_Entry_Service_Test extends TestCase {
             ->with( 10, $tournament );
         $this->finance_service->expects( $this->once() )
             ->method( 'add_player_invoice_for_tournament' )
-            ->with( $tournament, $this->callback( function( $invoice ) use ( &$captured_invoice ) {
-                $captured_invoice = $invoice;
-                return true;
-            } ) );
+            ->with(
+                $tournament,
+                $this->callback(
+                    function ( $invoice ) use ( &$captured_invoice ) {
+                        $captured_invoice = $invoice;
+                        return true;
+                    }
+                )
+            );
 
         /** @var Tournament_Entry|null $captured_entry */
         $captured_entry = null;
         $this->tournament_entry_repository->method( 'find_by_tournament_and_player' )->willReturn( null );
         $this->tournament_entry_repository->expects( $this->once() )
             ->method( 'save' )
-            ->willReturnCallback( function( $entry ) use ( &$captured_entry ) {
-                $captured_entry = $entry;
-                return 1;
-            } );
+            ->willReturnCallback(
+                function ( $entry ) use ( &$captured_entry ) {
+                    $captured_entry = $entry;
+                    return 1;
+                }
+            );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'         => '10',
-            'clubId'           => '1',
-            'tournamentEvents' => '10',
-            'event'            => [ '10' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'         => '10',
+                'clubId'           => '1',
+                'tournamentEvents' => '10',
+                'event'            => [ '10' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -2551,11 +2769,13 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->finance_service->expects( $this->once() )->method( 'cancel_player_invoices_by_tournament' );
         $this->finance_service->expects( $this->once() )->method( 'add_player_invoice_for_tournament' );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'         => '10',
-            'tournamentEvents' => '10',
-            'event'            => [ '10' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'         => '10',
+                'tournamentEvents' => '10',
+                'event'            => [ '10' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -2594,16 +2814,20 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->tournament_entry_repository->method( 'find_by_tournament_and_player' )->willReturn( null );
         $this->tournament_entry_repository->expects( $this->once() )
             ->method( 'save' )
-            ->willReturnCallback( function( $entry ) use ( &$captured_entry ) {
-                $captured_entry = $entry;
-                return 1;
-            } );
+            ->willReturnCallback(
+                function ( $entry ) use ( &$captured_entry ) {
+                    $captured_entry = $entry;
+                    return 1;
+                }
+            );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'         => '10',
-            'tournamentEvents' => '10',
-            'event'            => [ '10' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'         => '10',
+                'tournamentEvents' => '10',
+                'event'            => [ '10' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -2640,17 +2864,21 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->tournament_entry_repository->method( 'find_by_tournament_and_player' )->willReturn( null );
         $this->tournament_entry_repository->expects( $this->once() )
             ->method( 'save' )
-            ->willReturnCallback( function( $entry ) use ( &$captured_entry ) {
-                $captured_entry = $entry;
-                return 1;
-            } );
+            ->willReturnCallback(
+                function ( $entry ) use ( &$captured_entry ) {
+                    $captured_entry = $entry;
+                    return 1;
+                }
+            );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'         => '10',
-            'clubId'           => '1',
-            'tournamentEvents' => '10',
-            'event'            => [ '10' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'         => '10',
+                'clubId'           => '1',
+                'tournamentEvents' => '10',
+                'event'            => [ '10' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -2670,9 +2898,11 @@ class Competition_Entry_Service_Test extends TestCase {
         $player = $this->create_tournament_player( 10, 'M', 1990 );
         $this->player_service->method( 'get_player' )->willReturn( $player );
 
-        $dto_empty = $this->create_tournament_entry_request( [
-            'clubId' => '',
-        ] );
+        $dto_empty = $this->create_tournament_entry_request(
+            [
+                'clubId' => '',
+            ]
+        );
 
         $result_empty = $this->service->request_tournament_entry( $dto_empty );
 
@@ -2681,9 +2911,11 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->assertSame( 400, $result_empty->get_error_data( 'clubId' )['status'] ?? null );
         $this->assertContains( 'Select the club you are a member of', $result_empty->get_error_messages() );
 
-        $dto_zero = $this->create_tournament_entry_request( [
-            'clubId' => '0',
-        ] );
+        $dto_zero = $this->create_tournament_entry_request(
+            [
+                'clubId' => '0',
+            ]
+        );
 
         $result_zero = $this->service->request_tournament_entry( $dto_zero );
 
@@ -2708,31 +2940,37 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
         $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 5.0 );
 
-        $existing_entry = Tournament_Entry::from_object( (object) [
-            'id'            => 123,
-            'tournament_id' => 1,
-            'player_id'     => 10,
-            'status'        => 0,
-            'fee'           => 0,
-            'club_id'       => null,
-        ] );
+        $existing_entry = Tournament_Entry::from_object(
+            (object) [
+                'id'            => 123,
+                'tournament_id' => 1,
+                'player_id'     => 10,
+                'status'        => 0,
+                'fee'           => 0,
+                'club_id'       => null,
+            ]
+        );
 
         /** @var Tournament_Entry|null $captured_entry */
         $captured_entry = null;
         $this->tournament_entry_repository->method( 'find_by_tournament_and_player' )->willReturn( $existing_entry );
         $this->tournament_entry_repository->expects( $this->once() )
             ->method( 'save' )
-            ->willReturnCallback( function( $entry ) use ( &$captured_entry ) {
-                $captured_entry = $entry;
-                return 1;
-            } );
+            ->willReturnCallback(
+                function ( $entry ) use ( &$captured_entry ) {
+                    $captured_entry = $entry;
+                    return 1;
+                }
+            );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'         => '10',
-            'clubId'           => '1',
-            'tournamentEvents' => '10',
-            'event'            => [ '10' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'         => '10',
+                'clubId'           => '1',
+                'tournamentEvents' => '10',
+                'event'            => [ '10' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -2750,10 +2988,12 @@ class Competition_Entry_Service_Test extends TestCase {
         $event20 = $this->create_tournament_event( 20, 'MD' );
 
         $this->tournament_service->method( 'get_events_for_tournament' )->willReturn( [ $event10, $event20 ] );
-        $this->competition_service->method( 'get_event_by_id' )->willReturnMap( [
-            [ 10, $event10 ],
-            [ 20, $event20 ],
-        ] );
+        $this->competition_service->method( 'get_event_by_id' )->willReturnMap(
+            [
+                [ 10, $event10 ],
+                [ 20, $event20 ],
+            ]
+        );
 
         $player = $this->create_tournament_player( 10, 'M', 1990 );
         $this->player_service->method( 'get_player' )->willReturn( $player );
@@ -2778,21 +3018,25 @@ class Competition_Entry_Service_Test extends TestCase {
         $saved_league_teams = [];
         $this->league_team_repository->expects( $this->exactly( 2 ) )
             ->method( 'save' )
-            ->willReturnCallback( function( $lt ) use ( &$saved_league_teams ) {
-                $saved_league_teams[] = $lt;
-                return 1;
-            } );
+            ->willReturnCallback(
+                function ( $lt ) use ( &$saved_league_teams ) {
+                    $saved_league_teams[] = $lt;
+                    return 1;
+                }
+            );
 
         $this->player_service->expects( $this->once() )
             ->method( 'save_opt_in' )
             ->with( 10, '1' );
 
         // Player enters only event 10, omitting event 20
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'         => '10',
-            'tournamentEvents' => '10,20',
-            'event'            => [ '10' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'         => '10',
+                'tournamentEvents' => '10,20',
+                'event'            => [ '10' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -2827,31 +3071,37 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
         $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 5.0 );
 
-        $existing_entry = Tournament_Entry::from_object( (object) [
-            'id'            => 123,
-            'tournament_id' => 1,
-            'player_id'     => 10,
-            'status'        => 2,
-            'fee'           => 50,
-            'club_id'       => 5,
-        ] );
+        $existing_entry = Tournament_Entry::from_object(
+            (object) [
+                'id'            => 123,
+                'tournament_id' => 1,
+                'player_id'     => 10,
+                'status'        => 2,
+                'fee'           => 50,
+                'club_id'       => 5,
+            ]
+        );
 
         /** @var Tournament_Entry|null $captured_entry */
         $captured_entry = null;
         $this->tournament_entry_repository->method( 'find_by_tournament_and_player' )->willReturn( $existing_entry );
         $this->tournament_entry_repository->expects( $this->once() )
             ->method( 'save' )
-            ->willReturnCallback( function( $entry ) use ( &$captured_entry ) {
-                $captured_entry = $entry;
-                return 1;
-            } );
+            ->willReturnCallback(
+                function ( $entry ) use ( &$captured_entry ) {
+                    $captured_entry = $entry;
+                    return 1;
+                }
+            );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'         => '10',
-            'clubId'           => '1',
-            'tournamentEvents' => '10',
-            'event'            => [ '10' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'         => '10',
+                'clubId'           => '1',
+                'tournamentEvents' => '10',
+                'event'            => [ '10' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -2889,26 +3139,35 @@ class Competition_Entry_Service_Test extends TestCase {
             ->with( 10, $tournament );
         $this->finance_service->expects( $this->once() )
             ->method( 'add_player_invoice_for_tournament' )
-            ->with( $tournament, $this->callback( function( $invoice ) use ( &$captured_invoice ) {
-                $captured_invoice = $invoice;
-                return true;
-            } ) );
+            ->with(
+                $tournament,
+                $this->callback(
+                    function ( $invoice ) use ( &$captured_invoice ) {
+                        $captured_invoice = $invoice;
+                        return true;
+                    }
+                )
+            );
 
         /** @var Tournament_Entry|null $captured_entry */
         $captured_entry = null;
         $this->tournament_entry_repository->method( 'find_by_tournament_and_player' )->willReturn( null );
         $this->tournament_entry_repository->expects( $this->once() )
             ->method( 'save' )
-            ->willReturnCallback( function( $entry ) use ( &$captured_entry ) {
-                $captured_entry = $entry;
-                return 1;
-            } );
+            ->willReturnCallback(
+                function ( $entry ) use ( &$captured_entry ) {
+                    $captured_entry = $entry;
+                    return 1;
+                }
+            );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'         => '10',
-            'tournamentEvents' => '10',
-            'event'            => [ '10' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'         => '10',
+                'tournamentEvents' => '10',
+                'event'            => [ '10' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -2952,16 +3211,20 @@ class Competition_Entry_Service_Test extends TestCase {
         $captured_league_team = null;
         $this->league_team_repository->expects( $this->once() )
             ->method( 'save' )
-            ->willReturnCallback( function( $lt ) use ( &$captured_league_team ) {
-                $captured_league_team = $lt;
-                return 1;
-            } );
+            ->willReturnCallback(
+                function ( $lt ) use ( &$captured_league_team ) {
+                    $captured_league_team = $lt;
+                    return 1;
+                }
+            );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'         => '10',
-            'tournamentEvents' => '15',
-            'event'            => [ '15' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'         => '10',
+                'tournamentEvents' => '15',
+                'event'            => [ '15' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -2991,15 +3254,17 @@ class Competition_Entry_Service_Test extends TestCase {
         $doubles_event->set_league_index( [ 3050 => '1' ] );
 
         $this->event_repository->method( 'query_leagues' )
-            ->willReturnCallback( function( $event_id ) {
-                if ( (int) $event_id === 15 ) {
-                    return [ (object) [ 'id' => 2050 ] ];
+            ->willReturnCallback(
+                function ( $event_id ) {
+                    if ( (int) $event_id === 15 ) {
+                          return [ (object) [ 'id' => 2050 ] ];
+                    }
+                    if ( (int) $event_id === 16 ) {
+                        return [ (object) [ 'id' => 3050 ] ];
+                    }
+                    return [];
                 }
-                if ( (int) $event_id === 16 ) {
-                    return [ (object) [ 'id' => 3050 ] ];
-                }
-                return [];
-            } );
+            );
 
         $this->tournament_service->method( 'get_events_for_tournament' )
             ->willReturn( [ $singles_event, $doubles_event ] );
@@ -3015,23 +3280,27 @@ class Competition_Entry_Service_Test extends TestCase {
         // Player 10 is NOT yet entered in singles event 15 (league 2050)
         $existing_doubles_team = (object) [ 'team_id' => 999, 'league_team_id' => 888 ];
         $this->league_team_repository->method( 'player_already_entered_league' )
-            ->willReturnCallback( function( $pid, $lid, $season ) use ( $existing_doubles_team ) {
-                if ( (int) $lid === 3050 && in_array( (int) $pid, [ 10, 20 ], true ) ) {
-                    return $existing_doubles_team;
+            ->willReturnCallback(
+                function ( $pid, $lid, $season ) use ( $existing_doubles_team ) {
+                    if ( (int) $lid === 3050 && in_array( (int) $pid, [ 10, 20 ], true ) ) {
+                          return $existing_doubles_team;
+                    }
+                    return null;
                 }
-                return null;
-            } );
+            );
 
         $this->team_repository->method( 'find_team_by_players' )
-            ->willReturnCallback( function( array $players ) {
-                if ( count( $players ) === 1 && (int) $players[0] === 10 ) {
-                    return 500; // existing single-player team
+            ->willReturnCallback(
+                function ( array $players ) {
+                    if ( count( $players ) === 1 && (int) $players[0] === 10 ) {
+                          return 500; // existing single-player team
+                    }
+                    if ( count( $players ) === 2 ) {
+                        return 999; // existing doubles team
+                    }
+                    return null;
                 }
-                if ( count( $players ) === 2 ) {
-                    return 999; // existing doubles team
-                }
-                return null;
-            } );
+            );
 
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 0.0 ] );
         $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 20.0 );
@@ -3040,18 +3309,22 @@ class Competition_Entry_Service_Test extends TestCase {
         $captured_singles_league_team = null;
         $this->league_team_repository->expects( $this->once() )
             ->method( 'save' )
-            ->willReturnCallback( function( $lt ) use ( &$captured_singles_league_team ) {
-                $captured_singles_league_team = $lt;
-                return 1;
-            } );
+            ->willReturnCallback(
+                function ( $lt ) use ( &$captured_singles_league_team ) {
+                    $captured_singles_league_team = $lt;
+                    return 1;
+                }
+            );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'         => '10',
-            'tournamentEvents' => '15,16',
-            'event'            => [ '15', '16' ],
-            'partnerId'        => [ 16 => '20' ],
-            'partner'          => [ 16 => 'Partner 20' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'         => '10',
+                'tournamentEvents' => '15,16',
+                'event'            => [ '15', '16' ],
+                'partnerId'        => [ 16 => '20' ],
+                'partner'          => [ 16 => 'Partner 20' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -3088,11 +3361,13 @@ class Competition_Entry_Service_Test extends TestCase {
         $player = $this->create_tournament_player( 10, 'M', 1990 );
         $this->player_service->method( 'get_player' )->willReturn( $player );
 
-        $dto = $this->create_tournament_entry_request( [
-            'playerId'         => '10',
-            'tournamentEvents' => '16',
-            'event'            => [ '16' ],
-        ] );
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'         => '10',
+                'tournamentEvents' => '16',
+                'event'            => [ '16' ],
+            ]
+        );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -3125,21 +3400,25 @@ class Competition_Entry_Service_Test extends TestCase {
         $partner_team->team_id = 999;
         $this->league_team_repository->expects( $this->exactly( 2 ) )
             ->method( 'player_already_entered_league' )
-            ->willReturnCallback( function( $pid, $lid, $season ) use ( $partner_team ) {
-                $this->assertSame( 3050, $lid );
-                $this->assertSame( 2026, $season );
-                if ( $pid === 20 ) {
-                    return $partner_team;
+            ->willReturnCallback(
+                function ( $pid, $lid, $season ) use ( $partner_team ) {
+                    $this->assertSame( 3050, $lid );
+                    $this->assertSame( 2026, $season );
+                    if ( $pid === 20 ) {
+                          return $partner_team;
+                    }
+                    return null;
                 }
-                return null;
-            } );
+            );
 
-        $partner_request = new Tournament_Partner_Request_DTO( [
-            'playerId'     => 10,
-            'partnerId'    => 20,
-            'tournamentId' => 1,
-            'eventId'      => 20,
-        ] );
+        $partner_request = new Tournament_Partner_Request_DTO(
+            [
+                'playerId'     => 10,
+                'partnerId'    => 20,
+                'tournamentId' => 1,
+                'eventId'      => 20,
+            ]
+        );
 
         $result = $this->service->validate_tournament_partner( $partner_request, true );
 
@@ -3162,12 +3441,14 @@ class Competition_Entry_Service_Test extends TestCase {
         $partner = $this->create_tournament_player( 20, 'M', 1992 );
         $this->player_service->method( 'get_player' )->willReturn( $partner );
 
-        $partner_request = new Tournament_Partner_Request_DTO( [
-            'playerId'     => 10,
-            'partnerId'    => 20,
-            'tournamentId' => 1,
-            'eventId'      => 21,
-        ] );
+        $partner_request = new Tournament_Partner_Request_DTO(
+            [
+                'playerId'     => 10,
+                'partnerId'    => 20,
+                'tournamentId' => 1,
+                'eventId'      => 21,
+            ]
+        );
 
         $result = $this->service->validate_tournament_partner( $partner_request, true );
 
@@ -3225,7 +3506,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $club_id = 1;
         $club = new Club();
         $club->set_id( $club_id );
-        
+
         $club_entry = (object) [
             'season' => '2026',
             'events' => [
@@ -3297,23 +3578,28 @@ class Competition_Entry_Service_Test extends TestCase {
             id: 1,
             name: 'Summer League',
             type: Competition_Type::LEAGUE,
-            seasons: Competition_Test_Factory::season_map( '2026', [
-                'date_closing' => '2026-04-15 00:00:00',
-                'date_start'   => '2026-05-01 00:00:00',
-                'date_end'     => '2026-08-31 00:00:00',
-                'venue'        => null,
-            ] )
+            seasons: Competition_Test_Factory::season_map(
+                '2026',
+                [
+                    'date_closing' => '2026-04-15 00:00:00',
+                    'date_start'   => '2026-05-01 00:00:00',
+                    'date_end'     => '2026-08-31 00:00:00',
+                    'venue'        => null,
+                ]
+            )
         );
         $this->competition_to_return = $competition;
 
         $this->competition_service->method( 'is_season_valid_for_competition' )
-            ->willReturn( [
-                'name'         => '2026',
-                'date_closing' => '2026-04-15 00:00:00',
-                'date_start'   => '2026-05-01 00:00:00',
-                'date_end'     => '2026-08-31 00:00:00',
-                'venue'        => null,
-            ] );
+            ->willReturn(
+                [
+                    'name'         => '2026',
+                    'date_closing' => '2026-04-15 00:00:00',
+                    'date_start'   => '2026-05-01 00:00:00',
+                    'date_end'     => '2026-08-31 00:00:00',
+                    'venue'        => null,
+                ]
+            );
 
         $event = $this->create_event( 10, 'MD' );
         $event->set_seasons( [ '2025' => [ 'name' => '2025' ], '2026' => [ 'name' => '2026' ] ] );
@@ -3345,14 +3631,16 @@ class Competition_Entry_Service_Test extends TestCase {
         $shortcodes         = $this->createStub( \Racketmanager\Public\Shortcodes::class );
         $warnings           = [];
         $shortcodes->method( 'load_template' )->willReturnCallback(
-            function( string $template, array $args, string $subdir = '' ) use ( $shortcode_renderer, &$warnings ): string {
-                set_error_handler( static function ( int $errno, string $errstr, string $errfile, int $errline ) use ( &$warnings ): bool {
-                    if ( ! ( error_reporting() & $errno ) ) {
-                        return false;
+            function ( string $template, array $args, string $subdir = '' ) use ( $shortcode_renderer, &$warnings ): string {
+                set_error_handler(
+                    static function ( int $errno, string $errstr, string $errfile, int $errline ) use ( &$warnings ): bool {
+                        if ( ! ( error_reporting() & $errno ) ) {
+                            return false;
+                        }
+                        $warnings[] = [ 'errno' => $errno, 'errstr' => $errstr, 'errfile' => $errfile, 'errline' => $errline ];
+                        return true;
                     }
-                    $warnings[] = [ 'errno' => $errno, 'errstr' => $errstr, 'errfile' => $errfile, 'errline' => $errline ];
-                    return true;
-                } );
+                );
                 try {
                     return $shortcode_renderer->render( $template, $args, $subdir );
                 } finally {
@@ -3423,23 +3711,28 @@ class Competition_Entry_Service_Test extends TestCase {
             id: 1,
             name: 'Summer League',
             type: Competition_Type::LEAGUE,
-            seasons: Competition_Test_Factory::season_map( '2026', [
-                'date_closing' => '2026-04-15 00:00:00',
-                'date_start'   => '2026-05-01 00:00:00',
-                'date_end'     => '2026-08-31 00:00:00',
-                'venue'        => null,
-            ] )
+            seasons: Competition_Test_Factory::season_map(
+                '2026',
+                [
+                    'date_closing' => '2026-04-15 00:00:00',
+                    'date_start'   => '2026-05-01 00:00:00',
+                    'date_end'     => '2026-08-31 00:00:00',
+                    'venue'        => null,
+                ]
+            )
         );
         $this->competition_to_return = $competition;
 
         $this->competition_service->method( 'is_season_valid_for_competition' )
-            ->willReturn( [
-                'name'         => '2026',
-                'date_closing' => '2026-04-15 00:00:00',
-                'date_start'   => '2026-05-01 00:00:00',
-                'date_end'     => '2026-08-31 00:00:00',
-                'venue'        => null,
-            ] );
+            ->willReturn(
+                [
+                    'name'         => '2026',
+                    'date_closing' => '2026-04-15 00:00:00',
+                    'date_start'   => '2026-05-01 00:00:00',
+                    'date_end'     => '2026-08-31 00:00:00',
+                    'venue'        => null,
+                ]
+            );
 
         $event = $this->create_event( 10, 'MD' );
         $event->set_seasons( [ '2025' => [ 'name' => '2025' ], '2026' => [ 'name' => '2026' ] ] );
@@ -3470,7 +3763,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $shortcode_renderer = new Shortcode_Template_Renderer( $view_renderer, new Club_Presenter(), new Player_Presenter() );
         $shortcodes         = $this->createStub( \Racketmanager\Public\Shortcodes::class );
         $shortcodes->method( 'load_template' )->willReturnCallback(
-            function( string $template, array $args, string $subdir = '' ) use ( $shortcode_renderer ): string {
+            function ( string $template, array $args, string $subdir = '' ) use ( $shortcode_renderer ): string {
                 return $shortcode_renderer->render( $template, $args, $subdir );
             }
         );
@@ -3515,23 +3808,28 @@ class Competition_Entry_Service_Test extends TestCase {
             id: 2,
             name: 'Summer Cup',
             type: Competition_Type::CUP,
-            seasons: Competition_Test_Factory::season_map( '2026', [
-                'date_closing' => '2026-04-15 00:00:00',
-                'date_start'   => '2026-05-01 00:00:00',
-                'date_end'     => '2026-08-31 00:00:00',
-                'venue'        => 10,
-            ] )
+            seasons: Competition_Test_Factory::season_map(
+                '2026',
+                [
+                    'date_closing' => '2026-04-15 00:00:00',
+                    'date_start'   => '2026-05-01 00:00:00',
+                    'date_end'     => '2026-08-31 00:00:00',
+                    'venue'        => 10,
+                ]
+            )
         );
         $this->competition_to_return = $competition;
 
         $this->competition_service->method( 'is_season_valid_for_competition' )
-            ->willReturn( [
-                'name'         => '2026',
-                'date_closing' => '2026-04-15 00:00:00',
-                'date_start'   => '2026-05-01 00:00:00',
-                'date_end'     => '2026-08-31 00:00:00',
-                'venue'        => 10,
-            ] );
+            ->willReturn(
+                [
+                    'name'         => '2026',
+                    'date_closing' => '2026-04-15 00:00:00',
+                    'date_start'   => '2026-05-01 00:00:00',
+                    'date_end'     => '2026-08-31 00:00:00',
+                    'venue'        => 10,
+                ]
+            );
 
         $service = new Competition_Entry_Service(
             plugin_instance: $this->plugin,
@@ -3572,14 +3870,16 @@ class Competition_Entry_Service_Test extends TestCase {
         $shortcodes         = $this->createStub( \Racketmanager\Public\Shortcodes::class );
         $warnings           = [];
         $shortcodes->method( 'load_template' )->willReturnCallback(
-            function( string $template, array $args, string $subdir = '' ) use ( $shortcode_renderer, &$warnings ): string {
-                set_error_handler( static function ( int $errno, string $errstr, string $errfile, int $errline ) use ( &$warnings ): bool {
-                    if ( ! ( error_reporting() & $errno ) ) {
-                        return false;
+            function ( string $template, array $args, string $subdir = '' ) use ( $shortcode_renderer, &$warnings ): string {
+                set_error_handler(
+                    static function ( int $errno, string $errstr, string $errfile, int $errline ) use ( &$warnings ): bool {
+                        if ( ! ( error_reporting() & $errno ) ) {
+                            return false;
+                        }
+                        $warnings[] = [ 'errno' => $errno, 'errstr' => $errstr, 'errfile' => $errfile, 'errline' => $errline ];
+                        return true;
                     }
-                    $warnings[] = [ 'errno' => $errno, 'errstr' => $errstr, 'errfile' => $errfile, 'errline' => $errline ];
-                    return true;
-                } );
+                );
                 try {
                     return $shortcode_renderer->render( $template, $args, $subdir );
                 } finally {

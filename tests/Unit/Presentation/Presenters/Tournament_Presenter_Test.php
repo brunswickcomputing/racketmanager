@@ -20,7 +20,7 @@ final class Tournament_Presenter_Test extends TestCase {
 	public function test_formats_dates_with_configured_format(): void {
 		$tournament = Tournament::from_object( (object) [ 'name' => 'Cup', 'date_end' => '2026-08-20', 'date_closing' => '2026-08-01' ] );
 
-		$dates = ( new Tournament_Presenter( 'd/m/Y' ) )->present_dates( $tournament );
+		$dates = new Tournament_Presenter( 'd/m/Y' )->present_dates( $tournament );
 
 		$this->assertSame( '20/08/2026', $dates->date_display );
 		$this->assertSame( '01/08/2026', $dates->date_closing_display );
@@ -29,7 +29,7 @@ final class Tournament_Presenter_Test extends TestCase {
 	public function test_uses_fallbacks_for_missing_dates(): void {
 		$tournament = Tournament::from_object( (object) [ 'name' => 'Cup', 'date_end' => '0000-00-00', 'date_start' => '0000-00-00' ] );
 
-		$dates = ( new Tournament_Presenter() )->present_dates( $tournament );
+		$dates = new Tournament_Presenter()->present_dates( $tournament );
 
 		$this->assertSame( 'TBC', $dates->date_display );
 		$this->assertSame( 'N/A', $dates->date_closing_display );
@@ -59,14 +59,16 @@ final class Tournament_Presenter_Test extends TestCase {
 	}
 
 	public function test_present_dates_integrates_with_date_range_windows_and_boundaries(): void {
-		$tournament = Tournament::from_object( (object) [
-			'name'            => 'Championships 2026',
-			'date_start'      => '2026-07-01',
-			'date_end'        => '2026-07-15',
-			'date_open'       => '2026-05-01',
-			'date_closing'    => '2026-06-20',
-			'date_withdrawal' => '2026-06-25',
-		] );
+		$tournament = Tournament::from_object(
+            (object) [
+                'name'            => 'Championships 2026',
+                'date_start'      => '2026-07-01',
+                'date_end'        => '2026-07-15',
+                'date_open'       => '2026-05-01',
+                'date_closing'    => '2026-06-20',
+                'date_withdrawal' => '2026-06-25',
+            ]
+        );
 
 		$presenter = new Tournament_Presenter( 'd/m/Y' );
 		$dates     = $presenter->present_dates( $tournament );
@@ -87,11 +89,13 @@ final class Tournament_Presenter_Test extends TestCase {
 		$presenter = new Tournament_Presenter( 'd/m/Y' );
 
 		// 1. Partial dates: missing date_start
-		$partial_tournament = Tournament::from_object( (object) [
-			'name'       => 'Partial Tournament',
-			'date_start' => null,
-			'date_end'   => '2026-07-15',
-		] );
+		$partial_tournament = Tournament::from_object(
+            (object) [
+                'name'       => 'Partial Tournament',
+                'date_start' => null,
+                'date_end'   => '2026-07-15',
+            ]
+        );
 		$dates   = $presenter->present_dates( $partial_tournament );
 		$header  = $presenter->present_header( $partial_tournament );
 		$this->assertSame( '15/07/2026', $dates->date_display );
@@ -101,11 +105,13 @@ final class Tournament_Presenter_Test extends TestCase {
 		$this->assertNull( $header->date_end_display );
 
 		// 2. Reversed dates: start > end
-		$reversed_tournament = Tournament::from_object( (object) [
-			'name'       => 'Reversed Tournament',
-			'date_start' => '2026-08-20',
-			'date_end'   => '2026-08-01',
-		] );
+		$reversed_tournament = Tournament::from_object(
+            (object) [
+                'name'       => 'Reversed Tournament',
+                'date_start' => '2026-08-20',
+                'date_end'   => '2026-08-01',
+            ]
+        );
 		$rev_dates  = $presenter->present_dates( $reversed_tournament );
 		$rev_header = $presenter->present_header( $reversed_tournament );
 		$this->assertSame( '01/08/2026', $rev_dates->date_display );
@@ -115,11 +121,13 @@ final class Tournament_Presenter_Test extends TestCase {
 		$this->assertSame( '01/08/2026', $rev_header->date_end_display );
 
 		// 3. Zero / empty dates
-		$zero_tournament = Tournament::from_object( (object) [
-			'name'       => 'Zero Tournament',
-			'date_start' => '0000-00-00',
-			'date_end'   => '',
-		] );
+		$zero_tournament = Tournament::from_object(
+            (object) [
+                'name'       => 'Zero Tournament',
+                'date_start' => '0000-00-00',
+                'date_end'   => '',
+            ]
+        );
 		$zero_dates  = $presenter->present_dates( $zero_tournament );
 		$zero_header = $presenter->present_header( $zero_tournament );
 		$this->assertSame( 'TBC', $zero_dates->date_display );
@@ -161,9 +169,9 @@ final class Tournament_Presenter_Test extends TestCase {
 		$event->set_name( 'Singles Event' );
 		$league->event = $event;
 
-		$tournament = $this->createStub( Tournament::class );
-		$tournament->id = 5;
-		$tournament->name = 'Summer Championships';
+        $tournament = new Tournament();
+        $tournament->set_id( 5 );
+        $tournament->set_name( 'Summer Championships' );
 
 		$p1 = $this->createStub( Player::class );
 		$p1->method( 'get_id' )->willReturn( 101 );

@@ -446,8 +446,8 @@ final readonly class Get_Competition_Entry_Handler {
             $player_age = (int) substr( $tournament->date_end, 0, 4 ) - intval( $player->year_of_birth );
         }
 
-        $tournament->fees     = $this->tournament_service->get_fees( $tournament_id );
-        $tournament->payments = $this->finance_service->get_tournament_paid_total_for_player( $player_id, $tournament_id );
+        $tournament->set_fees( $this->tournament_service->get_fees( $tournament_id ) );
+        $tournament->set_payments( $this->finance_service->get_tournament_paid_total_for_player( $player_id, $tournament_id ) );
 
         $player_entries = [];
         $events         = $this->tournament_service->get_events_for_tournament( $tournament_id );

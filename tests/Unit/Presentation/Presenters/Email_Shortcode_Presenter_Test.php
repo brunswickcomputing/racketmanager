@@ -4,13 +4,9 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Presentation\Presenters;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Club\Club;
-use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
-use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
-use Racketmanager\Domain\DTO\Player\Player_DTO;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Team\Team;
@@ -29,10 +25,7 @@ use stdClass;
 
 class Email_Shortcode_Presenter_Test extends TestCase {
     private Tournament_Service $tournament_service;
-    private Competition_Service $competition_service;
-    private Team_Service $team_service;
     private Fixture_Link_Service $fixture_link_service;
-    private Fixture_Permission_Service $permission_service;
     private Email_Shortcode_Presenter $presenter;
     private string $site_url = 'https://example.com';
     private string $site_name = 'Test Site';
@@ -50,26 +43,26 @@ class Email_Shortcode_Presenter_Test extends TestCase {
         $this->test_competitions = [];
         $this->test_teams        = [];
 
-        $this->tournament_service   = $this->createStub( Tournament_Service::class );
-        $this->competition_service  = $this->createStub( Competition_Service::class );
-        $this->team_service         = $this->createStub( Team_Service::class );
+        $this->tournament_service = $this->createStub( Tournament_Service::class );
+        $competition_service      = $this->createStub( Competition_Service::class );
+        $team_service = $this->createStub( Team_Service::class );
         $this->fixture_link_service = $this->createStub( Fixture_Link_Service::class );
-        $this->permission_service   = $this->createStub( Fixture_Permission_Service::class );
+        $permission_service = $this->createStub( Fixture_Permission_Service::class );
 
-        $this->team_service->method( 'get_team_details' )->willReturnCallback( fn( int $id ) => $this->test_teams[ $id ] ?? null );
+        $team_service->method( 'get_team_details' )->willReturnCallback( fn( int $id ) => $this->test_teams[ $id ] ?? null );
 
         $league_repo = $this->createStub( League_Repository_Interface::class );
         $league_repo->method( 'find_by_id' )->willReturnCallback( fn( int $id ) => $this->test_leagues[ $id ] ?? null );
-        $this->competition_service->method( 'get_league_repository' )->willReturn( $league_repo );
-        $this->competition_service->method( 'get_event_by_id' )->willReturnCallback( fn( int $id ) => $this->test_events[ $id ] ?? null );
-        $this->competition_service->method( 'get_by_id' )->willReturnCallback( fn( int $id ) => $this->test_competitions[ $id ] ?? null );
+        $competition_service->method( 'get_league_repository' )->willReturn( $league_repo );
+        $competition_service->method( 'get_event_by_id' )->willReturnCallback( fn( int $id ) => $this->test_events[ $id ] ?? null );
+        $competition_service->method( 'get_by_id' )->willReturnCallback( fn( int $id ) => $this->test_competitions[ $id ] ?? null );
 
         $this->presenter = new Email_Shortcode_Presenter(
             $this->tournament_service,
-            $this->competition_service,
-            $this->team_service,
+            $competition_service,
+            $team_service,
             $this->fixture_link_service,
-            $this->permission_service,
+            $permission_service,
             $this->site_url,
             $this->site_name
         );
@@ -190,17 +183,19 @@ class Email_Shortcode_Presenter_Test extends TestCase {
     }
 
     public function test_present_match_notification_tournament_singles(): void {
-        $fixture = $this->create_test_fixture( [
-            'comp_type'    => 'tournament',
-            'league_type'  => 'MS',
-            'event_name'   => 'Men Singles',
-            'league_title' => 'Main Draw',
-            'home_name'    => 'Roger Federer',
-            'away_name'    => 'Rafael Nadal',
-        ] );
+        $fixture = $this->create_test_fixture(
+            [
+                'comp_type'    => 'tournament',
+                'league_type'  => 'MS',
+                'event_name'   => 'Men Singles',
+                'league_title' => 'Main Draw',
+                'home_name'    => 'Roger Federer',
+                'away_name'    => 'Rafael Nadal',
+            ]
+        );
 
-        $tournament       = $this->createStub( Tournament::class );
-        $tournament->name = 'Wimbledon 2026';
+        $tournament = new Tournament();
+        $tournament->set_name( 'Wimbledon 2026' );
 
         $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
 
@@ -225,20 +220,25 @@ class Email_Shortcode_Presenter_Test extends TestCase {
     }
 
     public function test_present_match_notification_tournament_doubles(): void {
-        $fixture = $this->create_test_fixture( [
-            'comp_type'   => 'tournament',
-            'league_type' => 'MD',
-        ] );
+        $fixture = $this->create_test_fixture(
+            [
+                'comp_type'   => 'tournament',
+                'league_type' => 'MD',
+            ]
+        );
 
-        $tournament       = $this->createStub( Tournament::class );
-        $tournament->name = 'Doubles Championship';
+        $tournament       = new Tournament();
+        $tournament->set_name( 'Doubles Championship' );
 
         $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
 
-        $vars = $this->presenter->present_match_notification( $fixture, [
-            'competition_type' => 'tournament',
-            'tournament'       => 'doubles',
-        ] );
+        $vars = $this->presenter->present_match_notification(
+            $fixture,
+            [
+                'competition_type' => 'tournament',
+                'tournament'       => 'doubles',
+            ]
+        );
 
         $this->assertSame( 'Home Players', $vars['teams']['home']->title );
         $this->assertSame( 'Away Players', $vars['teams']['away']->title );
@@ -247,33 +247,43 @@ class Email_Shortcode_Presenter_Test extends TestCase {
     }
 
     public function test_present_match_notification_tournament_not_found_throws(): void {
-        $fixture = $this->create_test_fixture( [
-            'comp_type' => 'tournament',
-        ] );
+        $fixture = $this->create_test_fixture(
+            [
+                'comp_type' => 'tournament',
+            ]
+        );
 
         $this->tournament_service->method( 'get_tournament' )->willThrowException( new Tournament_Not_Found_Exception( 'Tournament not found' ) );
 
         $this->expectException( Tournament_Not_Found_Exception::class );
-        $this->presenter->present_match_notification( $fixture, [
-            'competition_type' => 'tournament',
-            'tournament'       => 'nonexistent',
-        ] );
+        $this->presenter->present_match_notification(
+            $fixture,
+            [
+                'competition_type' => 'tournament',
+                'tournament'       => 'nonexistent',
+            ]
+        );
     }
 
     public function test_present_match_notification_cup_and_leg(): void {
-        $fixture = $this->create_test_fixture( [
-            'comp_type'    => 'cup',
-            'league_title' => 'Senior Cup',
-            'leg'          => '1',
-            'season'       => '2026',
-        ] );
+        $fixture = $this->create_test_fixture(
+            [
+                'comp_type'    => 'cup',
+                'league_title' => 'Senior Cup',
+                'leg'          => '1',
+                'season'       => '2026',
+            ]
+        );
 
         $this->fixture_link_service->method( 'get_fixture_link' )->willReturn( '/cups/senior-cup/match/100/' );
 
-        $vars = $this->presenter->present_match_notification( $fixture, [
-            'competition_type' => 'cup',
-            'round'            => 'Semi-Final',
-        ] );
+        $vars = $this->presenter->present_match_notification(
+            $fixture,
+            [
+                'competition_type' => 'cup',
+                'round'            => 'Semi-Final',
+            ]
+        );
 
         $this->assertSame( 'Home Team', $vars['teams']['home']->title );
         $this->assertSame( 'Away Team', $vars['teams']['away']->title );
@@ -283,20 +293,25 @@ class Email_Shortcode_Presenter_Test extends TestCase {
     }
 
     public function test_present_match_notification_host_away_mapping(): void {
-        $fixture = $this->create_test_fixture( [
-            'comp_type'     => 'cup',
-            'host'          => 'away',
-            'home_name'     => 'Home Club 1',
-            'away_name'     => 'Away Club 2',
-            'home_captain'  => 'Captain Home',
-            'home_email'    => 'home@example.com',
-            'away_captain'  => 'Captain Away',
-            'away_email'    => 'away@example.com',
-        ] );
+        $fixture = $this->create_test_fixture(
+            [
+                'comp_type'     => 'cup',
+                'host'          => 'away',
+                'home_name'     => 'Home Club 1',
+                'away_name'     => 'Away Club 2',
+                'home_captain'  => 'Captain Home',
+                'home_email'    => 'home@example.com',
+                'away_captain'  => 'Captain Away',
+                'away_email'    => 'away@example.com',
+            ]
+        );
 
-        $vars = $this->presenter->present_match_notification( $fixture, [
-            'competition_type' => 'cup',
-        ] );
+        $vars = $this->presenter->present_match_notification(
+            $fixture,
+            [
+                'competition_type' => 'cup',
+            ]
+        );
 
         // When host is 'away':
         // $teams['away'] receives home team (host) info
@@ -411,8 +426,8 @@ class Email_Shortcode_Presenter_Test extends TestCase {
             ]
         );
 
-        $tournament       = $this->createStub( Tournament::class );
-        $tournament->name = 'Singles Open';
+        $tournament = new Tournament();
+        $tournament->set_name( 'Singles Open' );
         $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
 
         $vars = $this->presenter->present_match_notification(
@@ -441,8 +456,8 @@ class Email_Shortcode_Presenter_Test extends TestCase {
             ]
         );
 
-        $tournament       = $this->createStub( Tournament::class );
-        $tournament->name = 'Singles Open';
+        $tournament = new Tournament();
+        $tournament->set_name( 'Singles Open' );
         $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
 
         $vars = $this->presenter->present_match_notification(
@@ -468,7 +483,7 @@ class Email_Shortcode_Presenter_Test extends TestCase {
         // In host 'away' mode: source home team is host (placed in $teams['away']),
         // source away team is visitor (placed in $teams['home']).
         // Player mode is determined by source home team_type: when source home is 'P',
-        // BOTH teams are populated with player rosters even if source away was 'T'.
+        // BOTH teams are populated with player rosters even if source away is 'T'.
         $fixture = $this->create_test_fixture(
             [
                 'comp_type'      => 'cup',
@@ -539,13 +554,16 @@ class Email_Shortcode_Presenter_Test extends TestCase {
     public function test_present_result_notification_admin_url(): void {
         $fixture = $this->create_test_fixture();
 
-        $vars = $this->presenter->present_result_notification( $fixture, [
-            'league'    => 12,
-            'match_day' => '3',
-            'round'     => 'Quarter-Final',
-            'complete'  => true,
-            'errors'    => false,
-        ] );
+        $vars = $this->presenter->present_result_notification(
+            $fixture,
+            [
+                'league'    => 12,
+                'match_day' => '3',
+                'round'     => 'Quarter-Final',
+                'complete'  => true,
+                'errors'    => false,
+            ]
+        );
 
         $this->assertStringContainsString( 'view=results', $vars['action_url'] );
         $this->assertStringContainsString( '&subpage=show-league&league_id=12', $vars['action_url'] );
@@ -555,32 +573,39 @@ class Email_Shortcode_Presenter_Test extends TestCase {
     }
 
     public function test_present_captain_result_notification_championship_and_standard(): void {
-        $fixture_champ = $this->create_test_fixture( [
-            'is_championship' => true,
-            'league_title'    => 'Premier League',
-            'season'          => '2026',
-            'final'           => 'final',
-            'leg'             => '2',
-            'home_name'       => 'Team Red',
-            'away_name'       => 'Team Blue',
-        ] );
+        $fixture_champ = $this->create_test_fixture(
+            [
+                'is_championship' => true,
+                'league_title'    => 'Premier League',
+                'season'          => '2026',
+                'final'           => 'final',
+                'leg'             => '2',
+                'home_name'       => 'Team Red',
+                'away_name'       => 'Team Blue',
+            ]
+        );
 
-        $vars_champ = $this->presenter->present_captain_result_notification( $fixture_champ, [
-            'outstanding' => true,
-            'time_period' => '24',
-        ] );
+        $vars_champ = $this->presenter->present_captain_result_notification(
+            $fixture_champ,
+            [
+                'outstanding' => true,
+                'time_period' => '24',
+            ]
+        );
 
         $this->assertStringContainsString( '/match/premier-league/2026/final/team-red-vs-team-blue/leg-2/result/', $vars_champ['action_url'] );
         $this->assertTrue( $vars_champ['outstanding'] );
 
-        $fixture_std = $this->create_test_fixture( [
-            'is_championship' => false,
-            'league_title'    => 'Division 2',
-            'season'          => '2026',
-            'match_day'       => 5,
-            'home_name'       => 'Team A',
-            'away_name'       => 'Team B',
-        ] );
+        $fixture_std = $this->create_test_fixture(
+            [
+                'is_championship' => false,
+                'league_title'    => 'Division 2',
+                'season'          => '2026',
+                'match_day'       => 5,
+                'home_name'       => 'Team A',
+                'away_name'       => 'Team B',
+            ]
+        );
 
         $vars_std = $this->presenter->present_captain_result_notification( $fixture_std, [] );
         $this->assertStringContainsString( '/match/division-2/2026/day5/team-a-vs-team-b/result/', $vars_std['action_url'] );
@@ -588,31 +613,38 @@ class Email_Shortcode_Presenter_Test extends TestCase {
 
     public function test_present_result_outstanding_notification_branches(): void {
         // Cup branch
-        $fixture_cup = $this->create_test_fixture( [
-            'comp_type'    => 'cup',
-            'league_title' => 'Challenger Cup',
-            'season'       => '2026',
-            'final'        => 'semi-final',
-            'home_name'    => 'Club X',
-            'away_name'    => 'Club Y',
-        ] );
+        $fixture_cup = $this->create_test_fixture(
+            [
+                'comp_type'    => 'cup',
+                'league_title' => 'Challenger Cup',
+                'season'       => '2026',
+                'final'        => 'semi-final',
+                'home_name'    => 'Club X',
+                'away_name'    => 'Club Y',
+            ]
+        );
 
-        $vars_cup = $this->presenter->present_result_outstanding_notification( $fixture_cup, [
-            'time_period' => 48,
-        ] );
+        $vars_cup = $this->presenter->present_result_outstanding_notification(
+            $fixture_cup,
+            [
+                'time_period' => 48,
+            ]
+        );
 
         $this->assertStringContainsString( '/match/challenger-cup/2026/semi-final/club-x-vs-club-y', $vars_cup['action_url'] );
         $this->assertStringNotContainsString( 'result/', $vars_cup['action_url'] );
 
         // Tournament branch
-        $fixture_tourn = $this->create_test_fixture( [
-            'comp_type' => 'tournament',
-            'season'    => '2026',
-            'id'        => 555,
-        ] );
+        $fixture_tourn = $this->create_test_fixture(
+            [
+                'comp_type' => 'tournament',
+                'season'    => '2026',
+                'id'        => 555,
+            ]
+        );
 
-        $tournament       = $this->createStub( Tournament::class );
-        $tournament->name = 'Autumn Open';
+        $tournament = new Tournament();
+        $tournament->set_name( 'Autumn Open' );
         $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
 
         $vars_tourn = $this->presenter->present_result_outstanding_notification( $fixture_tourn, [] );
@@ -620,53 +652,62 @@ class Email_Shortcode_Presenter_Test extends TestCase {
         $this->assertSame( 'tournament', $vars_tourn['template'] );
 
         // League branch
-        $fixture_league = $this->create_test_fixture( [
-            'comp_type'    => 'league',
-            'league_title' => 'Division 1',
-            'season'       => '2026',
-            'match_day'    => 4,
-            'home_name'    => 'Alpha',
-            'away_name'    => 'Beta',
-        ] );
+        $fixture_league = $this->create_test_fixture(
+            [
+                'comp_type'    => 'league',
+                'league_title' => 'Division 1',
+                'season'       => '2026',
+                'match_day'    => 4,
+                'home_name'    => 'Alpha',
+                'away_name'    => 'Beta',
+            ]
+        );
 
         $vars_league = $this->presenter->present_result_outstanding_notification( $fixture_league, [] );
         $this->assertStringContainsString( '/match/division-1/2026/day4/alpha-vs-beta', $vars_league['action_url'] );
     }
 
     public function test_present_club_player_notification(): void {
-        $vars = $this->presenter->present_club_player_notification( [
-            'club'      => 'Leigh Tennis Club',
-            'player'    => 'John Smith',
-            'action'    => 'registered',
-            'requestor' => 'Secretary',
-            'btm'       => '12345678',
-        ] );
+        $vars = $this->presenter->present_club_player_notification(
+            [
+                'club'      => 'Leigh Tennis Club',
+                'player'    => 'John Smith',
+                'action'    => 'registered',
+                'requestor' => 'Secretary',
+                'btm'       => '12345678',
+            ]
+        );
 
         $this->assertSame( 'https://example.com/clubs/leigh-tennis-club/john-smith/', $vars['action_url'] );
         $this->assertStringContainsString( 'Club Player Request - Leigh Tennis Club', $vars['email_subject'] );
     }
 
     public function test_present_match_date_change_notification(): void {
-        $fixture_tourn = $this->create_test_fixture( [
-            'comp_type'    => 'tournament',
-            'event_name'   => 'Men Doubles',
-            'league_title' => 'MD Draw',
-            'home_name'    => 'Pair 1',
-            'away_name'    => 'Pair 2',
-            'id'           => 88,
-        ] );
+        $fixture_tourn = $this->create_test_fixture(
+            [
+                'comp_type'    => 'tournament',
+                'event_name'   => 'Men Doubles',
+                'league_title' => 'MD Draw',
+                'home_name'    => 'Pair 1',
+                'away_name'    => 'Pair 2',
+                'id'           => 88,
+            ]
+        );
 
-        $tournament       = $this->createStub( Tournament::class );
-        $tournament->name = 'County Championship';
+        $tournament = new Tournament();
+        $tournament->set_name( 'County Championship' );
         $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
 
-        $vars_tourn = $this->presenter->present_match_date_change_notification( $fixture_tourn, [
-            'competition_type' => 'tournament',
-            'tournament'       => 'county',
-            'original_date'    => '2026-10-10',
-            'new_date'         => '2026-10-17',
-            'delay'            => true,
-        ] );
+        $vars_tourn = $this->presenter->present_match_date_change_notification(
+            $fixture_tourn,
+            [
+                'competition_type' => 'tournament',
+                'tournament'       => 'county',
+                'original_date'    => '2026-10-10',
+                'new_date'         => '2026-10-17',
+                'delay'            => true,
+            ]
+        );
 
         $this->assertSame( '<a href="https://example.com/tournament/county-championship/">County Championship</a>', $vars_tourn['tournament_link'] );
         $this->assertStringContainsString( 'match/md-draw/pair-1-vs-pair-2/88/', $vars_tourn['action_url'] );
@@ -675,74 +716,97 @@ class Email_Shortcode_Presenter_Test extends TestCase {
         $this->assertTrue( $vars_tourn['delay'] );
 
         // Cup branch
-        $fixture_cup = $this->create_test_fixture( [
-            'comp_type'    => 'cup',
-            'league_title' => 'Challenge Cup',
-            'season'       => '2026',
-            'leg'          => '2',
-        ] );
+        $fixture_cup = $this->create_test_fixture(
+            [
+                'comp_type'    => 'cup',
+                'league_title' => 'Challenge Cup',
+                'season'       => '2026',
+                'leg'          => '2',
+            ]
+        );
         $this->fixture_link_service->method( 'get_fixture_link' )->willReturn( '/cups/challenge-cup/match/100/' );
 
-        $vars_cup = $this->presenter->present_match_date_change_notification( $fixture_cup, [
-            'competition_type' => 'cup',
-        ] );
+        $vars_cup = $this->presenter->present_match_date_change_notification(
+            $fixture_cup,
+            [
+                'competition_type' => 'cup',
+            ]
+        );
         $this->assertSame( '', $vars_cup['tournament_link'] );
         $this->assertStringContainsString( '/cups/challenge-cup/2026/', $vars_cup['competition_link'] );
         $this->assertStringEndsWith( 'leg-2/', $vars_cup['action_url'] );
 
         // League branch
-        $fixture_league = $this->create_test_fixture( [
-            'comp_type'    => 'league',
-            'event_name'   => 'Premier Event',
-            'league_title' => 'Premier Division',
-            'season'       => '2026',
-        ] );
+        $fixture_league = $this->create_test_fixture(
+            [
+                'comp_type'    => 'league',
+                'event_name'   => 'Premier Event',
+                'league_title' => 'Premier Division',
+                'season'       => '2026',
+            ]
+        );
         $this->fixture_link_service->method( 'get_fixture_link' )->willReturn( '/leagues/premier-division/match/101/' );
 
-        $vars_league = $this->presenter->present_match_date_change_notification( $fixture_league, [
-            'competition_type' => 'league',
-        ] );
+        $vars_league = $this->presenter->present_match_date_change_notification(
+            $fixture_league,
+            [
+                'competition_type' => 'league',
+            ]
+        );
         $this->assertSame( '', $vars_league['tournament_link'] );
         $this->assertStringContainsString( '/leagues/premier-event/2026/', $vars_league['competition_link'] );
 
         // Mixed timed / untimed dates formatting
-        $vars_mixed_to_untimed = $this->presenter->present_match_date_change_notification( $fixture_league, [
-            'competition_type' => 'league',
-            'new_date'         => '2026-10-24 00:00:00',
-            'original_date'    => '2026-10-17 19:30:00',
-        ] );
+        $vars_mixed_to_untimed = $this->presenter->present_match_date_change_notification(
+            $fixture_league,
+            [
+                'competition_type' => 'league',
+                'new_date'         => '2026-10-24 00:00:00',
+                'original_date'    => '2026-10-17 19:30:00',
+            ]
+        );
         $this->assertSame( '24/10/2026', $vars_mixed_to_untimed['match_date'] );
         $this->assertSame( '17 October 2026 19:30', $vars_mixed_to_untimed['original_date'] );
 
-        $vars_mixed_to_timed = $this->presenter->present_match_date_change_notification( $fixture_league, [
-            'competition_type' => 'league',
-            'new_date'         => '2026-10-24 18:00:00',
-            'original_date'    => '2026-10-17 00:00:00',
-        ] );
+        $vars_mixed_to_timed = $this->presenter->present_match_date_change_notification(
+            $fixture_league,
+            [
+                'competition_type' => 'league',
+                'new_date'         => '2026-10-24 18:00:00',
+                'original_date'    => '2026-10-17 00:00:00',
+            ]
+        );
         $this->assertSame( '24 October 2026 18:00', $vars_mixed_to_timed['match_date'] );
         $this->assertSame( '17/10/2026', $vars_mixed_to_timed['original_date'] );
     }
 
     public function test_present_team_withdrawn_and_withdrawn_team_match_and_constitution(): void {
-        $team         = (object) [ 'title' => 'Withdrawn Team' ];
-        $league       = (object) [ 'title' => 'Division 1' ];
-        $vars_withdr  = $this->presenter->present_team_withdrawn_email( $team, $league, '2026', [
-            'subject' => 'Team Withdrawal Notice',
-            'from'    => 'admin@example.com',
-        ] );
+        $team          = (object) [ 'title' => 'Withdrawn Team' ];
+        $league        = (object) [ 'title' => 'Division 1' ];
+        $vars_withdraw = $this->presenter->present_team_withdrawn_email(
+            $team,
+            $league,
+            '2026',
+            [
+                'subject' => 'Team Withdrawal Notice',
+                'from'    => 'admin@example.com',
+            ]
+        );
 
-        $this->assertSame( $team, $vars_withdr['team'] );
-        $this->assertSame( $league, $vars_withdr['league'] );
-        $this->assertSame( '2026', $vars_withdr['season'] );
-        $this->assertSame( 'Team Withdrawal Notice', $vars_withdr['email_subject'] );
+        $this->assertSame( $team, $vars_withdraw['team'] );
+        $this->assertSame( $league, $vars_withdraw['league'] );
+        $this->assertSame( '2026', $vars_withdraw['season'] );
+        $this->assertSame( 'Team Withdrawal Notice', $vars_withdraw['email_subject'] );
 
-        $vars_match = $this->presenter->present_withdrawn_team_match( [
-            'is_tournament' => true,
-            'event'         => 'Men Singles',
-            'round'         => 'Quarter-Final',
-            'emailfrom'     => 'admin@example.com',
-            'subject'       => 'Opponent Withdrawn',
-        ] );
+        $vars_match = $this->presenter->present_withdrawn_team_match(
+            [
+                'is_tournament' => true,
+                'event'         => 'Men Singles',
+                'round'         => 'Quarter-Final',
+                'emailfrom'     => 'admin@example.com',
+                'subject'       => 'Opponent Withdrawn',
+            ]
+        );
         $this->assertTrue( $vars_match['is_tournament'] );
         $this->assertSame( 'Men Singles', $vars_match['event'] );
 

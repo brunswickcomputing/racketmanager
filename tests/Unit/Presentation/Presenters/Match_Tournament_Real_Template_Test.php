@@ -157,9 +157,9 @@ class Match_Tournament_Real_Template_Test extends TestCase {
     }
 
     private function render_matches( array $dates, array $groups = [], ?string $selected = null ): string {
-        $tournament = $this->createStub( Tournament::class );
-        $tournament->method( 'get_id' )->willReturn( 9 );
-        $tournament->name = 'Autumn Open';
+        $tournament = new Tournament();
+        $tournament->set_id( 9 );
+        $tournament->set_name( 'Autumn Open' );
         $service = $this->createStub( Tournament_Service::class );
         $service->method( 'get_tournament' )->willReturn( $tournament );
         $service->method( 'get_fixture_dates_for_tournament' )->willReturn( $dates );
@@ -277,9 +277,9 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         $event->set_name( 'Singles Event' );
         $league->event = $event;
 
-        $tournament = $this->createStub( Tournament::class );
-        $tournament->id = 5;
-        $tournament->name = 'Summer Championships';
+        $tournament = new Tournament();
+        $tournament->set_id( 5 );
+        $tournament->set_name( 'Summer Championships' );
 
         $detail = new Fixture_Details_DTO(
             fixture: $fixture,
@@ -349,9 +349,9 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         $event->set_name( 'Singles Event' );
         $league->event = $event;
 
-        $tournament = $this->createStub( Tournament::class );
-        $tournament->id = 5;
-        $tournament->name = 'Summer Championships';
+        $tournament = new Tournament();
+        $tournament->set_id( 5 );
+        $tournament->set_name( 'Summer Championships' );
 
         $detail = new Fixture_Details_DTO(
             fixture: $fixture,
@@ -533,8 +533,8 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         $event->set_name( 'Event' );
         $league->event = $event;
 
-        $tournament = $this->createStub( Tournament::class );
-        $tournament->name = 'Spring Open';
+        $tournament = new Tournament();
+        $tournament->set_name( 'Spring Open' );
 
         $permission = (object) [ 'user_can_update' => true ];
 
@@ -619,10 +619,15 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         // Backed meta store so the handler's set_meta( 'fixtures', $cards ) is observable by the template.
         $event->set_meta( 'fixtures', [ $detail ] );
 
-        $tournament = $this->createStub( Tournament::class );
-        $tournament->id = 5;
-        $tournament->name = 'Summer Championships';
-        $tournament->method( 'is_event_allowed' )->willReturn( true );
+        $tournament = $this->getMockBuilder( Tournament::class )
+                           ->onlyMethods( [ 'is_event_allowed' ] )
+                           ->getMock();
+        $tournament->set_id( 5 );
+        $tournament->set_name( 'Summer Championships' );
+        $tournament->set_season( '2026' );
+        $tournament->expects( self::exactly( 1 ) )
+                   ->method( 'is_event_allowed' )
+                   ->willReturn( true );
 
         $tournament_service = $this->createStub( Tournament_Service::class );
         $tournament_service->method( 'get_tournament' )->willReturn( $tournament );
@@ -686,9 +691,15 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         $tournament_player->set_teams( [] );
         $tournament_player->set_statistics( [] );
 
-        $tournament = $this->createStub( Tournament::class );
-        $tournament->id = 5;
-        $tournament->name = 'Summer Championships';
+        $tournament = $this->getMockBuilder( Tournament::class )
+                           ->onlyMethods( [ 'is_event_allowed' ] )
+                           ->getMock();
+        $tournament->set_id( 5 );
+        $tournament->set_name( 'Summer Championships' );
+        $tournament->set_season( '2026' );
+        $tournament->expects( self::exactly( 0 ) )
+                   ->method( 'is_event_allowed' )
+                   ->willReturn( true );
 
         $tournament_service = $this->createStub( Tournament_Service::class );
         $tournament_service->method( 'get_tournament' )->willReturn( $tournament );

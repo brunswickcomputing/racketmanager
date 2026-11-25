@@ -14,6 +14,7 @@ use Racketmanager\Domain\DTO\Tournament\Tournament_Details_DTO;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Club\Club;
+use ReflectionClass;
 use stdClass;
 use WP_Error;
 
@@ -50,19 +51,18 @@ class Tournament_Setup_Admin_Controller_Test extends TestCase {
         string $name = 'Test Tournament',
         string $date_end = '2023-12-31'
     ): Tournament_Details_DTO {
-        $reflectionTournament = new \ReflectionClass( Tournament::class );
-        $tournament = $reflectionTournament->newInstanceWithoutConstructor();
-        $tournament->id = $tournament_id;
-        $tournament->name = $name;
-        $tournament->season = $season;
-        $tournament->finals = [];
-        $tournament->date_end = $date_end;
+        $tournament = new ReflectionClass( Tournament::class )->newInstanceWithoutConstructor();
+        $tournament->set_id( $tournament_id );
+        $tournament->set_name( $name );
+        $tournament->set_season( $season );
+        $tournament->set_finals( [] );
+        $tournament->set_end_date( $date_end );
 
         $competition = $this->createMock( Competition::class );
         $competition->method( 'get_season_by_name' )->willReturn( $match_dates ? [ 'match_dates' => $match_dates ] : [] );
 
-        $reflectionClub = new \ReflectionClass( Club::class );
-        $club = $reflectionClub->newInstanceWithoutConstructor();
+        $reflection_club = new ReflectionClass( Club::class );
+        $club = $reflection_club->newInstanceWithoutConstructor();
 
         return new Tournament_Details_DTO( $tournament, $competition, $club );
     }

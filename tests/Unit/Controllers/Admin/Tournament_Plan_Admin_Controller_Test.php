@@ -16,6 +16,7 @@ use Racketmanager\Domain\DTO\Tournament\Tournament_Details_DTO;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Tournament_Service;
+use ReflectionClass;
 use stdClass;
 use WP_Error;
 
@@ -50,8 +51,8 @@ class Tournament_Plan_Admin_Controller_Test extends TestCase {
 
         $tournament_id = 123;
         $tournament_details = $this->createMock( Tournament_Details_DTO::class );
-        $tournament = (new \ReflectionClass( Tournament::class ))->newInstanceWithoutConstructor();
-        $tournament->id = $tournament_id;
+        $tournament = new ReflectionClass( Tournament::class )->newInstanceWithoutConstructor();
+        $tournament->set_id( $tournament_id );
         $tournament_details->tournament = $tournament;
 
         $tournament_service->expects( self::once() )
@@ -120,7 +121,7 @@ class Tournament_Plan_Admin_Controller_Test extends TestCase {
 
         // Mocking render dependencies
         $tournament_details = $this->createMock( Tournament_Details_DTO::class );
-        $tournament = (new \ReflectionClass( Tournament::class ))->newInstanceWithoutConstructor();
+        $tournament = (new ReflectionClass( Tournament::class ))->newInstanceWithoutConstructor();
         $tournament_details->tournament = $tournament;
         $tournament_service->method( 'get_tournament_with_details' )->willReturn( $tournament_details );
         $tournament_service->method( 'get_finals_matches_for_tournament' )->willReturn( [] );

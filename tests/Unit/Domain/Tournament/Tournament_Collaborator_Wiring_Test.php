@@ -81,7 +81,7 @@ final class Tournament_Collaborator_Wiring_Test extends TestCase {
 		$this->assertNull( $dto_without->payments );
 
 		$tournament           = new Tournament();
-		$tournament->payments = 12.5;
+		$tournament->set_payments( 12.5 );
 		$this->assertSame( 12.5, $tournament->payments );
 	}
 
@@ -167,9 +167,9 @@ final class Tournament_Collaborator_Wiring_Test extends TestCase {
 		);
 
 		$dummy = new Tournament();
-		$dummy->id = 55;
-		$dummy->competition_id = 12;
-		$dummy->name = 'Spring Open';
+		$dummy->set_id( 55 );
+		$dummy->set_competition_id( 12 );
+		$dummy->set_name( 'Spring Open' );
 
 		$repo->wire_tournament_collaborators( $dummy );
 

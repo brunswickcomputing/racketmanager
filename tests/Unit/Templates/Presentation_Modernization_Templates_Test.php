@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Templates;
 
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Competition\Queries\Club_Entry_Selection_Service;
 use Racketmanager\Application\Competition\Queries\Get_Competition_Clubs_Handler;
@@ -207,8 +208,8 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         );
 
         $tournament = new Tournament();
-        $tournament->id   = 7;
-        $tournament->name = 'Autumn Closed';
+        $tournament->set_id( 7 );
+        $tournament->set_name( 'Autumn Closed' );
 
         $player = Player_Test_Factory::create( id: 42, display_name: 'Test Player' );
 
@@ -265,17 +266,23 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             tournament_service: $tournament_service
         );
         $adapter = new Tournament_Shortcode_Adapter(
-            competition_service: $competition_service,
             tournament_presenter: $presenter,
-            player_presenter: new \Racketmanager\Presentation\Presenters\Player_Presenter()
+            player_presenter: new Player_Presenter(),
+            competition_service: $competition_service
         );
 
-        $tournament       = $this->createStub( Tournament::class );
-        $tournament->id   = 10;
-        $tournament->name = 'Spring Open';
-        $tournament->method( 'get_id' )->willReturn( 10 );
-        $tournament->method( 'get_competition_object' )->willReturn( $competition );
-        $tournament->method( 'is_event_allowed' )->willReturn( true );
+        $tournament = $this->getMockBuilder( Tournament::class )
+                           ->onlyMethods( [ 'is_event_allowed', 'get_competition_object' ] )
+                           ->getMock();
+        $tournament->set_id( 10 );
+        $tournament->set_name( 'Spring Open' );
+        $tournament->set_season( '2026' );
+        $tournament->expects( self::exactly( 3 ) )
+                   ->method( 'is_event_allowed' )
+                   ->willReturn( true );
+        $tournament->expects( self::exactly( 2 ) )
+                   ->method( 'get_competition_object' )
+                   ->willReturn( $competition );
 
         $event1            = new stdClass();
         $event1->id = 101;
@@ -356,13 +363,17 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
         $handler = new Get_Tournament_Draws_Handler(
             tournament_service: $tournament_service
         );
-        $adapter = new Tournament_Shortcode_Adapter( tournament_presenter: $presenter, player_presenter: new \Racketmanager\Presentation\Presenters\Player_Presenter() );
+        $adapter = new Tournament_Shortcode_Adapter( tournament_presenter: $presenter, player_presenter: new Player_Presenter() );
 
-        $tournament       = $this->createStub( Tournament::class );
-        $tournament->id   = 12;
-        $tournament->name = 'Winter Cup';
-        $tournament->method( 'get_id' )->willReturn( 12 );
-        $tournament->method( 'is_event_allowed' )->willReturn( true );
+        $tournament = $this->getMockBuilder( Tournament::class )
+                           ->onlyMethods( [ 'is_event_allowed' ] )
+                           ->getMock();
+        $tournament->set_id( 12 );
+        $tournament->set_name( 'Winter Cup' );
+        $tournament->set_season( '2026' );
+        $tournament->expects( self::exactly( 1 ) )
+                   ->method( 'is_event_allowed' )
+                   ->willReturn( true );
 
         $event1       = new stdClass();
         $event1->id = 201;
@@ -403,9 +414,9 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             player_presenter: $player_presenter
         );
 
-        $tournament       = new Tournament();
-        $tournament->id   = 15;
-        $tournament->name = 'Championship Open';
+        $tournament = new Tournament();
+        $tournament->set_id( 15 );
+        $tournament->set_name( 'Championship Open' );
 
         $tournament_service->method( 'get_tournament' )->willReturn( $tournament );
 
@@ -621,11 +632,11 @@ final class Presentation_Modernization_Templates_Test extends TestCase {
             entry_service: $comp_entry_service
         );
 
-        $tournament                  = new Tournament();
-        $tournament->id              = 8;
-        $tournament->name            = 'Spring Open';
-        $tournament->competition_id  = 3;
-        $tournament->season          = '2026';
+        $tournament = new Tournament();
+        $tournament->set_id( 8 );
+        $tournament->set_name( 'Spring Open' );
+        $tournament->set_competition_id( 3 );
+        $tournament->set_season( '2026' );
 
         $player = Player_Test_Factory::create( id: 55, display_name: 'Payment Player' );
 

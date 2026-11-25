@@ -11,17 +11,45 @@ use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use function __;
 
-class Get_Tournament_Handler {
+/**
+ * Handles requests for a tournament page and produces the corresponding tournament result.
+ *
+ * Resolves the requested tournament, redirects to the latest or active tournament when no
+ * tournament is supplied, reports lookup errors, and prepares view data for the selected
+ * tournament tab. The handler also determines available navigation options, loads related
+ * tournament seasons for the same age group, updates query state with the tournament season
+ * when supported, and returns all data required to render the tournament template.
+ */
+readonly class Get_Tournament_Handler {
+    /**
+     * Initialises the tournament-related dependencies.
+     *
+     * @param Tournament_Service_Interface       $tournament_service Service used to access tournament data.
+     * @param Get_Latest_Tournament_Handler|null $latest_tournament_handler Optional handler for retrieving the latest tournament.
+     * @param Query_Vars_Interface|null          $query_vars Optional query variables provider.
+     *
+     * @return void
+     */
     public function __construct(
-        private readonly Tournament_Service_Interface $tournament_service,
-        private readonly ?Get_Latest_Tournament_Handler $latest_tournament_handler = null,
-        private readonly ?Query_Vars_Interface $query_vars = null
+        private Tournament_Service_Interface $tournament_service,
+        private ?Get_Latest_Tournament_Handler $latest_tournament_handler = null,
+        private ?Query_Vars_Interface $query_vars = null
     ) {}
 
+    /**
+     * Handles a tournament query and builds the tournament result.
+     *
+     * Resolves missing tournament input to an appropriate redirect, loads tournament details,
+     * determines the active tab and menu availability, and returns the populated result object.
+     *
+     * @param Get_Tournament_Query $query Query containing the requested tournament, tab, filters, template, and post context.
+     *
+     * @return Tournament_Result Result containing tournament data, redirect information, or an error response.
+     */
     public function handle( Get_Tournament_Query $query ): Tournament_Result {
         $tournament = $query->tournament;
         if ( ! $tournament ) {
-            if ( $this->latest_tournament_handler !== null ) {
+            if ( null !== $this->latest_tournament_handler ) {
                 $latest_result = $this->latest_tournament_handler->handle( new Get_Latest_Tournament_Query() );
                 return Tournament_Result::redirect( $latest_result->redirect_url );
             }
@@ -51,9 +79,9 @@ class Get_Tournament_Handler {
                 'competition_id' => 'DESC',
             ],
         ];
-        $tournaments = $this->tournament_service->get_tournaments( $tournament_args );
+        $tournaments     = $this->tournament_service->get_tournaments( $tournament_args );
 
-        $this->query_vars?->set( 'season', $tournament_details->tournament->season );
+        $this->query_vars?->set( 'season', $tournament_details->tournament->get_season() );
 
         $tab = $query->tab;
         if ( ! empty( $query->match_day ) || ! empty( $query->team_id ) ) {

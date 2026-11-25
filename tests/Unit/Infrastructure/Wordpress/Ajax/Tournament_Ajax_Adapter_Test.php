@@ -526,8 +526,8 @@ class Tournament_Ajax_Adapter_Test extends TestCase {
     public function test_team_partner_sanitizes_wrong_tournament_season_to_null(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
 
-        $tournament = $this->createStub( Tournament::class );
-        $tournament->season = '2026';
+        $tournament = new Tournament();
+        $tournament->set_season( '2026' );
         $tournament_service = $this->createStub( Tournament_Service::class );
         $tournament_service->method( 'get_tournament' )
             ->willReturn( $tournament );
@@ -556,8 +556,8 @@ class Tournament_Ajax_Adapter_Test extends TestCase {
     public function test_team_partner_preserves_matching_tournament_season(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
 
-        $tournament = $this->createStub( Tournament::class );
-        $tournament->season = '2026';
+        $tournament = new Tournament();
+        $tournament->set_season( '2026' );
         $tournament_service = $this->createStub( Tournament_Service::class );
         $tournament_service->method( 'get_tournament' )
             ->willReturn( $tournament );
@@ -714,8 +714,8 @@ class Tournament_Ajax_Adapter_Test extends TestCase {
     public function test_team_partner_with_camel_case_tournament_id_resolves_season(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
 
-        $tournament = $this->createStub( Tournament::class );
-        $tournament->season = '2026';
+        $tournament = new Tournament();
+        $tournament->set_season( '2026' );
         $tournament_service = $this->createStub( Tournament_Service::class );
         $tournament_service->method( 'get_tournament' )
             ->willReturn( $tournament );

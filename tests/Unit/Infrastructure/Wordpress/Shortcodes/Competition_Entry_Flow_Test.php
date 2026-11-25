@@ -462,11 +462,11 @@ class Competition_Entry_Flow_Test extends TestCase {
 
     private function tournament(): Tournament {
         $tournament = new Tournament();
-        $tournament->id = 8;
-        $tournament->name = 'Autumn Open';
-        $tournament->competition_id = 5;
-        $tournament->season = '2026';
-        $tournament->date_end = '2026-10-20';
+        $tournament->set_id( 8 );
+        $tournament->set_name( 'Autumn Open' );
+        $tournament->set_competition_id( 5 );
+        $tournament->set_season( '2026' );
+        $tournament->set_end_date( '2026-10-20' );
         return $tournament;
     }
 

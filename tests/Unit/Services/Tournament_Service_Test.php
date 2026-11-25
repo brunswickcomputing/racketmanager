@@ -100,7 +100,7 @@ class Tournament_Service_Test extends TestCase {
 
     private function get_finalist_notification_service( Mailer_Interface $mailer, Option_Service $option_service, array $finalists ): MockObject|Tournament_Service {
         $tournament       = $this->createStub( Tournament::class );
-        $tournament->name = 'Spring Open';
+        $tournament->method( 'get_name' )->willReturn( 'Spring Open' );
         $tournament->method( 'get_id' )->willReturn( 1 );
         $tournament->method( 'get_start_time' )->willReturn( '2026-06-01 10:00:00' );
         $tournament->method( 'get_time_increment' )->willReturn( '00:30:00' );

@@ -51,6 +51,7 @@ use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
+use ReflectionObject;
 
 class Tournament_Shortcode_Adapter_Test extends TestCase {
     private function create_adapter( array $overrides = [] ): Tournament_Shortcode_Adapter {
@@ -190,7 +191,7 @@ class Tournament_Shortcode_Adapter_Test extends TestCase {
 
     public function test_show_tournament_matches_delegates_to_handler_and_presenter(): void {
         $tournament     = $this->createStub( Tournament::class );
-        $tournament->id = 123;
+        $this->set_property( $tournament, 'id', 123 );
         $this->assert_delegation_to_handler_and_presenter(
             Get_Tournament_Matches_Handler::class,
             Get_Tournament_Matches_Query::class,
@@ -306,7 +307,7 @@ class Tournament_Shortcode_Adapter_Test extends TestCase {
             ->willReturn( $resolved );
 
         $tournament = $this->createStub( Tournament::class );
-        $tournament->season = '2026';
+        $this->set_property( $tournament, 'season', '2026' );
         $tournament->method( 'get_competition_object' )->willReturn( $competition );
         $tournament->method( 'is_event_allowed' )->willReturnCallback( static fn( $identifier ): bool => $event === $identifier || $resolved === $identifier );
         $result     = new Tournament_Events_Result(
@@ -430,34 +431,29 @@ class Tournament_Shortcode_Adapter_Test extends TestCase {
         $competition = $this->createStub( Competition::class );
         $service     = $this->createMock( Competition_Service::class );
         $service->expects( $this->once() )
-            ->method( 'resolve_competition_event' )
-            ->with( $competition, $draw, '2026' )
-            ->willReturn( $resolved );
-
+                ->method( 'resolve_competition_event' )
+                ->with( $competition, $draw, '2026' )
+                ->willReturn( $resolved );
         $tournament = $this->createStub( Tournament::class );
-        $tournament->season = '2026';
+        $this->set_property( $tournament, 'season', '2026' );
         $tournament->method( 'get_competition_object' )->willReturn( $competition );
         $tournament->method( 'is_event_allowed' )->willReturnCallback( static fn( $identifier ): bool => $draw === $identifier || $resolved === $identifier );
         $result = new Tournament_Draws_Result(
             tournament: $tournament,
             draw: $draw
         );
-
         $handler = $this->createMock( Get_Tournament_Draws_Handler::class );
         $handler->expects( $this->once() )->method( 'handle' )->willReturn( $result );
-
         $presenter = $this->createMock( Shortcode_View_Presenter::class );
         $presenter->expects( $this->once() )
-            ->method( 'render' )
-            ->with( $this->isInstanceOf( Shortcode_View_Model::class ) )
-            ->willReturn( '<div>Allowed Draw</div>' );
-
+                  ->method( 'render' )
+                  ->with( $this->isInstanceOf( Shortcode_View_Model::class ) )
+                  ->willReturn( '<div>Allowed Draw</div>' );
         $adapter = $this->create_adapter( [
             'draws_handler'       => $handler,
             'view_presenter'      => $presenter,
             'competition_service' => $service,
         ] );
-
         $this->assertSame( '<div>Allowed Draw</div>', $adapter->show_draws( [ 'id' => 8 ] ) );
     }
 
@@ -492,7 +488,7 @@ class Tournament_Shortcode_Adapter_Test extends TestCase {
     public function test_show_tournament_events_fails_closed_for_raw_event_without_competition_service(): void {
         $competition = $this->createStub( Competition::class );
         $tournament  = $this->createStub( Tournament::class );
-        $tournament->season = '2026';
+        $this->set_property( $tournament, 'season', '2026' );
         $tournament->method( 'get_competition_object' )->willReturn( $competition );
         $tournament->method( 'is_event_allowed' )->willReturn( true );
         $result = new Tournament_Events_Result(
@@ -521,7 +517,7 @@ class Tournament_Shortcode_Adapter_Test extends TestCase {
         $service     = $this->createMock( Competition_Service::class );
         $service->expects( $this->once() )->method( 'resolve_competition_event' )->willReturn( null );
         $tournament = $this->createMock( Tournament::class );
-        $tournament->season = '2026';
+        $this->set_property( $tournament, 'season', '2026' );
         $tournament->method( 'get_competition_object' )->willReturn( $competition );
         $tournament->expects( $this->never() )->method( 'is_event_allowed' );
         $result = new Tournament_Events_Result(
@@ -614,5 +610,20 @@ class Tournament_Shortcode_Adapter_Test extends TestCase {
         }
 
         return $tournament;
+    }
+
+    private function set_property( object $target, string $property_name, mixed $value ): void {
+        $reflection = new \ReflectionObject( $target );
+        while ( false !== $reflection ) {
+            if ( $reflection->hasProperty( $property_name ) ) {
+                $property           = $reflection->getProperty( $property_name );
+                $declaring_property = $property->getDeclaringClass()->getProperty( $property_name );
+                $declaring_property->setValue( $target, $value );
+
+                return;
+            }
+            $reflection = $reflection->getParentClass();
+        }
+        self::fail( sprintf( 'Property "%s" not found on %s', $property_name, $target::class ) );
     }
 }

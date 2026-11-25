@@ -195,11 +195,9 @@ class Draw_And_Winners_Templates_Test extends TestCase {
     }
 
     public function test_render_tournament_winners_template_with_producer_links_and_zero_warnings(): void {
-        $tournament = $this->createStub( Tournament::class );
-        $tournament->id = 55;
-        $tournament->name = 'Summer 2026';
-        $tournament->method( 'get_id' )->willReturn( 55 );
-        $tournament->method( 'get_name' )->willReturn( 'Summer 2026' );
+        $tournament = new Tournament();
+        $tournament->set_id( 55 );
+        $tournament->set_name( 'Summer 2026' );
 
         $winner_item = (object) [
             'event_name'    => 'Mens Doubles',
@@ -470,8 +468,6 @@ class Draw_And_Winners_Templates_Test extends TestCase {
 
     public function test_get_tournament_draws_handler_renders_tournament_match_url_and_zero_warnings(): void {
         $tournament = $this->createStub( Tournament::class );
-        $tournament->id = 20;
-        $tournament->name = 'Summer 2026';
         $tournament->method( 'get_id' )->willReturn( 20 );
         $tournament->method( 'get_name' )->willReturn( 'Summer 2026' );
         $tournament->method( 'is_event_allowed' )->willReturn( true );
@@ -618,7 +614,6 @@ class Draw_And_Winners_Templates_Test extends TestCase {
 
     public function test_render_championship_draw_team_template_with_zero_warnings(): void {
         $tournament = $this->createStub( Tournament::class );
-        $tournament->name = 'Championship 2026';
         $tournament->method( 'get_name' )->willReturn( 'Championship 2026' );
 
         $competition = (object) [

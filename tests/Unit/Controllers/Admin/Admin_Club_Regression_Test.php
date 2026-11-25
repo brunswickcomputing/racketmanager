@@ -253,9 +253,9 @@ final class Admin_Club_Regression_Test extends TestCase {
 		$league->sport      = 'tennis';
 
 		$tournament         = new \Racketmanager\Domain\Tournament\Tournament();
-		$tournament->id     = 3;
-		$tournament->name   = 'Club Championship';
-		$tournament->season = '2026';
+		$tournament->set_id( 3 );
+		$tournament->set_name( 'Club Championship' );
+		$tournament->set_season( '2026' );
 
 		$team               = new stdClass();
 		$team->id           = 10;

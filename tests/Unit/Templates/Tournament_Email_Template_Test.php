@@ -68,7 +68,7 @@ final class Tournament_Email_Template_Test extends TestCase {
             'id'   => 1,
             'name' => 'Autumn Open',
         ] );
-        $tournament->is_open = true;
+        $tournament->set_is_open( true );
 
         $player = Player::from_array( [
             'ID'           => 10,

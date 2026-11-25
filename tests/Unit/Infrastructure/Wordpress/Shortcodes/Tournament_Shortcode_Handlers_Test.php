@@ -111,8 +111,8 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_tournament_handler_success_with_details(): void {
-        $tournament = $this->createStub( Tournament::class );
-        $tournament->season = '2026';
+        $tournament = new Tournament();
+        $tournament->set_season( '2026' );
 
         $competition = Competition_Test_Factory::create();
         $competition->set_age_group( 'seniors' );
@@ -148,13 +148,13 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
             );
             $render_page = function ( bool $is_open, string $venue ) use ( $view_presenter ): array {
                 $tournament = new Tournament();
-                $tournament->id = 8;
-                $tournament->name = 'Summer Open';
-                $tournament->competition_id = 5;
-                $tournament->season = '2026';
-                $tournament->date_start = '2026-06-01';
-                $tournament->date_end = '2026-06-07';
-                $tournament->is_open = $is_open;
+                $tournament->set_id( 8 );
+                $tournament->set_name( 'Summer Open' );
+                $tournament->set_competition_id( 5 );
+                $tournament->set_season( '2026' );
+                $tournament->set_start_date( '2026-06-01' );
+                $tournament->set_end_date( '2026-06-07' );
+                $tournament->set_is_open( $is_open );
 
                 $competition = Competition_Test_Factory::create();
                 $competition->set_age_group( 'seniors' );
@@ -602,8 +602,8 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_match_handler_success(): void {
-        $tournament = $this->createStub( Tournament::class );
-        $tournament->season = '2026';
+        $tournament = new Tournament();
+        $tournament->set_season( '2026' );
 
         $competition = Competition_Test_Factory::create();
         $competition->set_age_group( 'seniors' );

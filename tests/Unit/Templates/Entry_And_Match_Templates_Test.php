@@ -499,7 +499,7 @@ class Entry_And_Match_Templates_Test extends TestCase {
         $this->assertStringContainsString( $today->modify( '+10 days' )->format( 'd/m/Y' ), $output );
         $this->assertStringContainsString( "Men's Singles", $output );
 
-        $tournament->date_closing = null;
+        $tournament->set_closing_date( null );
         $missing_date_vm          = $this->present_entry( $handler, $query, new Tournament_Presenter( 'd/m/Y' ) );
         $missing_date_warnings   = [];
         $missing_date_output     = $this->render_and_capture_warnings(

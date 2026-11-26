@@ -42,8 +42,8 @@ class Favourites_Render_Test extends TestCase {
         unset( $GLOBALS['racketmanager'], $GLOBALS['wp_stubs_stylesheet_directory'], $GLOBALS['wp_stubs_template_directory'] );
 
         $this->container = new Simple_Container();
-        ( new Core_Service_Provider() )->register( $this->container );
-        ( new Presentation_Service_Provider() )->register( $this->container );
+        new Core_Service_Provider()->register( $this->container );
+        new Presentation_Service_Provider()->register( $this->container );
         $this->container->set( Club_Repository_Interface::class, fn() => $this->createStub( Club_Repository_Interface::class ) );
         $this->container->alias( 'club_repository', Club_Repository_Interface::class );
         $this->container->set( 'club_presenter', fn() => new Club_Presenter() );

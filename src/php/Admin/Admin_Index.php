@@ -22,63 +22,63 @@ use Racketmanager\Services\Container\Simple_Container;
  * Screen bridge for the competitions index screen.
  */
 final readonly class Admin_Index {
-	use Completes_Admin_Requests;
+    use Completes_Admin_Requests;
 
-	/**
-	 * Constructor.
-	 *
-	 * @param Simple_Container       $container       Dependency injection container.
-	 * @param Admin_Message_Service  $message_service Admin messaging service.
-	 * @param Admin_Action_Adapter   $actions         Action adapter for PRG redirects.
-	 * @param Admin_Screen_Presenter $screens         Screen presenter for view rendering.
-	 */
-	public function __construct(
-		private Simple_Container $container,
-		private Admin_Message_Service $message_service,
-		Admin_Action_Adapter $actions,
-		Admin_Screen_Presenter $screens,
-	) {
-		$this->actions = $actions;
-		$this->screens = $screens;
-	}
+    /**
+     * Constructor.
+     *
+     * @param Simple_Container       $container       Dependency injection container.
+     * @param Admin_Message_Service  $message_service Admin messaging service.
+     * @param Admin_Action_Adapter   $actions         Action adapter for PRG redirects.
+     * @param Admin_Screen_Presenter $screens         Screen presenter for view rendering.
+     */
+    public function __construct(
+        private Simple_Container $container,
+        private Admin_Message_Service $message_service,
+        Admin_Action_Adapter $actions,
+        Admin_Screen_Presenter $screens,
+    ) {
+        $this->actions = $actions;
+        $this->screens = $screens;
+    }
 
-	/**
-	 * Handle admin index displays.
-	 *
-	 * @param string|null $view Current view.
-	 *
-	 * @return void
-	 */
-	public function handle_display( ?string $view = null ): void {
-		unset( $view );
-		$this->display_index_page();
-	}
+    /**
+     * Handle admin index displays.
+     *
+     * @param string|null $view Current view.
+     *
+     * @return void
+     */
+    public function handle_display( ?string $view = null ): void {
+        unset( $view );
+        $this->display_index_page();
+    }
 
-	/**
-	 * Display index page.
-	 *
-	 * @return void
-	 */
-	public function display_index_page(): void {
-		$flash      = $this->screens->apply_flash();
-		$flash_data = $flash['flash_data'] ?? array();
+    /**
+     * Display index page.
+     *
+     * @return void
+     */
+    public function display_index_page(): void {
+        $flash      = $this->screens->apply_flash();
+        $flash_data = $flash['flash_data'] ?? array();
 
-		try {
-			/** @var Index_Admin_Controller $controller */
-			$controller = $this->container->get( Index_Admin_Controller::class );
+        try {
+            /** @var Index_Admin_Controller $controller */
+            $controller = $this->container->get( Index_Admin_Controller::class );
 
-			// phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
-			$result = $controller->index_page( $_GET, $_POST, $flash_data );
-			// phpcs:enable WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
+            // phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
+            $result = $controller->index_page( $_GET, $_POST, $flash_data );
+            // phpcs:enable WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
 
-			$this->complete_request(
-				$result,
-				Index_Page_View_Model::class,
-				'admin/index'
-			);
-		} catch ( Invalid_Status_Exception $e ) {
-			$this->message_service->set_message( $e->getMessage(), true );
-			$this->message_service->show_message();
-		}
-	}
+            $this->complete_request(
+                $result,
+                Index_Page_View_Model::class,
+                'admin/index'
+            );
+        } catch ( Invalid_Status_Exception $e ) {
+            $this->message_service->set_message( $e->getMessage(), true );
+            $this->message_service->show_message();
+        }
+    }
 }

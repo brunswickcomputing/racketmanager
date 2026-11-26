@@ -22,61 +22,61 @@ use Racketmanager\Services\Container\Simple_Container;
  * Screen bridge for RacketManager options and global settings.
  */
 final readonly class Admin_Options {
-	use Completes_Admin_Requests;
+    use Completes_Admin_Requests;
 
-	/**
-	 * Constructor.
-	 *
-	 * @param Simple_Container       $container       Dependency injection container.
-	 * @param Admin_Message_Service  $message_service Admin messaging service.
-	 * @param Admin_Action_Adapter   $actions         Action adapter for PRG redirects.
-	 * @param Admin_Screen_Presenter $screens         Screen presenter for view rendering.
-	 */
-	public function __construct(
-		private Simple_Container $container,
-		private Admin_Message_Service $message_service,
-		Admin_Action_Adapter $actions,
-		Admin_Screen_Presenter $screens,
-	) {
-		$this->actions = $actions;
-		$this->screens = $screens;
-	}
+    /**
+     * Constructor.
+     *
+     * @param Simple_Container       $container       Dependency injection container.
+     * @param Admin_Message_Service  $message_service Admin messaging service.
+     * @param Admin_Action_Adapter   $actions         Action adapter for PRG redirects.
+     * @param Admin_Screen_Presenter $screens         Screen presenter for view rendering.
+     */
+    public function __construct(
+        private Simple_Container $container,
+        private Admin_Message_Service $message_service,
+        Admin_Action_Adapter $actions,
+        Admin_Screen_Presenter $screens,
+    ) {
+        $this->actions = $actions;
+        $this->screens = $screens;
+    }
 
-	/**
-	 * Function to handle administration options displays.
-	 *
-	 * @param string|null $view Current view.
-	 *
-	 * @return void
-	 */
-	public function handle_display( ?string $view = null ): void {
-		unset( $view );
-		$this->display_options_page();
-	}
+    /**
+     * Function to handle administration options displays.
+     *
+     * @param string|null $view Current view.
+     *
+     * @return void
+     */
+    public function handle_display( ?string $view = null ): void {
+        unset( $view );
+        $this->display_options_page();
+    }
 
-	/**
-	 * Display global settings page.
-	 */
-	public function display_options_page(): void {
-		$flash      = $this->screens->apply_flash();
-		$flash_data = $flash['flash_data'] ?? array();
+    /**
+     * Display global settings page.
+     */
+    public function display_options_page(): void {
+        $flash      = $this->screens->apply_flash();
+        $flash_data = $flash['flash_data'] ?? array();
 
-		try {
-			/** @var Options_Admin_Controller $controller */
-			$controller = $this->container->get( Options_Admin_Controller::class );
+        try {
+            /** @var Options_Admin_Controller $controller */
+            $controller = $this->container->get( Options_Admin_Controller::class );
 
-			// phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
-			$result = $controller->options_page( $_GET, $_POST, $flash_data );
-			// phpcs:enable WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
+            // phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
+            $result = $controller->options_page( $_GET, $_POST, $flash_data );
+            // phpcs:enable WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
 
-			$this->complete_request(
-				$result,
-				Options_Page_View_Model::class,
-				'admin/show-settings'
-			);
-		} catch ( Invalid_Status_Exception $e ) {
-			$this->message_service->set_message( $e->getMessage(), true );
-			$this->message_service->show_message();
-		}
-	}
+            $this->complete_request(
+                $result,
+                Options_Page_View_Model::class,
+                'admin/show-settings'
+            );
+        } catch ( Invalid_Status_Exception $e ) {
+            $this->message_service->set_message( $e->getMessage(), true );
+            $this->message_service->show_message();
+        }
+    }
 }

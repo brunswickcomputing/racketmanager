@@ -10,9 +10,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Domain\DTO\Player;
 
-use Racketmanager\Util\Util;
-use function class_exists;
-use function function_exists;
+use Racketmanager\Util\Player_Link_Util;
 use function is_array;
 
 /**
@@ -34,21 +32,31 @@ class Players_List_DTO {
     public ?string $contactno;
     public ?string $user_nicename;
 
+    /**
+     * Initialises a player instance from an object or array of player data.
+     *
+     * Normalises supported field aliases, derives an index value when one is not
+     * provided, and generates a player link when possible.
+     *
+     * @param object|array $data Player data used to initialize the instance.
+     *
+     * @return void
+     */
     public function __construct( object|array $data ) {
         if ( is_array( $data ) ) {
             $data = (object) $data;
         }
 
-        $this->id           = (int) ( $data->player_id ?? ( $data->id ?? ( $data->ID ?? 0 ) ) );
-        $this->ID           = $this->id;
-        $this->display_name = $data->display_name ?? null;
-        $this->firstname    = $data->firstName ?? ( $data->firstname ?? ( $data->first_name ?? '' ) );
-        $this->surname      = $data->surname ?? ( $data->last_name ?? '' );
-        $this->first_name   = $this->firstname;
-        $this->last_name    = $this->surname;
-        $this->email        = $data->email ?? ( $data->email_address ?? ( $data->user_email ?? null ) );
-        $this->gender       = $data->gender ?? null;
-        $this->btm          = $data->btm ?? ( $data->btm_number ?? null );
+        $this->id            = (int) ( $data->player_id ?? ( $data->id ?? ( $data->ID ?? 0 ) ) );
+        $this->ID            = $this->id;
+        $this->display_name  = $data->display_name ?? null;
+        $this->firstname     = $data->firstName ?? ( $data->firstname ?? ( $data->first_name ?? '' ) ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+        $this->surname       = $data->surname ?? ( $data->last_name ?? '' );
+        $this->first_name    = $this->firstname;
+        $this->last_name     = $this->surname;
+        $this->email         = $data->email ?? ( $data->email_address ?? ( $data->user_email ?? null ) );
+        $this->gender        = $data->gender ?? null;
+        $this->btm           = $data->btm ?? ( $data->btm_number ?? null );
         $this->contactno     = $data->contactno ?? ( $data->contact_no ?? null );
         $this->user_nicename = $data->user_nicename ?? null;
 
@@ -63,16 +71,26 @@ class Players_List_DTO {
         if ( isset( $data->link ) && '' !== $data->link ) {
             $this->link = (string) $data->link;
         } elseif ( ! empty( $this->display_name ) ) {
-            $this->link = \Racketmanager\Util\Player_Link_Util::generate_link( $this->display_name, $this->btm ?? null );
+            $this->link = Player_Link_Util::generate_link( $this->display_name, $this->btm ?? null );
         } else {
             $this->link = null;
         }
     }
 
+    /**
+     * Gets the identifier for this instance.
+     *
+     * @return int The instance identifier.
+     */
     public function get_id(): int {
         return $this->id;
     }
 
+    /**
+     * Gets the display name.
+     *
+     * @return string The display name, or an empty string if none is set.
+     */
     public function get_display_name(): string {
         return $this->display_name ?? '';
     }

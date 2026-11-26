@@ -11,161 +11,180 @@ use ArrayIterator;
 use Traversable;
 
 /**
- * Value object representing competition settings.
+ * Represents a collection of competition configuration settings.
+ *
+ * Provides access to raw settings, typed convenience accessors for common
+ * competition options, array-style access, counting, iteration, and JSON
+ * serialization.
+ *
+ * Settings are stored as key-value pairs. The with() method returns a new
+ * instance with an updated setting, while ArrayAccess methods modify the
+ * current instance directly.
+ *
+ * @implements ArrayAccess<mixed,mixed>
+ * @implements IteratorAggregate<mixed,mixed>
  */
 final class Competition_Settings implements ArrayAccess, Countable, IteratorAggregate, JsonSerializable {
-	/**
-	 * @var array
-	 */
-	private array $settings;
+    /**
+     * @var array
+     */
+    private array $settings;
 
-	/**
-	 * Constructor
-	 *
-	 * @param array $settings
-	 */
-	public function __construct( array $settings = [] ) {
-		$this->settings = $settings;
-	}
+    /**
+     * Initialize settings.
+     *
+     * @param array $settings Settings values.
+     *
+     * @return void
+     */
+    public function __construct( array $settings = [] ) {
+        $this->settings = $settings;
+    }
 
-	/**
-	 * Get all settings.
-	 *
-	 * @return array
-	 */
-	public function all(): array {
-		return $this->settings;
-	}
+    /**
+     * Get all settings.
+     *
+     * @return array
+     */
+    public function all(): array {
+        return $this->settings;
+    }
 
-	/**
-	 * Get a setting by key.
-	 *
-	 * @param string $key
-	 * @param mixed $default
-	 * @return mixed
-	 */
-	public function get( string $key, mixed $default = null ): mixed {
-		return $this->settings[ $key ] ?? $default;
-	}
+    /**
+     * Gets a setting value by key.
+     *
+     * @param string $key Setting key.
+     * @param mixed  $default_value Default value to return when the key is not set.
+     *
+     * @return mixed
+     */
+    public function get( string $key, mixed $default_value = null ): mixed {
+        return $this->settings[ $key ] ?? $default_value;
+    }
 
-	/**
-	 * Set a setting by key, returning a new instance.
-	 *
-	 * @param string $key
-	 * @param mixed $value
-	 * @return self
-	 */
-	public function with( string $key, mixed $value ): self {
-		$settings = $this->settings;
-		$settings[ $key ] = $value;
-		return new self( $settings );
-	}
+    /**
+     * Returns a new instance with the specified setting value.
+     *
+     * @param string $key Setting key.
+     * @param mixed  $value Setting value.
+     *
+     * @return self New instance with the updated settings.
+     */
+    public function with( string $key, mixed $value ): self {
+        $settings         = $this->settings;
+        $settings[ $key ] = $value;
+        return new self( $settings );
+    }
 
-	/**
-	 * Get competition mode.
-	 *
-	 * @return string
-	 */
-	public function mode(): string {
-		return (string) $this->get( 'mode', 'default' );
-	}
+    /**
+     * Gets the current mode.
+     *
+     * @return string
+     */
+    public function mode(): string {
+        return (string) $this->get( 'mode', 'default' );
+    }
 
-	/**
-	 * Get entry type.
-	 *
-	 * @return string
-	 */
-	public function entry_type(): string {
-		return (string) $this->get( 'entry_type', 'team' );
-	}
+    /**
+     * Gets the entry type.
+     *
+     * @return string
+     */
+    public function entry_type(): string {
+        return (string) $this->get( 'entry_type', 'team' );
+    }
 
-	/**
-	 * Get sport.
-	 *
-	 * @return string
-	 */
-	public function sport(): string {
-		return (string) $this->get( 'sport', 'tennis' );
-	}
+    /**
+     * Get the sport value.
+     *
+     * @return string
+     */
+    public function sport(): string {
+        return (string) $this->get( 'sport', 'tennis' );
+    }
 
-	/**
-	 * Get number of courts available by club.
-	 *
-	 * @return array
-	 */
-	public function num_courts_available(): array {
-		return (array) $this->get( 'num_courts_available', [] );
-	}
+    /**
+     * Get the available court counts.
+     *
+     * @return array
+     */
+    public function num_courts_available(): array {
+        return (array) $this->get( 'num_courts_available', [] );
+    }
 
-	/**
-	 * ArrayAccess offsetExists.
-	 *
-	 * @param mixed $offset
-	 * @return bool
-	 */
-	public function offsetExists( mixed $offset ): bool {
-		return isset( $this->settings[ $offset ] );
-	}
+    /**
+     * Checks whether a settings offset exists.
+     *
+     * @param mixed $offset Offset to check.
+     *
+     * @return bool True if the offset exists, false otherwise.
+     */
+    public function offsetExists( mixed $offset ): bool {
+        return isset( $this->settings[ $offset ] );
+    }
 
-	/**
-	 * ArrayAccess offsetGet.
-	 *
-	 * @param mixed $offset
-	 * @return mixed
-	 */
-	public function offsetGet( mixed $offset ): mixed {
-		return $this->settings[ $offset ] ?? null;
-	}
+    /**
+     * ArrayAccess offsetGet.
+     *
+     * @param mixed $offset Offset to retrieve.
+     *
+     * @return mixed Value at the offset, or null if not set.
+     */
+    public function offsetGet( mixed $offset ): mixed {
+        return $this->settings[ $offset ] ?? null;
+    }
 
-	/**
-	 * ArrayAccess offsetSet.
-	 *
-	 * @param mixed $offset
-	 * @param mixed $value
-	 * @return void
-	 */
-	public function offsetSet( mixed $offset, mixed $value ): void {
-		if ( is_null( $offset ) ) {
-			$this->settings[] = $value;
-		} else {
-			$this->settings[ $offset ] = $value;
-		}
-	}
+    /**
+     * Sets a settings value at the specified offset, or appends it when the offset is null.
+     *
+     * @param mixed $offset The offset to assign the value to, or null to append.
+     * @param mixed $value The value to store.
+     *
+     * @return void
+     */
+    public function offsetSet( mixed $offset, mixed $value ): void {
+        if ( is_null( $offset ) ) {
+            $this->settings[] = $value;
+        } else {
+            $this->settings[ $offset ] = $value;
+        }
+    }
 
-	/**
-	 * ArrayAccess offsetUnset.
-	 *
-	 * @param mixed $offset
-	 * @return void
-	 */
-	public function offsetUnset( mixed $offset ): void {
-		unset( $this->settings[ $offset ] );
-	}
+    /**
+     * Unsets the setting at the specified offset.
+     *
+     * @param mixed $offset The offset to unset.
+     *
+     * @return void
+     */
+    public function offsetUnset( mixed $offset ): void {
+        unset( $this->settings[ $offset ] );
+    }
 
-	/**
-	 * Countable count.
-	 *
-	 * @return int
-	 */
-	public function count(): int {
-		return count( $this->settings );
-	}
+    /**
+     * Counts the settings.
+     *
+     * @return int
+     */
+    public function count(): int {
+        return count( $this->settings );
+    }
 
-	/**
-	 * IteratorAggregate getIterator.
-	 *
-	 * @return Traversable
-	 */
-	public function getIterator(): Traversable {
-		return new ArrayIterator( $this->settings );
-	}
+    /**
+     * Gets an iterator over the settings.
+     *
+     * @return Traversable
+     */
+    public function getIterator(): Traversable {
+        return new ArrayIterator( $this->settings );
+    }
 
-	/**
-	 * JsonSerializable jsonSerialize.
-	 *
-	 * @return array
-	 */
-	public function jsonSerialize(): array {
-		return $this->settings;
-	}
+    /**
+     * Serializes the object settings for JSON encoding.
+     *
+     * @return array The settings data to be serialized.
+     */
+    public function jsonSerialize(): array {
+        return $this->settings;
+    }
 }

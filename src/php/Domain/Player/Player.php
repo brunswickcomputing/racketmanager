@@ -10,7 +10,6 @@ declare( strict_types=1 );
 namespace Racketmanager\Domain\Player;
 
 use Racketmanager\Domain\DTO\Player\Player_Hydration_DTO;
-use Racketmanager\Domain\Player\Player_Ranking;
 
 /**
  * Class to implement the Player object
@@ -415,9 +414,10 @@ class Player {
     }
 
     /**
-     * Create from a generic object.
+     * Create a player instance from an object.
      *
-     * @param object $data
+     * @param object $data Source object containing player data.
+     *
      * @return self
      */
     public static function from_object( object $data ): self {
@@ -425,9 +425,10 @@ class Player {
     }
 
     /**
-     * Create from an associative array.
+     * Create a player instance from array data.
      *
-     * @param array $data
+     * @param array $data Player data used to create the instance.
+     *
      * @return self
      */
     public static function from_array( array $data ): self {
@@ -435,9 +436,9 @@ class Player {
     }
 
     /**
-     * Set ID
+     * Set the identifier.
      *
-     * @param int $id
+     * @param int $id Identifier value.
      *
      * @return void
      */
@@ -446,9 +447,9 @@ class Player {
     }
 
     /**
-     * Set email
+     * Set the email address.
      *
-     * @param string $email
+     * @param string $email Email address to set.
      *
      * @return void
      */
@@ -457,9 +458,9 @@ class Player {
     }
 
     /**
-     * Set firstname
+     * Set the first name.
      *
-     * @param string $firstname
+     * @param string $firstname First name to set.
      *
      * @return void
      */
@@ -468,9 +469,9 @@ class Player {
     }
 
     /**
-     * Set surname
+     * Set the surname.
      *
-     * @param string $surname
+     * @param string $surname Surname to set.
      *
      * @return void
      */
@@ -479,9 +480,9 @@ class Player {
     }
 
     /**
-     * Set display name
+     * Set the display name.
      *
-     * @param string $display_name
+     * @param string $display_name Display name to assign.
      *
      * @return void
      */
@@ -490,9 +491,9 @@ class Player {
     }
 
     /**
-     * Set gender
+     * Set the gender value.
      *
-     * @param string $gender
+     * @param string $gender Gender value to set.
      *
      * @return void
      */
@@ -501,9 +502,9 @@ class Player {
     }
 
     /**
-     * Set LTA tennis number
+     * Set the BTM value.
      *
-     * @param string $btm
+     * @param string $btm BTM value to set.
      *
      * @return void
      */
@@ -512,9 +513,9 @@ class Player {
     }
 
     /**
-     * Set year of birth
+     * Set the year of birth and recalculate the age.
      *
-     * @param int|string|null $year_of_birth
+     * @param int|string|null $year_of_birth Year of birth value, or null/empty string to clear it.
      *
      * @return void
      */
@@ -524,9 +525,9 @@ class Player {
     }
 
     /**
-     * Set contact number
+     * Set the contact number.
      *
-     * @param string $contactno
+     * @param string $contactno Contact number to assign.
      *
      * @return void
      */
@@ -535,9 +536,9 @@ class Player {
     }
 
     /**
-     * Set locked
+     * Set the locked status.
      *
-     * @param bool $locked
+     * @param bool $locked Locked status to assign.
      *
      * @return void
      */
@@ -546,9 +547,9 @@ class Player {
     }
 
     /**
-     * Set the locked date
+     * Set the locked date.
      *
-     * @param string $locked_date
+     * @param string $locked_date Locked date value.
      *
      * @return void
      */
@@ -557,29 +558,31 @@ class Player {
     }
 
     /**
-     * Set locked user
+     * Set the locked user identifier.
      *
-     * @param int|string|null $locked_user
+     * @param int|string|null $locked_user Locked user identifier, or null to clear it.
      *
      * @return void
      */
     public function set_locked_user( int|string|null $locked_user ): void {
         $this->locked_user = null !== $locked_user ? (string) $locked_user : null;
     }
+
     /**
-     * Set the removed date
+     * Set the removed date.
      *
-     * @param string $removed_date
+     * @param string $removed_date Removed date value to assign.
      *
      * @return void
      */
     public function set_removed_date( string $removed_date ): void {
         $this->removed_date = $removed_date;
     }
+
     /**
-     * Set removed user
+     * Set the removed user identifier.
      *
-     * @param int|string|null $removed_user
+     * @param int|string|null $removed_user Removed user identifier, or null to unset it.
      *
      * @return void
      */
@@ -588,9 +591,10 @@ class Player {
     }
 
     /**
-     * Set matches.
+     * Set the matches collection.
      *
-     * @param array $matches Matches array.
+     * @param array $matches Matches to assign.
+     *
      * @return void
      */
     public function set_matches( array $matches ): void {
@@ -598,9 +602,10 @@ class Player {
     }
 
     /**
-     * Set stats.
+     * Set the stats data.
      *
-     * @param array $stats Stats array.
+     * @param array $stats Stats data to set.
+     *
      * @return void
      */
     public function set_stats( array $stats ): void {
@@ -684,7 +689,7 @@ class Player {
     }
 
     /**
-     * Set locked user name.
+     * Set locked username.
      *
      * @param string $name Locked user name.
      * @return void
@@ -707,7 +712,7 @@ class Player {
      * @return string
      */
     public function get_firstname(): string {
-        return (string) ( $this->firstname ?? '' );
+        return $this->firstname ?? '';
     }
 
     /**
@@ -716,7 +721,7 @@ class Player {
      * @return string
      */
     public function get_surname(): string {
-        return (string) ( $this->surname ?? '' );
+        return $this->surname ?? '';
     }
 
     /**
@@ -725,7 +730,7 @@ class Player {
      * @return string
      */
     public function get_fullname(): string {
-        return (string) ( $this->display_name ?? '' );
+        return $this->display_name ?? '';
     }
 
     /**
@@ -734,7 +739,7 @@ class Player {
      * @return string
      */
     public function get_name(): string {
-        return (string) ( $this->name !== '' ? $this->name : ( $this->display_name ?? '' ) );
+        return '' !== $this->name ? $this->name : ( $this->display_name ?? '' );
     }
 
     /**
@@ -752,7 +757,7 @@ class Player {
      * @return string
      */
     public function get_login(): string {
-        return (string) ( $this->user_login ?? '' );
+        return $this->user_login ?? '';
     }
 
     /**
@@ -761,7 +766,7 @@ class Player {
      * @return string
      */
     public function get_password(): string {
-        return (string) ( $this->user_pass ?? '' );
+        return $this->user_pass ?? '';
     }
 
     /**
@@ -770,7 +775,7 @@ class Player {
      * @return string
      */
     public function get_date_registered(): string {
-        return (string) ( $this->user_registered ?? '' );
+        return $this->user_registered ?? '';
     }
 
     /**
@@ -779,7 +784,7 @@ class Player {
      * @return string
      */
     public function get_gender(): string {
-        return (string) ( $this->gender ?? '' );
+        return $this->gender ?? '';
     }
 
     /**
@@ -882,9 +887,9 @@ class Player {
      */
     public function get_ranking( string $discipline = 'singles' ): Player_Ranking {
         $disc_lower = strtolower( $discipline );
-        $val        = $this->wtn[ $discipline ] 
-                   ?? $this->wtn[ $disc_lower ] 
-                   ?? $this->wtn[ strtoupper( $discipline ) ] 
+        $val        = $this->wtn[ $discipline ]
+                   ?? $this->wtn[ $disc_lower ]
+                   ?? $this->wtn[ strtoupper( $discipline ) ]
                    ?? null;
 
         if ( null === $val ) {
@@ -907,10 +912,22 @@ class Player {
         return $this->age;
     }
 
+    /**
+     * Serialize the object state.
+     *
+     * @return array Object properties as an associative array.
+     */
     public function __serialize(): array {
         return get_object_vars( $this );
     }
 
+    /**
+     * Restore object state from serialized data.
+     *
+     * @param array $data Associative array of property names and values to restore.
+     *
+     * @return void
+     */
     public function __unserialize( array $data ): void {
         foreach ( $data as $key => $value ) {
             if ( property_exists( $this, $key ) ) {
@@ -926,7 +943,7 @@ class Player {
      * @return void
      */
     public function set_wtn( array $wtn ): void {
-        foreach( $wtn as $match_type => $value ) {
+        foreach ( $wtn as $match_type => $value ) {
             $this->set_wtn_type( $match_type, $value );
         }
     }

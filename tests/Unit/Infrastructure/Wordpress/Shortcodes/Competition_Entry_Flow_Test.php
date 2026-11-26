@@ -329,6 +329,24 @@ class Competition_Entry_Flow_Test extends TestCase {
                 1
             )->template
         );
+        $this->assertSame(
+            '',
+            Get_Competition_Payment_Query::from_atts(
+                [ 'template' => 'foo' ],
+                $GLOBALS['query_vars'],
+                1,
+                [],
+                true
+            )->template
+        );
+        $this->assertSame(
+            '',
+            Get_Competition_Payment_Query::from_atts(
+                [ 'template' => 123 ],
+                $GLOBALS['query_vars'],
+                1
+            )->template
+        );
     }
 
     public function test_payment_rejects_non_tournament_and_unknown_tournament(): void {

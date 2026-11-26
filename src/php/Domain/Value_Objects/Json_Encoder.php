@@ -3,10 +3,18 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Domain\Value_Objects;
 
+use RuntimeException;
 use stdClass;
 
 /** Native JSON encoding with the same UTF-8 recovery as WordPress's default encoder. */
 final class Json_Encoder {
+    /**
+     * Encodes a value as a JSON string, attempting to handle invalid UTF-8 input when encoding fails.
+     *
+     * @param mixed $value Value to encode.
+     *
+     * @return string|false JSON-encoded string, or false if encoding fails.
+     */
     public static function encode( mixed $value ): string|false {
         $json = json_encode( $value );
         if ( false !== $json || JSON_ERROR_UTF8 !== json_last_error() ) {
@@ -19,14 +27,23 @@ final class Json_Encoder {
 
         try {
             return json_encode( self::sanitize( $value, 512 ) );
-        } catch ( \RuntimeException ) {
+        } catch ( RuntimeException ) {
             return false;
         }
     }
 
+    /**
+     * Sanitises a value by converting strings to UTF-8 and recursively processing arrays and objects.
+     *
+     * @param mixed $value Value to sanitize.
+     * @param int   $depth Maximum remaining recursion depth.
+     *
+     * @return mixed Sanitized value with strings normalized to UTF-8.
+     * @throws RuntimeException If the recursion depth limit is exceeded.
+     */
     private static function sanitize( mixed $value, int $depth ): mixed {
         if ( $depth < 0 ) {
-            throw new \RuntimeException( 'Reached depth limit' );
+            throw new RuntimeException( 'Reached depth limit' );
         }
         if ( is_string( $value ) ) {
             $encoding = mb_detect_encoding( $value, mb_detect_order(), true ) ?: 'UTF-8';
@@ -35,7 +52,7 @@ final class Json_Encoder {
         if ( is_array( $value ) || is_object( $value ) ) {
             $result = is_array( $value ) ? array() : new stdClass();
             foreach ( $value as $key => $item ) {
-                $key = is_string( $key ) ? self::sanitize( $key, $depth - 1 ) : $key;
+                $key  = is_string( $key ) ? self::sanitize( $key, $depth - 1 ) : $key;
                 $item = self::sanitize( $item, $depth - 1 );
                 if ( is_array( $result ) ) {
                     $result[ $key ] = $item;

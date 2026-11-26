@@ -14,12 +14,12 @@ namespace Racketmanager\Application\Ports;
  */
 interface Page_Title_Service_Interface {
 
-	/**
-	 * Build dynamic page title based on current post slug and query variables.
-	 *
-	 * @param string      $title     Default or existing title.
-	 * @param string|null $site_name Optional site name override.
-	 * @return string
-	 */
-	public function build_title( string $title = '', ?string $site_name = null ): string;
+    /**
+     * Build dynamic page title based on current post slug and query variables.
+     *
+     * @param string      $title     Default or existing title.
+     * @param string|null $site_name Optional site name override.
+     * @return string
+     */
+    public function build_title( string $title = '', ?string $site_name = null ): string;
 }

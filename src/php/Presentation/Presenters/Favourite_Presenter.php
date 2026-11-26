@@ -15,10 +15,30 @@ use function is_object;
 use function is_string;
 use function trim;
 
+/**
+ * Converts favourite data into view models used by templates.
+ *
+ * Builds control state for the current user's favourites, transforms favourite records into list item
+ * view models, and resolves display metadata such as labels, URLs, and icon paths for supported
+ * favourite types.
+ */
 final readonly class Favourite_Presenter {
+    /**
+     * Initialises the service with a user favourites gateway.
+     *
+     * @param User_Favourites_Gateway_Interface $gateway Gateway used to access user favourites data.
+     *
+     * @return void
+     */
     public function __construct( private User_Favourites_Gateway_Interface $gateway ) {}
 
-    /** Shared view data for all public shortcode entry points, including theme overrides. */
+    /**
+     * Builds presentation variables for favourite controls and favourite rows.
+     *
+     * @param array $vars Template variables containing favourite type groups or a single favourite list.
+     *
+     * @return array Presentation data including favourite controls and any generated favourite rows.
+     */
     public function present_template_vars( array $vars ): array {
         $presentation = [ 'favourite_controls' => $this->present_controls() ];
         if ( isset( $vars['favourite_types'] ) ) {
@@ -34,6 +54,14 @@ final readonly class Favourite_Presenter {
         return $presentation;
     }
 
+    /**
+     * Builds the favourite controls view model for the current user.
+     *
+     * Retrieves the current user's favourites, maps valid favourite identifiers to the selected state,
+     * and provides the default unselected state for items that are not marked as favourites.
+     *
+     * @return Favourite_Controls_View_Model View model containing favourite availability, selected states, and the unselected state.
+     */
     public function present_controls(): Favourite_Controls_View_Model {
         $favourites     = $this->gateway->get_current_user_favourites();
         $unselected     = new Favourite_State_View_Model( __( 'Add favourite', 'racketmanager' ), '', '', '' );
@@ -50,8 +78,12 @@ final readonly class Favourite_Presenter {
     }
 
     /**
-     * @param list<object> $favourites
-     * @return list<Favourite_List_Item_View_Model>
+     * Builds view model rows for a list of favourites of the specified type.
+     *
+     * @param string $type Favourite type used to resolve URLs and icons.
+     * @param array  $favourites Favourite records to transform into list item view models.
+     *
+     * @return array List of favourite list item view models.
      */
     public function present_list( string $type, array $favourites ): array {
         $rows = [];
@@ -60,11 +92,11 @@ final readonly class Favourite_Presenter {
                 continue;
             }
             $detail = $favourite->detail ?? null;
-            $name   = (string) ( $favourite->name ?? ( is_object( $detail ) ? ( $detail->title ?? $detail->name ?? $detail->display_name ?? '' ) : '' ) );
+            $name   = $favourite->name ?? ( is_object( $detail ) ? ( $detail->title ?? $detail->name ?? $detail->display_name ?? '' ) : '' );
             if ( '' === trim( $name ) ) {
                 $name = __( 'Unavailable', 'racketmanager' );
             }
-            $id     = (int) ( $favourite->id ?? ( is_object( $detail ) ? ( $detail->id ?? $detail->ID ?? 0 ) : 0 ) );
+            $id = (int) $favourite->id ?? ( is_object( $detail ) ? ( $detail->id ?? $detail->ID ?? 0 ) : 0 );
 
             [ $url, $icon ] = match ( $type ) {
                 'league' => [
@@ -109,15 +141,21 @@ final readonly class Favourite_Presenter {
         return $rows;
     }
 
+    /**
+     * Resolves the competitions URL for a team based on the available club shortcode.
+     *
+     * @param object      $favourite Favourite team data that may contain a club shortcode.
+     * @param object|null $detail Optional detail data used as a fallback source for the club shortcode.
+     *
+     * @return string The resolved team competitions URL, or an empty string when no valid shortcode is available.
+     */
     private function resolve_team_url( object $favourite, ?object $detail ): string {
         $club_shortcode = $favourite->club_shortcode ?? null;
-        if ( ! is_string( $club_shortcode ) || '' === $club_shortcode ) {
-            if ( is_object( $detail ) ) {
-                if ( isset( $detail->club ) && is_object( $detail->club ) && ! empty( $detail->club->shortcode ) && is_string( $detail->club->shortcode ) ) {
-                    $club_shortcode = $detail->club->shortcode;
-                } elseif ( isset( $detail->club_shortcode ) && is_string( $detail->club_shortcode ) ) {
-                    $club_shortcode = $detail->club_shortcode;
-                }
+        if ( ( ! is_string( $club_shortcode ) || '' === $club_shortcode ) && is_object( $detail ) ) {
+            if ( isset( $detail->club ) && is_object( $detail->club ) && ! empty( $detail->club->shortcode ) && is_string( $detail->club->shortcode ) ) {
+                $club_shortcode = $detail->club->shortcode;
+            } elseif ( isset( $detail->club_shortcode ) && is_string( $detail->club_shortcode ) ) {
+                $club_shortcode = $detail->club_shortcode;
             }
         }
 
@@ -128,6 +166,14 @@ final readonly class Favourite_Presenter {
         return '';
     }
 
+    /**
+     * Resolves the tournament URL for a favourite using competition and event detail data.
+     *
+     * @param object      $favourite Favourite object used as a fallback source for the event name.
+     * @param object|null $detail Detail object containing competition and event information.
+     *
+     * @return string Tournament URL when competition and event names are available, or an empty string otherwise.
+     */
     private function resolve_competition_url( object $favourite, ?object $detail ): string {
         if ( ! is_object( $detail ) ) {
             return '';

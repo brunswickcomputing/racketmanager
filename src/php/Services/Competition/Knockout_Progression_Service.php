@@ -335,7 +335,7 @@ class Knockout_Progression_Service
             $fixture->get_leg() ?: null
         );
 
-        // Sorting by ID ensures consistency, but for tournaments, 
+        // Sorting by ID ensures consistency, but for tournaments,
         // we assume creation order matches logical bracket order.
         usort($current_round_fixtures, fn($a, $b) => $a->get_id() <=> $b->get_id());
 

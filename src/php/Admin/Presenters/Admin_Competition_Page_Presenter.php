@@ -19,7 +19,24 @@ use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Season_Service;
 
+/**
+ * Assembles view models for administrative competition pages.
+ *
+ * Coordinates competition, club, season, and finance services to prepare normalised data for
+ * configuration and season management screens, including submitted form values, validation
+ * errors, related clubs, events, season details, and fee information.
+ */
 final readonly class Admin_Competition_Page_Presenter {
+    /**
+     * Initialises the service with required dependencies.
+     *
+     * @param Competition_Service $competition_service Competition service dependency.
+     * @param Club_Service        $club_service Club service dependency.
+     * @param Season_Service      $season_service Season service dependency.
+     * @param Finance_Service     $finance_service Finance service dependency.
+     *
+     * @return void
+     */
     public function __construct(
         private Competition_Service $competition_service,
         private Club_Service $club_service,
@@ -28,6 +45,16 @@ final readonly class Admin_Competition_Page_Presenter {
     ) {
     }
 
+    /**
+     * Builds the tournament competition configuration page view model.
+     *
+     * @param Competition     $competition Competition whose settings are used to build the configuration.
+     * @param Tournament|null $tournament Tournament associated with the competition, or null when unavailable.
+     * @param string          $tab Active configuration tab identifier.
+     * @param array           $flash_data Flash data containing submitted form data and validation errors.
+     *
+     * @return Tournament_Competition_Config_Page_View_Model View model containing configuration data, options, related clubs, events, and errors.
+     */
     public function config( Competition $competition, ?Tournament $tournament, string $tab, array $flash_data ): Tournament_Competition_Config_Page_View_Model {
         $config            = (object) $competition->get_settings();
         $config->type      = $competition->get_type();
@@ -41,8 +68,14 @@ final readonly class Admin_Competition_Page_Presenter {
             }
             if ( ! isset( $config->start_time ) || ! is_array( $config->start_time ) ) {
                 $config->start_time = array(
-                    'weekday' => array( 'min' => null, 'max' => null ),
-                    'weekend' => array( 'min' => null, 'max' => null ),
+                    'weekday' => array(
+                        'min' => null,
+                        'max' => null,
+                    ),
+                    'weekend' => array(
+                        'min' => null,
+                        'max' => null,
+                    ),
                 );
             }
             foreach ( array( 'weekday', 'weekend' ) as $period ) {
@@ -54,17 +87,47 @@ final readonly class Admin_Competition_Page_Presenter {
                 }
             }
             if ( isset( $form_data['default_match_start_time'] ) ) {
-                $time = explode( ':', strval( $form_data['default_match_start_time'] ) );
+                $time                             = explode( ':', strval( $form_data['default_match_start_time'] ) );
                 $config->default_match_start_time = 2 === count( $time )
-                    ? array( 'hour' => intval( $time[0] ), 'hours' => intval( $time[0] ), 'minutes' => intval( $time[1] ) )
+                    ? array(
+                        'hour'    => intval( $time[0] ),
+                        'hours'   => intval( $time[0] ),
+                        'minutes' => intval( $time[1] ),
+                    )
                     : $form_data['default_match_start_time'];
             }
             $fields = array(
-                'sport', 'mode', 'entry_type', 'age_group', 'competition_code', 'grade', 'max_teams', 'num_entries',
-                'teams_per_club', 'teams_prom_relg', 'lowest_promotion', 'team_ranking', 'point_rule', 'scoring',
-                'num_sets', 'num_rubbers', 'reverse_rubbers', 'fixed_match_dates', 'home_away', 'round_length',
-                'home_away_diff', 'filler_weeks', 'match_day_restriction', 'match_day_weekends', 'match_days_allowed',
-                'point_format', 'point_2_format', 'num_matches_per_page', 'rules', 'standings', 'num_courts_available',
+                'sport',
+                'mode',
+                'entry_type',
+                'age_group',
+                'competition_code',
+                'grade',
+                'max_teams',
+                'num_entries',
+                'teams_per_club',
+                'teams_prom_relg',
+                'lowest_promotion',
+                'team_ranking',
+                'point_rule',
+                'scoring',
+                'num_sets',
+                'num_rubbers',
+                'reverse_rubbers',
+                'fixed_match_dates',
+                'home_away',
+                'round_length',
+                'home_away_diff',
+                'filler_weeks',
+                'match_day_restriction',
+                'match_day_weekends',
+                'match_days_allowed',
+                'point_format',
+                'point_2_format',
+                'num_matches_per_page',
+                'rules',
+                'standings',
+                'num_courts_available',
             );
             foreach ( $fields as $key ) {
                 if ( array_key_exists( $key, $form_data ) ) {
@@ -97,14 +160,26 @@ final readonly class Admin_Competition_Page_Presenter {
         );
     }
 
+    /**
+     * Builds the view model for creating or editing a competition season.
+     *
+     * @param Competition $competition Competition that owns the season.
+     * @param string|null $season Season name being edited or used as the initial season value.
+     * @param bool        $edit_mode Whether the page is editing an existing season.
+     * @param array       $flash_data Flash data containing submitted form values and validation errors.
+     *
+     * @return Season_Modify_Page_View_Model View model populated with competition, season, club, form, fee, and error data.
+     */
     public function season( Competition $competition, ?string $season, bool $edit_mode, array $flash_data ): Season_Modify_Page_View_Model {
         $current_season = null;
         if ( $edit_mode ) {
-            $current_season = (object) $competition->get_season_by_name( $season );
-            $charges = $this->finance_service->get_charges_by_criteria( array(
-                'competition' => $competition->get_id(),
-                'season' => $season,
-            ) );
+            $current_season  = (object) $competition->get_season_by_name( $season );
+            $charges         = $this->finance_service->get_charges_by_criteria(
+                array(
+                    'competition' => $competition->get_id(),
+                    'season'      => $season,
+                )
+            );
             $fee_competition = 0;
             $fee_event       = 0;
             $fee_status      = null;
@@ -122,7 +197,7 @@ final readonly class Admin_Competition_Page_Presenter {
                     foreach ( $charges as $charge ) {
                         $fee_competition += $charge->fee_competition;
                         $fee_event       += $charge->fee_event;
-                        $fee_status      = $charge->status;
+                        $fee_status       = $charge->status;
                     }
                     break;
             }
@@ -137,21 +212,33 @@ final readonly class Admin_Competition_Page_Presenter {
             $current_season ??= (object) array( 'name' => $season ?? ( $form['season'] ?? null ) );
             foreach ( array( 'venue', 'max_teams', 'teams_per_club', 'teams_prom_relg', 'lowest_promotion', 'num_match_days', 'round_length', 'home_away_diff', 'filler_weeks', 'feeLeadTime' ) as $key ) {
                 if ( isset( $form[ $key ] ) ) {
-                    $target = 'feeLeadTime' === $key ? 'fee_lead_time' : $key;
+                    $target                  = 'feeLeadTime' === $key ? 'fee_lead_time' : $key;
                     $current_season->$target = intval( $form[ $key ] );
                 }
             }
-            foreach ( array( 'dateStart' => 'date_start', 'dateEnd' => 'date_end', 'dateOpen' => 'date_open', 'dateClose' => 'date_closing', 'grade' => 'grade' ) as $key => $target ) {
+            foreach ( array(
+                'dateStart' => 'date_start',
+                'dateEnd'   => 'date_end',
+                'dateOpen'  => 'date_open',
+                'dateClose' => 'date_closing',
+                'grade'     => 'grade',
+            ) as $key => $target ) {
                 if ( isset( $form[ $key ] ) ) {
                     $current_season->$target = sanitize_text_field( wp_unslash( strval( $form[ $key ] ) ) );
                 }
             }
-            foreach ( array( 'homeAway' => 'home_away', 'fixedMatchDates' => 'fixed_match_dates' ) as $key => $target ) {
+            foreach ( array(
+                'homeAway'        => 'home_away',
+                'fixedMatchDates' => 'fixed_match_dates',
+            ) as $key => $target ) {
                 if ( isset( $form[ $key ] ) ) {
                     $current_season->$target = 'true' === $form[ $key ];
                 }
             }
-            foreach ( array( 'feeClub' => 'fee_competition', 'feeTeam' => 'fee_event' ) as $key => $target ) {
+            foreach ( array(
+                'feeClub' => 'fee_competition',
+                'feeTeam' => 'fee_event',
+            ) as $key => $target ) {
                 if ( isset( $form[ $key ] ) ) {
                     $current_season->$target = floatval( $form[ $key ] );
                 }
@@ -170,6 +257,13 @@ final readonly class Admin_Competition_Page_Presenter {
         );
     }
 
+    /**
+     * Creates an error bag from flash data when available.
+     *
+     * @param array $flash_data Flash data that may contain an errors array.
+     *
+     * @return Error_Bag Error bag populated from flash data or an empty error bag.
+     */
     private function errors( array $flash_data ): Error_Bag {
         return is_array( $flash_data['errors'] ?? null ) ? new Error_Bag( $flash_data['errors'] ) : new Error_Bag();
     }

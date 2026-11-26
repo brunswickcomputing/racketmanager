@@ -7,39 +7,45 @@ namespace Racketmanager\Domain\DTO\Season;
  * Data Transfer Object for hydrating a Season entity from database rows or input data.
  */
 readonly class Season_Hydration_DTO {
-	/**
-	 * @param int|null $id
-	 * @param string $name
-	 */
-	public function __construct(
-		public ?int $id = null,
-		public string $name = ''
-	) {
-	}
+    /**
+     * Initialises a new instance.
+     *
+     * @param int|null $id Optional identifier.
+     * @param string   $name Name value.
+     *
+     * @return void
+     */
+    public function __construct(
+        public ?int $id = null,
+        public string $name = ''
+    ) {
+    }
 
-	/**
-	 * Create from a generic object (e.g., database row).
-	 *
-	 * @param object $data
-	 * @return self
-	 */
-	public static function from_object( object $data ): self {
-		$id   = isset( $data->id ) ? (int) $data->id : null;
-		$name = (string) ( $data->name ?? '' );
+    /**
+     * Creates an instance from an object representation.
+     *
+     * @param object $data Source object containing optional identifier and name values.
+     *
+     * @return self New instance populated from the provided object.
+     */
+    public static function from_object( object $data ): self {
+        $id   = isset( $data->id ) ? (int) $data->id : null;
+        $name = (string) ( $data->name ?? '' );
 
-		return new self(
-			id: $id,
-			name: $name
-		);
-	}
+        return new self(
+            id: $id,
+            name: $name
+        );
+    }
 
-	/**
-	 * Create from an array.
-	 *
-	 * @param array $data
-	 * @return self
-	 */
-	public static function from_array( array $data ): self {
-		return self::from_object( (object) $data );
-	}
+    /**
+     * Creates an instance from an array of data.
+     *
+     * @param array $data Source data used to create the instance.
+     *
+     * @return self Created instance.
+     */
+    public static function from_array( array $data ): self {
+        return self::from_object( (object) $data );
+    }
 }

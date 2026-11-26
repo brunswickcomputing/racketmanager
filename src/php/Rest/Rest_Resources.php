@@ -20,6 +20,7 @@ use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event as Competition_Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Factory;
+use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
@@ -440,8 +441,12 @@ class Rest_Resources extends WP_REST_Controller {
                     );
                     $i     = 0;
                     foreach ( $teams as $team ) {
-                        $team->league = $league_item->title;
-                        $teams[ $i ]  = $team;
+                        if ( $team instanceof League_Team ) {
+                            $team->set_league( $league_item->title );
+                        } else {
+                            $team->league = $league_item->title;
+                        }
+                        $teams[ $i ] = $team;
                         ++$i;
                     }
                     if ( $teams ) {

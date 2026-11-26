@@ -61,12 +61,14 @@ final class Standings_Service_Resolve_League_Team_Test extends TestCase {
     }
 
     private function league_team( int $id ): League_Team {
-        $team            = new League_Team();
-        $team->id        = $id;
-        $team->league_id = 12;
-        $team->season    = '2026';
-        $team->custom    = [];
-        return $team;
+        return League_Team::from_array(
+            [
+                'id'        => $id,
+                'league_id' => 12,
+                'season'    => '2026',
+                'custom'    => [],
+            ]
+        );
     }
 
     private function league_query_service(): League_Query_Service {

@@ -43,11 +43,14 @@ final class Standings_Service_Encapsulation_Regression_Test extends TestCase {
         $league->set_point_rule( 'three' );
         $league->set_num_rubbers( 0 );
 
-        $team            = new League_Team();
-        $team->id        = 10;
-        $team->league_id = 12;
-        $team->season    = '2026';
-        $team->custom    = array();
+        $team = League_Team::from_array(
+            array(
+                'id'        => 10,
+                'league_id' => 12,
+                'season'    => '2026',
+                'custom'    => array(),
+            )
+        );
 
         $league_query_service = $this->createStub( League_Query_Service::class );
         $league_query_service->method( 'get_matches' )->willReturn( array() );

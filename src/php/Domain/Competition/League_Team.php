@@ -27,40 +27,40 @@ class League_Team {
      *
      * @var int
      */
-    public int $done_matches = 0;
+    public private(set) int $done_matches = 0;
 
     /**
      * Number of won matches
      *
      * @var int
      */
-    public int $won_matches = 0;
+    public private(set) int $won_matches = 0;
 
     /**
      * Number of draw matches
      *
      * @var int
      */
-    public int $draw_matches = 0;
+    public private(set) int $draw_matches = 0;
 
     /**
      * Number of lost matches
      *
      * @var int
      */
-    public int $lost_matches = 0;
+    public private(set) int $lost_matches = 0;
 
     /**
      * Percentage of won matches
      *
      * @var int|float
      */
-    public int|float $win_percent = 0;
+    public private(set) int|float $win_percent = 0;
 
     /**
      * Retrieve team instance
      *
-     * @param int $team_id
+     * @var int|null $team_id
      */
     private ?int $team_id = null;
     /**
@@ -74,361 +74,361 @@ class League_Team {
      *
      * @var boolean
      */
-    public bool $home;
+    public private(set) bool $home = false;
     /**
      * Team id variable
      *
      * @var ?int
      */
-    public ?int $id = null;
+    public private(set) ?int $id = null;
     /**
      * Table id variable
      *
-     * @var int
+     * @var int|null
      */
-    public int $table_id;
+    public private(set) ?int $table_id = null;
     /**
      * Title variable
      *
      * @var ?string
      */
-    public ?string $title = null;
+    public private(set) ?string $title = null;
     /**
      * Stadium variable
      *
      * @var string
      */
-    public string $stadium;
+    public private(set) string $stadium = '';
     /**
      * Profile variable
      *
      * @var Team_Profile
      */
-    private Team_Profile $profile; // Type-hinted to the Enum
+    private Team_Profile $profile; // Type-hinted to the Enum.
     /**
      * Status variable
      *
      * @var ?string
      */
-    public ?string $status = null;
+    public private(set) ?string $status = null;
     /**
      * Status text variable
      *
      * @var string
      */
-    public string $status_text;
+    public private(set) string $status_text = '';
     /**
      * Status icon variable
      *
      * @var string
      */
-    public string $status_icon;
+    public private(set) string $status_icon = '';
     /**
      * Club variable
      *
-     * @var int
+     * @var ?int
      */
-    public int $club_id;
+    public private(set) ?int $club_id = null;
     /**
      * Club object variable
      *
      * @var Club|null
      */
-    public Club|null $club;
+    public private(set) Club|null $club = null;
     /**
      * Positive points variable
      *
      * @var float
      */
-    public float $points_plus = 0;
+    public private(set) float $points_plus = 0.0;
     /**
      * Additional points variable
      *
-     * @var int
+     * @var float
      */
-    public float $add_points = 0.0;
+    public private(set) float $add_points = 0.0;
     /**
      * Points variable
      *
      * @var array
      */
-    public array $points;
+    public private(set) array $points = array();
     /**
      * Sets won variable
      *
      * @var int
      */
-    public int $sets_won = 0;
+    public private(set) int $sets_won = 0;
     /**
      * Sets lost variable
      *
      * @var int
      */
-    public int $sets_allowed = 0;
+    public private(set) int $sets_allowed = 0;
     /**
      * Games won variable
      *
      * @var int
      */
-    public int $games_won = 0;
+    public private(set) int $games_won = 0;
     /**
      * Games lost variable
      *
      * @var int
      */
-    public int $games_allowed = 0;
+    public private(set) int $games_allowed = 0;
     /**
      * Points minus variable
      *
      * @var float
      */
-    public float $points_minus = 0;
+    public private(set) float $points_minus = 0.0;
     /**
      * Secondary points variable
      *
      * @var array
      */
-    public array $points_2 = array();
+    public private(set) array $points_2 = array();
     /**
      * Secondary points plus variable
      *
      * @var int
      */
-    public int $points_2_plus = 0;
+    public private(set) int $points_2_plus = 0;
     /**
      * Secondary points minus variable
      *
      * @var int
      */
-    public int $points_2_minus = 0;
+    public private(set) int $points_2_minus = 0;
     /**
      * Points difference variable
      *
      * @var string|int
      */
-    public string|int $diff = 0;
+    public private(set) string|int $diff = 0;
     /**
      * Roster variable
      *
      * @var array
      */
-    public mixed $roster = null;
+    public private(set) mixed $roster = null;
     /**
      * Player variable
      *
      * @var int
      */
-    public int $player;
+    public private(set) int $player = 0;
     /**
      * Player id variable
      *
      * @var int
      */
-    public int $player_id;
+    public private(set) int $player_id = 0;
     /**
      * League id variable
      *
      * @var int
      */
-    public int $league_id;
+    public private(set) int $league_id = 0;
     /**
      * Next match variable
      *
-     * @var object
+     * @var ?object
      */
-    public object $next_match;
+    public private(set) ?object $next_match = null;
     /**
      * Previous match variable
      *
-     * @var object
+     * @var ?object
      */
-    public object $prev_match;
+    public private(set) ?object $prev_match = null;
     /**
      * Season variable
      *
      * @var string
      */
-    public string $season;
+    public private(set) string $season = '';
     /**
      * Custom variable
      *
      * @var string|array|null
      */
-    public string|array|null $custom = null;
+    public private(set) string|array|null $custom = null;
     /**
      * Display class variable
      *
      * @var string
      */
-    public string $class;
+    public private(set) string $class = '';
     /**
      * Captain (user id) variable - persisted in the league teams `captain` column.
      *
      * @var ?int
      */
-    public ?int $captain = null;
+    public private(set) ?int $captain = null;
     /**
      * Captain display name variable (populated when team details are loaded)
      *
      * @var ?string
      */
-    public ?string $captain_name = null;
+    public private(set) ?string $captain_name = null;
     /**
      * Formatted points variable
      *
      * @var array
      */
-    public array $points_formatted;
+    public private(set) array $points_formatted = array();
     /**
      * Captain id variable
      *
      * @var ?int
      */
-    public ?int $captain_id = null;
+    public private(set) ?int $captain_id = null;
     /**
      * Contact number variable
      *
      * @var ?string
      */
-    public ?string $contactno = null;
+    public private(set) ?string $contactno = null;
     /**
      * Content email variable
      *
      * @var ?string
      */
-    public ?string $contactemail = null;
+    public private(set) ?string $contactemail = null;
     /**
      * Match day variable
      *
      * @var ?string
      */
-    public ?string $match_day = null;
+    public private(set) ?string $match_day = null;
     /**
      * Match time variable
      *
      * @var ?string
      */
-    public ?string $match_time = null;
+    public private(set) ?string $match_time = null;
     /**
      * Old rank
      *
      * @var ?int
      */
-    public ?int $old_rank = null;
+    public private(set) ?int $old_rank = null;
     /**
      * Team ref variable
      *
      * @var string
      */
-    public string $team_ref;
+    public private(set) string $team_ref = '';
     /**
      * Team type variable
      *
      * @var string|null
      */
-    public ?string $team_type = null;
+    public private(set) ?string $team_type = null;
     /**
      * Is withdrawn variable
      *
      * @var boolean
      */
-    public bool $is_withdrawn;
+    public private(set) bool $is_withdrawn = false;
     /**
      * Players variable
      *
      * @var array
      */
-    public array $players = array();
+    public private(set) array $players = array();
     /**
      * Group variable
      *
      * @var string|null
      */
-    public ?string $group = null;
+    public private(set) ?string $group = null;
     /**
      * Rank variable
      *
      * @var int|null
      */
-    public ?int $rank = null;
+    public private(set) ?int $rank = null;
     /**
      * Rating variable
      *
      * @var float|null
      */
-    public ?float $rating = null;
+    public private(set) ?float $rating = null;
     /**
      * Straight set variable
      *
      * @var array
      */
-    public array $straight_set;
+    public private(set) array $straight_set = array();
     /**
      * Split set variable
      *
      * @var array
      */
-    public array $split_set;
+    public private(set) array $split_set = array();
     /**
      * Sets shared variable
      *
      * @var string
      */
-    public string $sets_shared;
+    public private(set) string $sets_shared = '';
     /**
      * No team variable
      *
      * @var string
      */
-    public string $no_team;
+    public private(set) string $no_team = '';
     /**
      * No player variable
      *
      * @var string
      */
-    public string $no_player;
+    public private(set) string $no_player = '';
     /**
      * Rubbers won variable
      *
      * @var int
      */
-    public int $rubbers_won;
+    public private(set) int $rubbers_won = 0;
     /**
      * Rubbers shared variable
      *
      * @var int
      */
-    public int $rubbers_shared;
+    public private(set) int $rubbers_shared = 0;
     /**
      * Matches won variable
      *
      * @var int
      */
-    public int $matches_won;
+    public private(set) int $matches_won = 0;
     /**
      * Matches shared variable
      *
      * @var int
      */
-    public int $matches_shared;
+    public private(set) int $matches_shared = 0;
     /**
      * Info variable
      *
      * @var object|null
      */
-    public ?object $info = null;
+    public private(set) ?object $info = null;
     /**
      * League variable
      *
      * @var string
      */
-    public string $league;
+    public private(set) string $league = '';
     /**
      * League status variable
      *
      * @var ?string
      */
-    public ?string $league_status = null;
+    public private(set) ?string $league_status = null;
     /**
      * Constructor
      *
@@ -498,19 +498,21 @@ class League_Team {
     }
 
     /**
-     * Create from a generic object (e.g. database row) via League_Team_Factory.
+     * Create an instance from an object row.
      *
-     * @param object $row
-     * @return self
+     * @param object $row Source object containing team data.
+     *
+     * @return self Created instance.
      */
     public static function from_object( object $row ): self {
         return League_Team_Factory::from_object( $row );
     }
 
     /**
-     * Create from an array via League_Team_Factory.
+     * Create an instance from array data.
      *
-     * @param array $data
+     * @param array $data Data used to create the instance.
+     *
      * @return self
      */
     public static function from_array( array $data ): self {
@@ -736,27 +738,122 @@ class League_Team {
     /**
      * Set id
      *
-     * @param int|string $id Identifier
+     * @param int|null $id Identifier.
      *
      * @return void
      */
-    public function set_id( $id ): void {
+    public function set_id( ?int $id ): void {
         $this->id = $id;
     }
-    public function set_captain( int $captain ): void {
+    /**
+     * Set captain user id
+     *
+     * @param int|null $captain Captain user id.
+     *
+     * @return void
+     */
+    public function set_captain( ?int $captain ): void {
         $this->captain = $captain;
     }
-    public function set_match_day( string $match_day ): void {
+
+    /**
+     * Set captain id
+     *
+     * @param int|null $captain_id Captain id.
+     *
+     * @return void
+     */
+    public function set_captain_id( ?int $captain_id ): void {
+        $this->captain_id = $captain_id;
+    }
+
+    /**
+     * Set captain name
+     *
+     * @param string|null $captain_name Captain display name.
+     *
+     * @return void
+     */
+    public function set_captain_name( ?string $captain_name ): void {
+        $this->captain_name = $captain_name;
+    }
+
+    /**
+     * Set contact number
+     *
+     * @param string|null $contactno Contact number.
+     *
+     * @return void
+     */
+    public function set_contactno( ?string $contactno ): void {
+        $this->contactno = $contactno;
+    }
+
+    /**
+     * Set contact email
+     *
+     * @param string|null $contactemail Contact email.
+     *
+     * @return void
+     */
+    public function set_contactemail( ?string $contactemail ): void {
+        $this->contactemail = $contactemail;
+    }
+
+    /**
+     * Set match day
+     *
+     * @param string|null $match_day Match day.
+     *
+     * @return void
+     */
+    public function set_match_day( ?string $match_day ): void {
         $this->match_day = $match_day;
     }
-    public function set_match_time( string $match_time ): void {
+
+    /**
+     * Set match time
+     *
+     * @param string|null $match_time Match time.
+     *
+     * @return void
+     */
+    public function set_match_time( ?string $match_time ): void {
         $this->match_time = $match_time;
     }
+
+    /**
+     * Set league status
+     *
+     * @param string|null $league_status League status.
+     *
+     * @return void
+     */
+    public function set_league_status( ?string $league_status ): void {
+        $this->league_status = $league_status;
+    }
+
+    /**
+     * Set status
+     *
+     * @param string|null $status Status.
+     *
+     * @return void
+     */
     public function set_status( ?string $status = null ): void {
         $this->status = $status;
     }
 
-    public function add_details( int $captain, string $match_day, string $match_time ): void {
+    /**
+     * Add team details
+     *
+     * @param int|null    $captain Captain id.
+     * @param string|null $match_day Match day.
+     * @param string|null $match_time Match time.
+     *
+     * @return void
+     */
+    public function add_details( ?int $captain, ?string $match_day, ?string $match_time ): void {
         $this->captain    = $captain;
         $this->match_day  = $match_day;
         $this->match_time = $match_time;
@@ -788,15 +885,15 @@ class League_Team {
     /**
      * Set rating
      *
-     * @param float $rating rating.
+     * @param float|null $rating rating.
      */
-    public function set_rating( float $rating ): void {
+    public function set_rating( ?float $rating ): void {
         $this->rating = $rating;
     }
     /**
      * Update constitution settings
      *
-     * @param int $league_id league id.
+     * @param int    $league_id league id.
      * @param string $status status.
      */
     public function update_constitution( int $league_id, string $status ): void {
@@ -814,9 +911,9 @@ class League_Team {
     /**
      * Update Table
      *
-     * @param int $league_id league id.
-     * @param int $rank rank.
-     * @param string $status status.
+     * @param int        $league_id league id.
+     * @param int        $rank rank.
+     * @param string     $status status.
      * @param string|int $profile profile.
      */
     public function set_constitution_rank( int $league_id, int $rank, string $status, string|int $profile ): void {
@@ -827,40 +924,370 @@ class League_Team {
     }
 
     /**
-     * Set team details for given player
+     * Get table id
      *
-     * @param int|string $player_id Player identifier
-     *
-     * @return void
+     * @return int|null Table id.
      */
-    public function set_team_details( $player_id ) {
-
-    }
-
     public function get_table_id(): ?int {
         return $this->table_id ?? null;
     }
 
-    public function set_table_id( int $table_id ): void {
+    /**
+     * Set table id
+     *
+     * @param int|null $table_id Table id.
+     *
+     * @return void
+     */
+    public function set_table_id( ?int $table_id ): void {
         $this->table_id = $table_id;
     }
 
+    /**
+     * Set team id
+     *
+     * @param int|null $team_id Team id.
+     *
+     * @return void
+     */
     public function set_team_id( ?int $team_id ): void {
         $this->team_id = $team_id;
     }
+
+    /**
+     * Set season
+     *
+     * @param int|null $season Season year.
+     *
+     * @return void
+     */
     public function set_season( ?int $season ): void {
         $this->season = (string) $season;
     }
-    public function set_league_id( ?int $league_id ): void {
+
+    /**
+     * Set league id
+     *
+     * @param int $league_id League id.
+     *
+     * @return void
+     */
+    public function set_league_id( int $league_id ): void {
         $this->league_id = $league_id;
     }
 
+    /**
+     * Set entered state profile
+     *
+     * @param Team_Profile $entered_state Entered state profile.
+     *
+     * @return void
+     */
     public function set_entered_state( Team_Profile $entered_state ): void {
         $this->profile = $entered_state;
     }
 
+    /**
+     * Set rank
+     *
+     * @param int|null $rank Rank.
+     *
+     * @return void
+     */
     public function set_rank( ?int $rank ): void {
         $this->rank = $rank;
     }
 
+    /**
+     * Set club
+     *
+     * @param Club|null $club Club entity.
+     *
+     * @return void
+     */
+    public function set_club( ?Club $club ): void {
+        $this->club = $club;
+    }
+
+    /**
+     * Set club id
+     *
+     * @param int|null $club_id Club id.
+     *
+     * @return void
+     */
+    public function set_club_id( ?int $club_id ): void {
+        $this->club_id = $club_id;
+    }
+
+    /**
+     * Set players
+     *
+     * @param array $players Players array.
+     *
+     * @return void
+     */
+    public function set_players( array $players ): void {
+        $this->players = $players;
+    }
+
+    /**
+     * Set title
+     *
+     * @param string $title Title.
+     *
+     * @return void
+     */
+    public function set_title( string $title ): void {
+        $this->title = $title;
+    }
+
+    /**
+     * Set display class
+     *
+     * @param string $display_class Display class.
+     *
+     * @return void
+     */
+    public function set_class( string $display_class ): void {
+        $this->class = $display_class;
+    }
+
+    /**
+     * Set formatted points
+     *
+     * @param array $points_formatted Formatted points.
+     *
+     * @return void
+     */
+    public function set_points_formatted( array $points_formatted ): void {
+        $this->points_formatted = $points_formatted;
+    }
+
+    /**
+     * Set is withdrawn
+     *
+     * @param bool $is_withdrawn Withdrawn status.
+     *
+     * @return void
+     */
+    public function set_withdrawn( bool $is_withdrawn ): void {
+        $this->is_withdrawn = $is_withdrawn;
+    }
+
+    /**
+     * Set match counts
+     *
+     * @param int $done Done matches.
+     * @param int $won Won matches.
+     * @param int $draw Draw matches.
+     * @param int $lost Lost matches.
+     *
+     * @return void
+     */
+    public function set_match_counts( int $done, int $won, int $draw, int $lost ): void {
+        $this->done_matches = $done;
+        $this->won_matches  = $won;
+        $this->draw_matches = $draw;
+        $this->lost_matches = $lost;
+        $this->win_percent();
+    }
+
+    /**
+     * Update standings statistics
+     *
+     * @param array            $points Points breakdown.
+     * @param int|float|string $diff Points difference.
+     * @param array            $points_2 Secondary points breakdown.
+     * @param array|null       $custom Custom stats.
+     *
+     * @return void
+     */
+    public function update_standings_stats( array $points, int|float|string $diff, array $points_2, ?array $custom = null ): void {
+        $this->points   = $points;
+        $this->diff     = is_float( $diff ) ? (int) $diff : $diff;
+        $this->points_2 = $points_2;
+        $this->custom   = $custom;
+    }
+
+    /**
+     * Set points
+     *
+     * @param array $points Points breakdown.
+     *
+     * @return void
+     */
+    public function set_points( array $points ): void {
+        $this->points = $points;
+    }
+
+    /**
+     * Set points plus
+     *
+     * @param int|float $points_plus Points plus.
+     *
+     * @return void
+     */
+    public function set_points_plus( int|float $points_plus ): void {
+        $this->points_plus = (float) $points_plus;
+    }
+
+    /**
+     * Set points minus
+     *
+     * @param int|float $points_minus Points minus.
+     *
+     * @return void
+     */
+    public function set_points_minus( int|float $points_minus ): void {
+        $this->points_minus = (float) $points_minus;
+    }
+
+    /**
+     * Set points diff
+     *
+     * @param int|float|string $diff Difference.
+     *
+     * @return void
+     */
+    public function set_diff( int|float|string $diff ): void {
+        $this->diff = is_float( $diff ) ? (int) $diff : $diff;
+    }
+
+    /**
+     * Set points 2 plus
+     *
+     * @param int $points_plus Secondary points plus.
+     *
+     * @return void
+     */
+    public function set_points_2_plus( int $points_plus ): void {
+        $this->points_2_plus = $points_plus;
+    }
+
+    /**
+     * Set points 2 minus
+     *
+     * @param int $points_minus Secondary points minus.
+     *
+     * @return void
+     */
+    public function set_points_2_minus( int $points_minus ): void {
+        $this->points_2_minus = $points_minus;
+    }
+
+    /**
+     * Set custom data
+     *
+     * @param string|array|null $custom Custom metadata.
+     *
+     * @return void
+     */
+    public function set_custom( string|array|null $custom ): void {
+        $this->custom = $custom;
+    }
+
+    /**
+     * Set previous/old rank
+     *
+     * @param int|null $old_rank Previous rank.
+     *
+     * @return void
+     */
+    public function set_old_rank( ?int $old_rank ): void {
+        $this->old_rank = $old_rank;
+    }
+
+    /**
+     * Record previous rank
+     *
+     * @param int|null $old_rank Previous rank.
+     *
+     * @return void
+     */
+    public function record_previous_rank( ?int $old_rank = null ): void {
+        $this->old_rank = $old_rank ?? $this->rank;
+    }
+
+    /**
+     * Set league title / display name
+     *
+     * @param string $league League title.
+     *
+     * @return void
+     */
+    public function set_league( string $league ): void {
+        $this->league = $league;
+    }
+
+    /**
+     * Set info details object
+     *
+     * @param object|null $info Team details object.
+     *
+     * @return void
+     */
+    public function set_info( ?object $info ): void {
+        $this->info = $info;
+    }
+
+    /**
+     * Set roster
+     *
+     * @param mixed $roster Roster data.
+     *
+     * @return void
+     */
+    public function set_roster( mixed $roster ): void {
+        $this->roster = $roster;
+    }
+
+    /**
+     * Apply standings calculation metrics to the team.
+     *
+     * @param array $metrics Associative array of standings metrics.
+     *
+     * @return void
+     */
+    public function apply_standings_metrics( array $metrics ): void {
+        if ( array_key_exists( 'sets_won', $metrics ) ) {
+            $this->sets_won = (int) $metrics['sets_won'];
+        }
+        if ( array_key_exists( 'sets_allowed', $metrics ) ) {
+            $this->sets_allowed = (int) $metrics['sets_allowed'];
+        }
+        if ( array_key_exists( 'sets_shared', $metrics ) ) {
+            $this->sets_shared = (string) $metrics['sets_shared'];
+        }
+        if ( array_key_exists( 'games_won', $metrics ) ) {
+            $this->games_won = (int) $metrics['games_won'];
+        }
+        if ( array_key_exists( 'games_allowed', $metrics ) ) {
+            $this->games_allowed = (int) $metrics['games_allowed'];
+        }
+        if ( array_key_exists( 'straight_set', $metrics ) ) {
+            $this->straight_set = (array) $metrics['straight_set'];
+        }
+        if ( array_key_exists( 'split_set', $metrics ) ) {
+            $this->split_set = (array) $metrics['split_set'];
+        }
+        if ( array_key_exists( 'no_team', $metrics ) ) {
+            $this->no_team = (string) $metrics['no_team'];
+        }
+        if ( array_key_exists( 'no_player', $metrics ) ) {
+            $this->no_player = (string) $metrics['no_player'];
+        }
+        if ( array_key_exists( 'rubbers_won', $metrics ) ) {
+            $this->rubbers_won = (int) $metrics['rubbers_won'];
+        }
+        if ( array_key_exists( 'rubbers_shared', $metrics ) ) {
+            $this->rubbers_shared = (int) $metrics['rubbers_shared'];
+        }
+        if ( array_key_exists( 'matches_won', $metrics ) ) {
+            $this->matches_won = (int) $metrics['matches_won'];
+        }
+        if ( array_key_exists( 'matches_shared', $metrics ) ) {
+            $this->matches_shared = (int) $metrics['matches_shared'];
+        }
+    }
 }

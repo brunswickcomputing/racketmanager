@@ -467,7 +467,7 @@ final class Layer_Rules {
                 self::DOMAIN_ENTITY_FILES,
                 Rule_Kind::FORBIDDEN_PUBLIC_MUTABLE_PROPERTY,
                 [],
-                Rule_Mode::RATCHET
+                Rule_Mode::STRICT
             ),
         ];
     }

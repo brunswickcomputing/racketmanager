@@ -146,15 +146,18 @@ class Standings_Service implements Standings_Service_Interface {
                 'compare'     => 'not',
             );
 
-            // initialize team standings data.
-            $team->done_matches   = 0;
-            $team->won_matches    = 0;
-            $team->draw_matches   = 0;
-            $team->lost_matches   = 0;
-            $team->points_plus    = 0;
-            $team->points_minus   = 0;
-            $team->points_2_plus  = 0;
-            $team->points_2_minus = 0;
+            // initialise team standing data.
+            $team->set_match_counts( 0, 0, 0, 0 );
+            $team->set_points_plus( 0 );
+            $team->set_points_minus( 0 );
+            $team->set_points_2_plus( 0 );
+            $team->set_points_2_minus( 0 );
+            $team->set_diff( 0 );
+
+            $done_matches = 0;
+            $won_matches  = 0;
+            $draw_matches = 0;
+            $lost_matches = 0;
 
             // get matches.
             $matches = $this->league_query()->get_matches( $league, $match_args );
@@ -168,30 +171,28 @@ class Standings_Service implements Standings_Service_Interface {
             }
             foreach ( $matches as $match ) {
                 if ( '' !== $match->home_points && '' !== $match->away_points ) {
-                    $team->done_matches += 1;
+                    ++$done_matches;
                 }
                 if ( $match->winner_id === $team->id ) {
-                    $team->won_matches += 1;
+                    ++$won_matches;
                 }
                 if ( $match->loser_id === $team->id ) {
-                    $team->lost_matches += 1;
+                    ++$lost_matches;
                 }
                 if ( -1 === $match->winner_id && -1 === $match->loser_id ) {
-                    $team->draw_matches += 1;
+                    ++$draw_matches;
                 }
             }
-            $team->points         = $this->calculate_points( $league, $team, $matches );
-            $team->points_plus    = $team->points['plus'];
-            $team->points_minus   = $team->points['minus'];
-            $team->points_2_plus  = 0;
-            $team->points_2_minus = 0;
-            $team->diff           = $team->points_2_plus - $team->points_2_minus;
-            $team->custom['diff'] = $team->diff;
-            $team->win_percent();
-            $custom = $this->get_standings_data( $league, (int) $team->id, $team->custom, $matches );
-            foreach ( $custom as $key => $value ) {
-                $team->{$key} = $team instanceof League_Team && in_array( $key, [ 'sets_shared', 'no_player', 'no_team' ], true ) ? (string) $value : $value;
-            }
+            $team->set_match_counts( $done_matches, $won_matches, $draw_matches, $lost_matches );
+            $points = $this->calculate_points( $league, $team, $matches );
+            $team->set_points( $points );
+            $team->set_points_plus( $points['plus'] );
+            $team->set_points_minus( $points['minus'] );
+            $custom_data         = is_array( $team->custom ) ? $team->custom : array();
+            $custom_data['diff'] = $team->diff;
+            $team->set_custom( $custom_data );
+            $custom = $this->get_standings_data( $league, (int) $team->id, $custom_data, $matches );
+            $team->apply_standings_metrics( $custom );
             $teams[ $i ] = $team;
         }
 
@@ -317,14 +318,15 @@ class Standings_Service implements Standings_Service_Interface {
             }
             $this->refresh_match_counts( $league, $league_team );
 
-            $league_team->points   = $this->calculate_points( $league, $league_team );
-            $league_team->diff     = 0;
-            $league_team->points_2 = array(
+            $points   = $this->calculate_points( $league, $league_team );
+            $diff     = 0;
+            $points_2 = array(
                 'plus'  => 0,
                 'minus' => 0,
             );
             // get custom team standings data.
-            $league_team->custom = $this->get_standings_data( $league, (int) $league_team->id, $league_team->custom );
+            $custom = $this->get_standings_data( $league, (int) $league_team->id, $league_team->custom );
+            $league_team->update_standings_stats( $points, $diff, $points_2, $custom );
 
             $this->league_repository->update_team_standings(
                 (int) $league_team->league_id,
@@ -704,7 +706,7 @@ class Standings_Service implements Standings_Service_Interface {
             ),
         );
 
-        $done                      = $this->league_query()->get_matches(
+        $done = $this->league_query()->get_matches(
             $league,
             array_merge(
                 $base,
@@ -715,14 +717,12 @@ class Standings_Service implements Standings_Service_Interface {
                 )
             )
         );
-        $league_team->done_matches = (int) apply_filters( 'racketmanager_done_matches_' . $league->sport, $done, $league_team->id, $league->id );
-        $league_team->win_percent();
+        $done = (int) apply_filters( 'racketmanager_done_matches_' . $league->sport, $done, $league_team->id, $league->id );
 
-        $won                      = $this->league_query()->get_matches( $league, array_merge( $base, array( 'winner_id' => $league_team->id ) ) );
-        $league_team->won_matches = (int) apply_filters( 'racketmanager_won_matches_' . $league->sport, $won, $league_team->id, $league->id );
-        $league_team->win_percent();
+        $won = $this->league_query()->get_matches( $league, array_merge( $base, array( 'winner_id' => $league_team->id ) ) );
+        $won = (int) apply_filters( 'racketmanager_won_matches_' . $league->sport, $won, $league_team->id, $league->id );
 
-        $draw                      = $this->league_query()->get_matches(
+        $draw = $this->league_query()->get_matches(
             $league,
             array_merge(
                 $base,
@@ -733,12 +733,12 @@ class Standings_Service implements Standings_Service_Interface {
                 )
             )
         );
-        $league_team->draw_matches = (int) apply_filters( 'racketmanager_tie_matches_' . $league->sport, $draw, $league_team->id, $league->id );
-        $league_team->win_percent();
+        $draw = (int) apply_filters( 'racketmanager_tie_matches_' . $league->sport, $draw, $league_team->id, $league->id );
 
-        $lost                      = $this->league_query()->get_matches( $league, array_merge( $base, array( 'loser_id' => $league_team->id ) ) );
-        $league_team->lost_matches = (int) apply_filters( 'racketmanager_lost_matches_' . $league->sport, $lost, $league_team->id, $league->id );
-        $league_team->win_percent();
+        $lost = $this->league_query()->get_matches( $league, array_merge( $base, array( 'loser_id' => $league_team->id ) ) );
+        $lost = (int) apply_filters( 'racketmanager_lost_matches_' . $league->sport, $lost, $league_team->id, $league->id );
+
+        $league_team->set_match_counts( $done, $won, $draw, $lost );
     }
 
     private function league_query(): League_Query_Service {

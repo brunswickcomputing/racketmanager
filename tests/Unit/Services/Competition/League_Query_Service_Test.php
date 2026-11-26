@@ -122,15 +122,18 @@ class League_Query_Service_Test extends TestCase {
 		$team_row->points_2_minus = 1;
 		$team_row->players        = array();
 
-		$league_team_mock                 = $this->createStub( League_Team::class );
-		$league_team_mock->custom         = array();
-		$league_team_mock->roster         = array();
-		$league_team_mock->title          = 'Team A';
-		$league_team_mock->points_plus    = 10;
-		$league_team_mock->points_minus   = 5;
-		$league_team_mock->points_2_plus  = 2;
-		$league_team_mock->points_2_minus = 1;
-		$league_team_mock->players        = array();
+		$league_team_mock = League_Team::from_array(
+			array(
+				'custom'         => array(),
+				'roster'         => array(),
+				'title'          => 'Team A',
+				'points_plus'    => 10,
+				'points_minus'   => 5,
+				'points_2_plus'  => 2,
+				'points_2_minus' => 1,
+				'players'        => array(),
+			)
+		);
 
 		$this->league_team_repository->expects( $this->once() )
 			->method( 'find_by_id' )
@@ -156,11 +159,14 @@ class League_Query_Service_Test extends TestCase {
 		$team_row->table_id = 10;
 		$team_row->team_id  = 100;
 
-		$league_team         = $this->createStub( League_Team::class );
-		$league_team->id     = 100;
-		$league_team->custom = array();
-		$league_team->roster = array();
-		$league_team->title  = 'Team A';
+		$league_team = League_Team::from_array(
+			array(
+				'id'     => 100,
+				'custom' => array(),
+				'roster' => array(),
+				'title'  => 'Team A',
+			)
+		);
 
 		$this->league_team_repository->expects( $this->once() )->method( 'find_by_id' )->with( 10 )->willReturn( $league_team );
 		$this->league_repository->expects( $this->once() )
@@ -188,11 +194,14 @@ class League_Query_Service_Test extends TestCase {
 		$team_row->table_id = 10;
 		$team_row->team_id  = 100;
 
-		$league_team         = $this->createStub( League_Team::class );
-		$league_team->id     = 100;
-		$league_team->custom = array();
-		$league_team->roster = array();
-		$league_team->title  = 'Team A';
+		$league_team = League_Team::from_array(
+			array(
+				'id'     => 100,
+				'custom' => array(),
+				'roster' => array(),
+				'title'  => 'Team A',
+			)
+		);
 
 		$this->league_team_repository->method( 'find_by_id' )->willReturn( $league_team );
 		$this->league_repository->method( 'query_league_teams' )->willReturn( array( $team_row ) );
@@ -204,6 +213,67 @@ class League_Query_Service_Test extends TestCase {
 		$result = $this->service->get_league_teams( $league, array( 'get_details' => true ) );
 
 		$this->assertSame( 'Monday', $result[0]->match_day );
+	}
+
+	public function test_get_league_teams_with_details_retains_fields_on_raw_row_when_repo_lookup_returns_null(): void {
+		$league = League_Test_Factory::from_object( (object) array( 'id' => 42, 'title' => 'Premier Division' ) );
+		$league->set_seasons( array( '2026' => array( 'name' => '2026' ) ) );
+		$league->set_current_season( array( 'name' => '2026' ) );
+
+		$raw_row           = new stdClass();
+		$raw_row->id       = 100;
+		$raw_row->table_id = 10;
+		$raw_row->team_id  = 100;
+		$raw_row->title    = 'Raw Team';
+
+		$this->league_team_repository->expects( $this->once() )
+			->method( 'find_by_id' )
+			->with( 10 )
+			->willReturn( null );
+
+		$this->league_repository->expects( $this->once() )
+			->method( 'query_league_teams' )
+			->willReturn( array( $raw_row ) );
+
+		$captain_player = Player::from_array(
+			array(
+				'ID'           => 55,
+				'display_name' => 'Jane Doe',
+				'contactno'    => '0123456789',
+				'user_email'   => 'jane@example.com',
+			)
+		);
+
+		$this->player_repository->expects( $this->once() )
+			->method( 'find' )
+			->with( 55 )
+			->willReturn( $captain_player );
+
+		$this->league_repository->expects( $this->once() )
+			->method( 'get_team_details' )
+			->with( 42, 100, '2026' )
+			->willReturn(
+				(object) array(
+					'id'            => 100,
+					'title'         => 'Raw Team',
+					'match_day'     => 'Wednesday',
+					'match_time'    => '19:30',
+					'captain'       => 55,
+					'league_status' => 'W',
+				)
+			);
+
+		$result = $this->service->get_league_teams( $league, array( 'get_details' => true ) );
+
+		$this->assertCount( 1, $result );
+		$this->assertInstanceOf( stdClass::class, $result[0] );
+		$this->assertSame( 'Wednesday', $result[0]->match_day );
+		$this->assertSame( '19:30', $result[0]->match_time );
+		$this->assertSame( 55, $result[0]->captain_id );
+		$this->assertSame( 'Jane Doe', $result[0]->captain_name );
+		$this->assertSame( '0123456789', $result[0]->contactno );
+		$this->assertSame( 'jane@example.com', $result[0]->contactemail );
+		$this->assertSame( 'W', $result[0]->league_status );
 	}
 
 	public function test_get_team_dtls_enriches_club_and_players_via_repositories_without_globals(): void {
@@ -1175,4 +1245,77 @@ class League_Query_Service_Test extends TestCase {
     $this->assertSame( array(), $this->service->get_league_teams( $league ) );
     $this->assertSame( 0, $this->service->get_league_teams( $league, array( 'count' => true ) ) );
   }
+
+	/**
+	 * Test get_league_teams alternates row classes across multiple teams.
+	 */
+	public function test_get_league_teams_alternates_row_classes_across_multiple_teams(): void {
+		$league = League_Test_Factory::from_object(
+			(object) array(
+				'id'    => 42,
+				'title' => 'Division 1',
+			)
+		);
+		$league->set_seasons( array( '2026' => array( 'name' => '2026' ) ) );
+		$league->set_current_season( array( 'name' => '2026' ) );
+
+		$row1 = (object) array(
+			'table_id' => 10,
+			'team_id'  => 101,
+		);
+		$row2 = (object) array(
+			'table_id' => 20,
+			'team_id'  => 102,
+		);
+		$row3 = (object) array(
+			'table_id' => 30,
+			'team_id'  => 103,
+		);
+
+		$team1 = League_Team::from_array(
+			array(
+				'id'     => 101,
+				'title'  => 'Team 1',
+				'custom' => array(),
+				'roster' => array(),
+			)
+		);
+		$team2 = League_Team::from_array(
+			array(
+				'id'     => 102,
+				'title'  => 'Team 2',
+				'custom' => array(),
+				'roster' => array(),
+			)
+		);
+		$team3 = League_Team::from_array(
+			array(
+				'id'     => 103,
+				'title'  => 'Team 3',
+				'custom' => array(),
+				'roster' => array(),
+			)
+		);
+
+		$this->league_team_repository->method( 'find_by_id' )->willReturnCallback(
+			static fn( int $id ): ?League_Team => match ( $id ) {
+				10 => $team1,
+				20 => $team2,
+				30 => $team3,
+				default => null,
+			}
+		);
+
+		$this->league_repository->expects( $this->once() )
+			->method( 'query_league_teams' )
+			->with( 42, $this->anything(), false )
+			->willReturn( array( $row1, $row2, $row3 ) );
+
+		$teams = $this->service->get_league_teams( $league );
+
+		$this->assertCount( 3, $teams );
+		$this->assertStringContainsString( 'alternate', $teams[0]->class );
+		$this->assertStringNotContainsString( 'alternate', $teams[1]->class );
+		$this->assertStringContainsString( 'alternate', $teams[2]->class );
+	}
 }

@@ -194,12 +194,15 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     public function test_save_add_points_success(): void {
         $this->allow_security();
 
-        $league_team = new \Racketmanager\Domain\Competition\League_Team();
-        $league_team->table_id = 5;
-        $league_team->league_id = 1;
-        $league_team->season = '2026';
-        $league_team->rank = 1;
-        $league_team->status = 'active';
+        $league_team = \Racketmanager\Domain\Competition\League_Team::from_array(
+            [
+                'table_id'  => 5,
+                'league_id' => 1,
+                'season'    => '2026',
+                'rank'      => 1,
+                'status'    => 'active',
+            ]
+        );
         $league_team->set_entered_state(\Racketmanager\Domain\Enums\Team_Profile::from_value(1));
         $GLOBALS['wp_stubs_league_teams'] = [ 5 => $league_team ];
         $league = League_Test_Factory::from_object( (object) [ 'title' => 'Division 1' ] );

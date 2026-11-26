@@ -543,6 +543,26 @@ class League_Team_Repository_Test extends TestCase {
         $this->assertSame( 'Vainqueur de', $team2->title );
     }
 
+    /**
+     * Test hydrate fallback when team_ref is empty and title has underscore.
+     */
+    public function test_hydrate_falls_back_to_title_when_team_ref_is_empty_and_title_contains_underscore(): void {
+        $GLOBALS['wp_stubs_translate_callback'] = static function ( string $text ): string {
+            return 'Winner of' === $text ? 'Vainqueur de' : $text;
+        };
+
+        $repo = new League_Team_Repository( $this->wpdb );
+        $row  = (object) [
+            'id'       => 12,
+            'table_id' => 34,
+            'title'    => '1_semi_250',
+            'team_ref' => '',
+        ];
+
+        $team = $repo->hydrate( $row );
+        $this->assertSame( 'Vainqueur de', $team->title );
+    }
+
     public function test_hydrate_breaks_recursive_fixture_team_cycle_gracefully(): void {
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
 

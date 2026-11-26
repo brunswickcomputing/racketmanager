@@ -243,6 +243,7 @@ final class Layer_Rules_Test extends TestCase {
                 'domain.no_wordpress_functions',
                 'domain.no_untyped_constructor',
                 'domain.no_lenient_from_object',
+                'domain.no_public_mutable_properties',
                 'application.no_wpdb',
                 'application.no_global_racketmanager',
                 'application.no_concrete_repositories',

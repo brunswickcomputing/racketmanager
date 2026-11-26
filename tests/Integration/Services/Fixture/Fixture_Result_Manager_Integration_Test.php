@@ -5,12 +5,27 @@ namespace Racketmanager\Tests\Integration\Services\Fixture;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
-use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\Competition\League_Team;
+use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
+use Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response;
 use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Domain\Result\Result;
+use Racketmanager\Domain\Team\Team;
+use Racketmanager\Repositories\Fixture_Repository;
+use Racketmanager\Repositories\League_Repository;
+use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Competition_Service;
+use Racketmanager\Services\Container\Simple_Container;
+use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\League_Service;
+use Racketmanager\Services\Player_Service;
+use Racketmanager\Services\Registration_Service;
+use Racketmanager\Services\Result\Result_Reporting_Service;
 use Racketmanager\Services\Result_Service;
+use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\Standings\Standings_Service;
 use Racketmanager\Services\Competition\Knockout_Progression_Service;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
@@ -26,11 +41,11 @@ use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Fixture\Service_Provider as Fixture_Service_Provider;
 use Racketmanager\Services\Result\Rubber_Result_Manager;
+use Racketmanager\Services\Validator\Player_Details_Validator;
 use Racketmanager\Services\Validator\Player_Validation_Service;
 use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
 use Racketmanager\Services\Validator\Score_Validation_Service;
-use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Stage;
 use Racketmanager\Domain\Scoring\Scoring_Context;
@@ -39,6 +54,7 @@ use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
 use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use Racketmanager\Tests\Helpers\Result_Test_Factory;
+use ReflectionClass;
 use stdClass;
 
 #[AllowMockObjectsWithoutExpectations]
@@ -51,79 +67,75 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
     private $league_service;
     private $score_validator;
     private $rubber_manager;
-    private $player_validator;
-    private $notification_service;
-    private $settings_service;
     private $manager;
     private $permission_service;
     private $league_team_repository;
-    private $team_repository;
-    private $player_repository;
     private $league_repository_repo;
     private $rubber_repository;
     private $results_checker_repository;
-    private $results_report_repository;
     private $fixture_maintenance_service;
-    private $fixture_finalization_service;
     private $fixture_repository;
     private $result_reporting_service;
 
     protected function setUp(): void {
         parent::setUp();
         $this->backup_globals();
-        $this->result_service = $this->createMock(Result_Service::class);
+        $this->result_service = $this->createMock( Result_Service::class );
         $this->standings_service = $this->createMock( Standings_Service::class );
-        $this->progression_service = $this->createMock(Knockout_Progression_Service::class);
-        $this->league_service = $this->createMock(League_Service::class);
-        $this->score_validator = $this->createMock(Score_Validation_Service::class);
-        $this->rubber_manager = $this->createMock(Rubber_Result_Manager::class);
-        $this->player_validator = $this->createMock(Player_Validation_Service::class);
-        $this->notification_service = $this->createMock(Notification_Service::class);
-        $this->settings_service = $this->createMock(\Racketmanager\Services\Settings_Service::class);
-        $this->settings_service->method('get_all_options')->willReturn([]);
-        $this->league_team_repository = $this->createMock(League_Team_Repository_Interface::class);
-        $this->team_repository = $this->createMock(Team_Repository_Interface::class);
-        $this->player_repository = $this->createMock(Player_Repository_Interface::class);
-        $this->league_repository_repo = $this->createMock(League_Repository_Interface::class);
-        $this->rubber_repository = $this->createMock(Rubber_Repository_Interface::class);
-        $this->results_checker_repository = $this->createMock(Results_Checker_Repository_Interface::class);
-        $this->results_report_repository = $this->createMock(Results_Report_Repository_Interface::class);
-        $this->fixture_repository = $this->createMock(Fixture_Repository_Interface::class);
-        $this->result_reporting_service = $this->createMock(\Racketmanager\Services\Result\Result_Reporting_Service::class);
+        $this->progression_service = $this->createMock( Knockout_Progression_Service::class );
+        $this->league_service = $this->createMock( League_Service::class );
+        $this->score_validator = $this->createMock( Score_Validation_Service::class );
+        $this->rubber_manager = $this->createMock( Rubber_Result_Manager::class );
+        $player_validator = $this->createMock( Player_Validation_Service::class );
+        $notification_service = $this->createMock( Notification_Service::class );
+        $settings_service = $this->createMock( Settings_Service::class );
+        $settings_service->method( 'get_all_options' )->willReturn( [] );
+        $this->league_team_repository = $this->createMock( League_Team_Repository_Interface::class );
+        $team_repository              = $this->createMock( Team_Repository_Interface::class );
+        $player_repository = $this->createMock( Player_Repository_Interface::class );
+        $this->league_repository_repo = $this->createMock( League_Repository_Interface::class );
+        $this->rubber_repository = $this->createMock( Rubber_Repository_Interface::class );
+        $this->results_checker_repository = $this->createMock( Results_Checker_Repository_Interface::class );
+        $results_report_repository = $this->createMock( Results_Report_Repository_Interface::class );
+        $this->fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
+        $this->result_reporting_service = $this->createMock( Result_Reporting_Service::class );
 
-        $reg_service = $this->createMock(\Racketmanager\Services\Registration_Service::class);
-        $reg_service->method('get_dummy_players')->willReturn([]);
-        $comp_service = $this->createMock(\Racketmanager\Services\Competition_Service::class);
-        $club_service = $this->createMock(\Racketmanager\Services\Club_Service::class);
-        $player_service = $this->createMock(\Racketmanager\Services\Player_Service::class);
-        $container = new \Racketmanager\Services\Container\Simple_Container();
-        $container->set('registration_service', $reg_service);
-        $container->set('competition_service', $comp_service);
-        $container->set('club_service', $club_service);
-        $container->set('player_service', $player_service);
+        $reg_service = $this->createMock( Registration_Service::class );
+        $reg_service->method( 'get_dummy_players' )->willReturn( [] );
+        $comp_service = $this->createMock( Competition_Service::class );
+        $club_service = $this->createMock( Club_Service::class );
+        $player_service = $this->createMock( Player_Service::class );
+        $container = new Simple_Container();
+        $container->set( 'registration_service', $reg_service );
+        $container->set( 'competition_service', $comp_service );
+        $container->set( 'club_service', $club_service );
+        $container->set( 'player_service', $player_service );
         $racketmanager_instance = new class($container) {
             public $container;
             public $result_warnings = [];
-            public function __construct($container) { $this->container = $container; }
-            public function get_confirmation_email() { return 'admin@example.com'; }
+            public function __construct( $container ) {
+                $this->container = $container; }
+            public function get_confirmation_email() {
+                return 'admin@example.com'; }
             public function get_options() {
                 return [
-                    'league' => ['resultConfirmation' => 'manual'],
-                    'tournament' => ['resultConfirmation' => 'manual'],
+                    'league' => [ 'resultConfirmation' => 'manual' ],
+                    'tournament' => [ 'resultConfirmation' => 'manual' ],
                 ];
             }
-            public function get_result_warnings( $args ) { return $this->result_warnings; }
+            public function get_result_warnings( $args ) {
+                return $this->result_warnings; }
         };
         $GLOBALS['racketmanager'] = $racketmanager_instance;
 
         $repository_provider = new Repository_Provider(
             league_repository: $this->league_repository_repo,
             league_team_repository: $this->league_team_repository,
-            team_repository: $this->team_repository,
-            player_repository: $this->player_repository,
+            team_repository: $team_repository,
+            player_repository: $player_repository,
             rubber_repository: $this->rubber_repository,
             results_checker_repository: $this->results_checker_repository,
-            results_report_repository: $this->results_report_repository,
+            results_report_repository: $results_report_repository,
             fixture_repository: $this->fixture_repository
         );
 
@@ -132,44 +144,46 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
             progression_service: $this->progression_service,
             league_service: $this->league_service,
             score_validator: $this->score_validator,
-            notification_service: $this->notification_service,
+            notification_service: $notification_service,
             registration_service: $reg_service
         );
-        $service_provider->set_player_validator( $this->player_validator );
+        $service_provider->set_player_validator( $player_validator );
         $service_provider->set_rubber_manager( $this->rubber_manager );
-        $service_provider->set_settings_service( $this->settings_service );
+        $service_provider->set_settings_service( $settings_service );
         $service_provider->set_result_reporting_service( $this->result_reporting_service );
-        $this->fixture_finalization_service = new Fixture_Finalization_Service(
+        $fixture_finalization_service = new Fixture_Finalization_Service(
             $this->standings_service,
             $this->progression_service,
             $this->result_reporting_service
         );
-        $service_provider->set_fixture_finalization_service( $this->fixture_finalization_service );
+        $service_provider->set_fixture_finalization_service( $fixture_finalization_service );
         $this->fixture_maintenance_service = $this->createMock( Fixture_Maintenance_Service::class );
         $service_provider->set_fixture_maintenance_service( $this->fixture_maintenance_service );
 
-        $this->permission_service = $this->createMock(\Racketmanager\Services\Fixture\Fixture_Permission_Service::class);
-        $this->permission_service->method('is_update_allowed')->willReturnCallback(function($fixture) {
-            if ($fixture->get_id() === 999) {
-                return (object)[
-                    'user_can_update' => false,
-                    'user_type' => 'none',
-                    'user_team' => 'none',
-                    'message' => 'Result entry not permitted',
+        $this->permission_service = $this->createMock( Fixture_Permission_Service::class );
+        $this->permission_service->method( 'is_update_allowed' )->willReturnCallback(
+            function ( $fixture ) {
+                if ( $fixture->get_id() === 999 ) {
+                    return (object) [
+                        'user_can_update' => false,
+                        'user_type' => 'none',
+                        'user_team' => 'none',
+                        'message' => 'Result entry not permitted',
+                        'match_approval_mode' => false,
+                        'match_update' => false,
+                    ];
+                }
+                return (object) [
+                    'user_can_update' => true,
+                    'user_type' => 'admin',
+                    'user_team' => 'home',
+                    'message' => '',
                     'match_approval_mode' => false,
-                    'match_update' => false
+                    'match_update' => true,
                 ];
             }
-            return (object)[
-                'user_can_update' => true,
-                'user_type' => 'admin',
-                'user_team' => 'home',
-                'message' => '',
-                'match_approval_mode' => false,
-                'match_update' => true
-            ];
-        });
-        $service_provider->set_fixture_permission_service($this->permission_service);
+        );
+        $service_provider->set_fixture_permission_service( $this->permission_service );
 
         $this->manager = new Fixture_Result_Manager(
             $service_provider,
@@ -207,7 +221,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $league->method( 'get_point_rule' )->willReturn( [ 'match_result' => 'sets' ] );
         $league->method( 'get_competition_type' )->willReturn( $comp_type );
 
-        $event = $this->getMockBuilder( \Racketmanager\Domain\Competition\Event::class )
+        $event = $this->getMockBuilder( Event::class )
             ->disableOriginalConstructor()
             ->onlyMethods( [ 'get_season_by_name', 'get_type' ] )
             ->getMock();
@@ -221,18 +235,24 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
 
     private function assert_is_any_team_withdrawn( bool $home_withdrawn, bool $away_withdrawn, bool $expected ): void {
         $fixture = Fixture_Test_Factory::create( id: 123, league_id: 456, home_team: '100', away_team: '200', season: '2026' );
-        $home_team = $this->createMock( \Racketmanager\Domain\Competition\League_Team::class );
-        $home_team->is_withdrawn = $home_withdrawn;
-        $away_team = $this->createMock( \Racketmanager\Domain\Competition\League_Team::class );
-        $away_team->is_withdrawn = $away_withdrawn;
+        $home_team = new League_Team();
+        $home_team->set_league_id( 456 );
+        $home_team->set_team_id( 100 );
+        $home_team->set_withdrawn( $home_withdrawn );
+        $away_team = new League_Team();
+        $away_team->set_league_id( 456 );
+        $away_team->set_team_id( 200 );
+        $away_team->set_withdrawn( $away_withdrawn );
 
         $this->league_team_repository->method( 'find_by_team_league_and_season' )
-            ->willReturnMap( [
-                [ 100, 456, 2026, $home_team ],
-                [ 200, 456, 2026, $away_team ],
-            ] );
+            ->willReturnMap(
+                [
+                    [ 100, 456, 2026, $home_team ],
+                    [ 200, 456, 2026, $away_team ],
+                ]
+            );
 
-        $reflection = new \ReflectionClass( Fixture_Result_Manager::class );
+        $reflection = new ReflectionClass( Fixture_Result_Manager::class );
         $method     = $reflection->getMethod( 'is_any_team_withdrawn' );
         $this->assertSame( $expected, $method->invoke( $this->manager, $fixture ) );
     }
@@ -253,14 +273,14 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture = Fixture_Test_Factory::create(
             id: 123,
             league_id: 456,
-            season: '2026',
+            winner_id: 10,
             home_points: '3',
             away_points: '1',
-            winner_id: 10
+            season: '2026'
         );
 
         $league = $this->create_league_mock( id: 456, is_championship: false );
-        
+
         $this->league_service->expects( $this->atLeastOnce() )->method( 'get_league' )->with( 456 )->willReturn( $league );
         $GLOBALS['wp_stubs_leagues'][456] = $league;
 
@@ -274,7 +294,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         // Result_Service::apply_to_fixture is expected to be called during reset to save the fixture.
         $this->result_service->expects( $this->once() )
                              ->method( 'apply_to_fixture' )
-                             ->with( $fixture, $this->isInstanceOf( \Racketmanager\Domain\Result\Result::class ), null );
+                             ->with( $fixture, $this->isInstanceOf( Result::class ), null );
 
         $this->rubber_repository->expects( $this->once() )
                                 ->method( 'find_by_fixture_id' )
@@ -294,12 +314,12 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
             id: 123,
             league_id: 789,
             season: '2026',
-            final: 'R1',
-            confirmed: 'Y'
+            confirmed: 'Y',
+            final: 'R1'
         );
 
         $league = $this->create_league_mock( id: 789, is_championship: true, name: 'Tournament' );
-        
+
         $this->league_service->expects( $this->atLeastOnce() )->method( 'get_league' )->with( 789 )->willReturn( $league );
         $GLOBALS['wp_stubs_leagues'][789] = $league;
 
@@ -313,7 +333,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         // Result_Service::apply_to_fixture is expected to be called during reset to save the fixture.
         $this->result_service->expects( $this->once() )
                              ->method( 'apply_to_fixture' )
-                             ->with( $fixture, $this->isInstanceOf( \Racketmanager\Domain\Result\Result::class ), null );
+                             ->with( $fixture, $this->isInstanceOf( Result::class ), null );
 
         $this->rubber_repository->expects( $this->once() )
                                 ->method( 'find_by_fixture_id' )
@@ -335,11 +355,11 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         );
 
         $league = $this->create_league_mock( id: 789, is_championship: true, name: 'Tournament', num_sets: 3, num_sets_to_win: 2 );
-        
+
         $this->league_service->expects( $this->atLeastOnce() )->method( 'get_league' )->with( 789 )->willReturn( $league );
         $this->league_repository_repo->expects( $this->once() )->method( 'find_by_id' )->with( 789 )->willReturn( $league );
         $GLOBALS['wp_stubs_leagues'][789] = $league;
-        
+
         $this->result_service->expects( $this->once() )
                              ->method( 'apply_to_fixture' );
 
@@ -354,7 +374,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $request  = Result_Test_Factory::create_fixture_update_request( fixture_id: 123, sets: [], match_status: 'share', confirmed: 'Y' );
         $response = $this->manager->handle_fixture_result_update( $fixture, $request );
 
-        $this->assertInstanceOf( \Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response::class, $response );
+        $this->assertInstanceOf( Fixture_Update_Response::class, $response );
         $this->assertTrue( $response->has_outcome( Fixture_Update_Status::SAVED ) );
         $this->assertTrue( $response->has_outcome( Fixture_Update_Status::PROGRESSED ) );
     }
@@ -382,7 +402,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $request  = Result_Test_Factory::create_fixture_update_request( fixture_id: 123, sets: [], match_status: 'share', confirmed: 'Y' );
         $response = $this->manager->handle_fixture_result_update( $fixture, $request );
 
-        $this->assertInstanceOf( \Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response::class, $response );
+        $this->assertInstanceOf( Fixture_Update_Response::class, $response );
         $this->assertTrue( $response->has_outcome( Fixture_Update_Status::SAVED ) );
         $this->assertTrue( $response->has_outcome( Fixture_Update_Status::TABLE_UPDATED ) );
     }
@@ -400,7 +420,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
 
         $this->league_service->method( 'get_league' )->willReturn( $league );
 
-        $fixture_repo = $this->createMock( \Racketmanager\Repositories\League_Repository::class );
+        $fixture_repo = $this->createMock( League_Repository::class );
         $fixture_repo->method( 'find_by_id' )->willReturn( $league );
 
         $GLOBALS['wp_stubs_teams'][100] = (object) [ 'club_id' => 10, 'is_withdrawn' => false ];
@@ -419,10 +439,12 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
 
         $this->result_service->expects( $this->once() )
              ->method( 'apply_to_fixture' )
-             ->willReturnCallback( function ( $f, $r, $c ) {
-                 $f->set_result( $r );
-                 $f->set_confirmed( $c );
-             } );
+            ->willReturnCallback(
+                function ( $f, $r, $c ) {
+                    $f->set_result( $r );
+                    $f->set_confirmed( $c );
+                }
+            );
 
         $request = Result_Test_Factory::create_team_update_request(
             match_id: 123,
@@ -462,7 +484,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
 
         $this->league_service->method( 'get_league' )->willReturn( $league );
 
-        $fixture_repo = $this->createMock( \Racketmanager\Repositories\League_Repository::class );
+        $fixture_repo = $this->createMock( League_Repository::class );
         $fixture_repo->method( 'find_by_id' )->willReturn( $league );
 
         $GLOBALS['wp_stubs_teams'][100] = (object) [ 'club_id' => 10, 'is_withdrawn' => false ];
@@ -480,10 +502,12 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
 
         $this->result_service->expects( $this->once() )
              ->method( 'apply_to_fixture' )
-             ->willReturnCallback( function ( $f, $r, $c ) {
-                 $f->set_result( $r );
-                 $f->set_confirmed( $c );
-             } );
+            ->willReturnCallback(
+                function ( $f, $r, $c ) {
+                    $f->set_result( $r );
+                    $f->set_confirmed( $c );
+                }
+            );
 
         $request = Result_Test_Factory::create_team_update_request(
             match_id: 123,
@@ -528,7 +552,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
 
         $this->league_service->method( 'get_league' )->willReturn( $league );
 
-        $fixture_repo = $this->createMock( \Racketmanager\Repositories\League_Repository::class );
+        $fixture_repo = $this->createMock( League_Repository::class );
         $fixture_repo->method( 'find_by_id' )->willReturn( $league );
 
         $this->score_validator->method( 'get_error' )->willReturn( false );
@@ -595,11 +619,11 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
 
         $GLOBALS['wp_stubs_current_user_can'] = false;
 
-        $home_team = $this->getMockBuilder( \Racketmanager\Domain\Team\Team::class )
+        $home_team = $this->getMockBuilder( Team::class )
                           ->disableOriginalConstructor()
                           ->getMock();
         $home_team->method( 'get_club_id' )->willReturn( 10 );
-        $away_team = $this->getMockBuilder( \Racketmanager\Domain\Team\Team::class )
+        $away_team = $this->getMockBuilder( Team::class )
                           ->disableOriginalConstructor()
                           ->getMock();
         $away_team->method( 'get_club_id' )->willReturn( 20 );
@@ -610,14 +634,16 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
             sets: [ 1 => [] ]
         );
 
-        $this->rubber_manager->method( 'handle_rubber_update' )->willReturn( Result_Test_Factory::create_rubber_update_result(
-            rubber_id: 10,
-            home_points: 2.0,
-            away_points: 0.0,
-            winner_id: 5,
-            status: 1,
-            stats: []
-        ) );
+        $this->rubber_manager->method( 'handle_rubber_update' )->willReturn(
+            Result_Test_Factory::create_rubber_update_result(
+                rubber_id: 10,
+                home_points: 2.0,
+                away_points: 0.0,
+                winner_id: 5,
+                status: 1,
+                stats: []
+            )
+        );
 
         $result = $this->manager->handle_team_result_update( $fixture, $request );
 
@@ -635,8 +661,8 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
             away_points: '2',
             season: '2026',
             status: 0,
-            confirmed: null,
-            custom: []
+            custom: [],
+            confirmed: null
         );
 
         $league = $this->create_league_mock( id: 456, is_championship: false, name: 'Test League' );
@@ -646,22 +672,22 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
 
         $this->result_service->expects( $this->once() )
                              ->method( 'apply_to_fixture' )
-                             ->with( $this->equalTo( $fixture ), $this->isInstanceOf( \Racketmanager\Domain\Result\Result::class ), $this->equalTo( 'Y' ) );
+                             ->with( $this->equalTo( $fixture ), $this->isInstanceOf( Result::class ), $this->equalTo( 'Y' ) );
 
         $response = $this->manager->confirm_result( $fixture, 'home', 'Direct confirmation' );
 
         $this->assertEquals( 'Y', $fixture->get_confirmed() );
         $comments = maybe_unserialize( $fixture->get_comments() );
         $this->assertEquals( 'Direct confirmation', $comments['home_confirm'] );
-        $this->assertInstanceOf( \Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response::class, $response );
+        $this->assertInstanceOf( Fixture_Update_Response::class, $response );
     }
 
     public function test_handle_player_warnings_returns_correct_data(): void {
         $fixture = Fixture_Test_Factory::create(
             id: 123,
+            league_id: 456,
             home_team: '100',
-            away_team: '200',
-            league_id: 456
+            away_team: '200'
         );
 
         $league = $this->create_league_mock( id: 456 );
@@ -699,7 +725,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
             ->with( 10 )
             ->willReturn( $rubber );
 
-        $reflection = new \ReflectionClass( Fixture_Result_Manager::class );
+        $reflection = new ReflectionClass( Fixture_Result_Manager::class );
         $method = $reflection->getMethod( 'handle_player_warnings' );
 
         $result = $method->invoke( $this->manager, $fixture );
@@ -740,33 +766,35 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
             ],
         ];
 
-        $player_dto5 = $this->getMockBuilder( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class )
+        $player_dto5 = $this->getMockBuilder( Club_Player_DTO::class )
                             ->disableOriginalConstructor()
                             ->getMock();
         $player_dto5->id = 5;
         $player_dto5->wtn = [ 'S' => 20.0 ];
 
-        $player_dto6 = $this->getMockBuilder( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class )
+        $player_dto6 = $this->getMockBuilder( Club_Player_DTO::class )
                             ->disableOriginalConstructor()
                             ->getMock();
         $player_dto6->id = 6;
         $player_dto6->wtn = [ 'S' => 21.0 ];
 
-        $reg_service = $this->createMock( \Racketmanager\Services\Registration_Service::class );
+        $reg_service = $this->createMock( Registration_Service::class );
         $reg_service->expects( $this->exactly( 2 ) )
                     ->method( 'get_registration' )
-                    ->willReturnMap( [
-                        [ 5, $player_dto5 ],
-                        [ 6, $player_dto6 ],
-                    ] );
+                    ->willReturnMap(
+                        [
+                            [ 5, $player_dto5 ],
+                            [ 6, $player_dto6 ],
+                        ]
+                    );
 
-        $fixture_repo = $this->createMock( \Racketmanager\Repositories\Fixture_Repository::class );
+        $fixture_repo = $this->createMock( Fixture_Repository::class );
         $player_validator = new Player_Validation_Service(
             $reg_service,
             $this->results_checker_repository,
             $fixture_repo,
-            $this->createMock( \Racketmanager\Repositories\Interfaces\Player_Repository_Interface::class ),
-            $this->createMock( \Racketmanager\Services\Validator\Player_Details_Validator::class )
+            $this->createMock( Player_Repository_Interface::class ),
+            $this->createMock( Player_Details_Validator::class )
         );
 
         $player_validator->run_fixture_checks( $fixture, $league, $rubbers, [] );
@@ -824,9 +852,9 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
             id: 456,
             home_team: 20,
             away_team: 10,
+            winner_id: 20,
             home_points: '5.0',
-            away_points: '1.0',
-            winner_id: 20
+            away_points: '1.0'
         );
 
         $this->fixture_repository->expects( $this->exactly( 1 ) )
@@ -860,7 +888,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
             away_points: '1',
             confirmed: 'Y'
         );
-        
+
         $this->fixture_maintenance_service->expects( $this->once() )
             ->method( 'delete_result_report' )
             ->with( 123 );
@@ -889,9 +917,11 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $league = $this->createStub( League::class );
         $this->league_service->method( 'get_league' )->willReturn( $league );
 
-        $this->permission_service->method( 'is_update_allowed' )->willReturn( (object) [
-            'user_team' => 'home',
-        ] );
+        $this->permission_service->method( 'is_update_allowed' )->willReturn(
+            (object) [
+                'user_team' => 'home',
+            ]
+        );
 
         $request = Result_Test_Factory::create_fixture_update_request(
             fixture_id: 123,
@@ -905,7 +935,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $this->manager->handle_fixture_result_update( $fixture, $request );
 
         $this->assertEquals( 123, $fixture->get_home_approver() );
-        
+
         unset( $GLOBALS['wp_stubs_get_current_user_id'] );
     }
 
@@ -974,7 +1004,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $this->manager->handle_team_result_confirmation( $fixture, $request );
 
         $this->assertEquals( 456, $fixture->get_away_approver(), 'Away approver should be set to current user ID' );
-        
+
         unset( $GLOBALS['wp_stubs_get_current_user_id'] );
     }
 }

@@ -22,6 +22,7 @@ use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Championship_Factory;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
+use stdClass;
 use Throwable;
 use function __;
 use function add_query_arg;
@@ -212,7 +213,9 @@ class League_Query_Service implements League_Query_Service_Interface {
      *
      * @param object $league League object.
      * @param array  $query_args Query arguments.
+     *
      * @return array|int Database results
+     * @throws InvalidArgumentException Missing league team repository.
      */
     public function get_league_teams( object $league, array $query_args = array() ): array|int {
         if ( ! $league instanceof League || empty( $league->id ) ) {
@@ -247,9 +250,9 @@ class League_Query_Service implements League_Query_Service_Interface {
             $teams = $this->league_repository->query_league_teams( (int) $league->id, $repo_args, (bool) $count );
 
             if ( ! $count ) {
-                $teams      = is_array( $teams ) ? $teams : array();
-                $class      = array();
-                $team_index = array();
+                $teams         = is_array( $teams ) ? $teams : array();
+                $team_index    = array();
+                $current_class = '';
                 foreach ( $teams as $i => $team ) {
                     if ( $league_team_repository ) {
                         $team = $league_team_repository->find_by_id( (int) $team->table_id );
@@ -259,14 +262,23 @@ class League_Query_Service implements League_Query_Service_Interface {
                     if ( ! $team ) {
                         continue;
                     }
-                    $class[]                = ( 'alternate' === $class ) ? '' : 'alternate';
-                    $team->custom           = isset( $team->custom ) ? stripslashes_deep( maybe_unserialize( $team->custom ) ) : array();
-                    $team->roster           = isset( $team->roster ) ? maybe_unserialize( $team->roster ) : null;
-                    $team->title            = htmlspecialchars( stripslashes( $team->title ?? '' ), ENT_QUOTES );
-                    $team->class            = implode( ' ', $class );
-                    $team->points_formatted = array(
-                        'primary'   => sprintf( $league->point_format ?? '%d:%d', $team->points_plus ?? 0, $team->points_minus ?? 0 ),
-                        'secondary' => sprintf( $league->point_2_format ?? '%d:%d', $team->points_2_plus ?? 0, $team->points_2_minus ?? 0 ),
+                    $current_class = ( 'alternate' === $current_class ) ? '' : 'alternate';
+                    $row_classes   = array();
+                    if ( '' !== $current_class ) {
+                        $row_classes[] = $current_class;
+                    }
+                    $custom = isset( $team->custom ) ? stripslashes_deep( maybe_unserialize( $team->custom ) ) : array();
+                    $team->set_custom( $custom );
+                    $roster = isset( $team->roster ) ? maybe_unserialize( $team->roster ) : null;
+                    $team->set_roster( $roster );
+                    $title = htmlspecialchars( stripslashes( $team->title ?? '' ), ENT_QUOTES );
+                    $team->set_title( $title );
+                    $team->set_class( implode( ' ', $row_classes ) );
+                    $team->set_points_formatted(
+                        array(
+                            'primary'   => sprintf( $league->point_format ?? '%d:%d', $team->points_plus ?? 0, $team->points_minus ?? 0 ),
+                            'secondary' => sprintf( $league->point_2_format ?? '%d:%d', $team->points_2_plus ?? 0, $team->points_2_minus ?? 0 ),
+                        )
                     );
                     if ( ! empty( $team->players ) && ! empty( $league->event->type ) ) {
                         $type        = substr( $league->event->type, 1, 1 );
@@ -277,7 +289,7 @@ class League_Query_Service implements League_Query_Service_Interface {
                                 $team_rating += (float) $rating;
                             }
                         }
-                        $team->rating = $team_rating;
+                        $team->set_rating( $team_rating );
                     }
 
                     $team_index[ $team->id ] = $i;
@@ -302,13 +314,23 @@ class League_Query_Service implements League_Query_Service_Interface {
                         if ( isset( $team->id ) ) {
                             $team_dtls = $this->get_team_dtls( $league, (int) $team->id, $details_season );
                             if ( is_object( $team_dtls ) ) {
-                                $team->match_day     = $team_dtls->match_day ?? null;
-                                $team->match_time    = $team_dtls->match_time ?? null;
-                                $team->captain_id    = isset( $team_dtls->captain_id ) ? (int) $team_dtls->captain_id : null;
-                                $team->captain_name  = $team_dtls->captain ?? null;
-                                $team->contactno     = isset( $team_dtls->contactno ) && '' !== $team_dtls->contactno ? (string) $team_dtls->contactno : null;
-                                $team->contactemail  = isset( $team_dtls->contactemail ) && '' !== $team_dtls->contactemail ? (string) $team_dtls->contactemail : null;
-                                $team->league_status = isset( $team_dtls->league_status ) && '' !== $team_dtls->league_status ? (string) $team_dtls->league_status : null;
+                                if ( $team instanceof League_Team ) {
+                                    $team->set_match_day( $team_dtls->match_day ?? null );
+                                    $team->set_match_time( $team_dtls->match_time ?? null );
+                                    $team->set_captain_id( isset( $team_dtls->captain_id ) ? (int) $team_dtls->captain_id : null );
+                                    $team->set_captain_name( $team_dtls->captain ?? null );
+                                    $team->set_contactno( isset( $team_dtls->contactno ) && '' !== $team_dtls->contactno ? (string) $team_dtls->contactno : null );
+                                    $team->set_contactemail( isset( $team_dtls->contactemail ) && '' !== $team_dtls->contactemail ? (string) $team_dtls->contactemail : null );
+                                    $team->set_league_status( isset( $team_dtls->league_status ) && '' !== $team_dtls->league_status ? (string) $team_dtls->league_status : null );
+                                } elseif ( $team instanceof stdClass ) {
+                                    $team->match_day     = $team_dtls->match_day ?? null;
+                                    $team->match_time    = $team_dtls->match_time ?? null;
+                                    $team->captain_id    = isset( $team_dtls->captain_id ) ? (int) $team_dtls->captain_id : null;
+                                    $team->captain_name  = $team_dtls->captain ?? null;
+                                    $team->contactno     = isset( $team_dtls->contactno ) && '' !== $team_dtls->contactno ? (string) $team_dtls->contactno : null;
+                                    $team->contactemail  = isset( $team_dtls->contactemail ) && '' !== $team_dtls->contactemail ? (string) $team_dtls->contactemail : null;
+                                    $team->league_status = isset( $team_dtls->league_status ) && '' !== $team_dtls->league_status ? (string) $team_dtls->league_status : null;
+                                }
                             }
                         }
                     }
@@ -375,6 +397,7 @@ class League_Query_Service implements League_Query_Service_Interface {
         if ( ! isset( $team ) || ! $team ) {
             return false;
         }
+
         if ( str_contains( (string) ( $team->title ?? '' ), '_' ) ) {
             $team_name = Util::generate_team_name( $team->title, $this->get_fixture_repository() );
             if ( ! empty( $team_name ) ) {

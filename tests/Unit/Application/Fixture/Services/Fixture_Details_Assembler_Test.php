@@ -96,15 +96,21 @@ class Fixture_Details_Assembler_Test extends TestCase {
         $fixture->method('get_home_team')->willReturn('1');
         $fixture->method('get_away_team')->willReturn('2');
 
-        $league_team_home = $this->createStub(\Racketmanager\Domain\Competition\League_Team::class);
-        $league_team_home->method('get_captain')->willReturn(50);
-        $league_team_home->contactno = '0777111';
-        $league_team_home->contactemail = 'home@capt.com';
+        $league_team_home = \Racketmanager\Domain\Competition\League_Team::from_array(
+            [
+                'captain'      => 50,
+                'contactno'    => '0777111',
+                'contactemail' => 'home@capt.com',
+            ]
+        );
 
-        $league_team_away = $this->createStub(\Racketmanager\Domain\Competition\League_Team::class);
-        $league_team_away->method('get_captain')->willReturn(60);
-        $league_team_away->contactno = '0777222';
-        $league_team_away->contactemail = 'away@capt.com';
+        $league_team_away = \Racketmanager\Domain\Competition\League_Team::from_array(
+            [
+                'captain'      => 60,
+                'contactno'    => '0777222',
+                'contactemail' => 'away@capt.com',
+            ]
+        );
 
         $this->league_team_repository->method('find_by_team_league_and_season')->willReturnCallback(function($team_id, $league_id, $season) use ($league_team_home, $league_team_away) {
             if ($team_id === 1) return $league_team_home;

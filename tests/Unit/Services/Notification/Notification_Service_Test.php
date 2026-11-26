@@ -420,8 +420,7 @@ class Notification_Service_Test extends TestCase {
         $this->team_repository->method('find_by_id')->willReturn($this->createStub(Team::class));
 
         // Mock League_Team to avoid call to get_club() in constructor/initialization
-        $league_team = $this->getMockBuilder(League_Team::class)->disableOriginalConstructor()->getMock();
-        $league_team->club_id = 10;
+        $league_team = League_Team::from_array( [ 'club_id' => 10 ] );
         $this->league_team_repository->expects( $this->once() )->method('find_by_id')->with(200)->willReturn($league_team);
 
         $club = new Club();
@@ -502,8 +501,7 @@ class Notification_Service_Test extends TestCase {
         $this->assertEquals('admin@example.com', $GLOBALS['wp_mail_calls'][0]['to']);
 
         // Case 2: Club not found
-        $league_team = $this->getMockBuilder(League_Team::class)->disableOriginalConstructor()->getMock();
-        $league_team->club_id = 10;
+        $league_team = League_Team::from_array( [ 'club_id' => 10 ] );
         $this->league_team_repository->method('find_by_id')->willReturn($league_team);
         $this->club_repository->method( 'find_by_id' )->willReturn(null);
         $GLOBALS['wp_mail_calls'] = [];
@@ -784,9 +782,7 @@ class Notification_Service_Test extends TestCase {
         $this->option_service->method( 'get_confirmation_email' )->willReturn( 'admin@example.com' );
 
         // Mock Captain
-        $league_team = $this->getMockBuilder( League_Team::class )->disableOriginalConstructor()->getMock();
-        $league_team->method( 'get_captain' )->willReturn( 5 );
-        $league_team->club_id = 10;
+        $league_team = League_Team::from_array( [ 'captain' => 5, 'club_id' => 10 ] );
         $this->league_team_repository->expects( $this->once() )->method( 'find_by_team_league_and_season' )
             ->with( 100, 456, 2026 )
             ->willReturn( $league_team );

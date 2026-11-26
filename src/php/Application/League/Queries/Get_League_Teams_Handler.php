@@ -10,6 +10,7 @@ use Racketmanager\Application\League\DTOs\League_View_State;
 use Racketmanager\Application\League\Ports\League_Query_Service_Interface;
 use Racketmanager\Application\League\Ports\League_Service_Interface;
 use Racketmanager\Application\Player\Ports\Player_Stats_Service_Interface;
+use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Team\Team;
 use Racketmanager\Util\Util;
 use Throwable;
@@ -181,7 +182,7 @@ readonly class Get_League_Teams_Handler {
 
         $info = $this->league_query_service->get_team_dtls( $league, $team->id );
         if ( is_object( $info ) ) {
-            if ( $team instanceof Team ) {
+            if ( $team instanceof Team || $team instanceof League_Team ) {
                 $team->set_info( $info );
             } else {
                 $team->info = $info;
@@ -254,7 +255,7 @@ readonly class Get_League_Teams_Handler {
             );
         }
 
-        if ( $team instanceof Team ) {
+        if ( $team instanceof Team || $team instanceof League_Team ) {
             if ( is_array( $players ) ) {
                 $team->set_players( $players );
             }
@@ -308,7 +309,7 @@ readonly class Get_League_Teams_Handler {
             foreach ( $teams as $team ) {
                 $info = $this->league_query_service->get_team_dtls( $league, $team->id );
                 if ( is_object( $info ) ) {
-                    if ( $team instanceof Team ) {
+                    if ( $team instanceof Team || $team instanceof League_Team ) {
                         $team->set_info( $info );
                     } else {
                         $team->info = $info;

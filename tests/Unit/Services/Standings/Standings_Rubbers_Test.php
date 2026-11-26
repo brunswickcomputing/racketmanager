@@ -61,10 +61,13 @@ class Standings_Rubbers_Test extends TestCase {
         $fixture_repository = $this->createStub( Fixture_Repository_Interface::class );
         $fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
 
-        $team         = new League_Team();
-        $team->id     = 10;
-        $team->season = '2026';
-        $team->custom = [];
+        $team = League_Team::from_array(
+            [
+                'id'     => 10,
+                'season' => '2026',
+                'custom' => [],
+            ]
+        );
         $league_team_repository = $this->createMock( League_Team_Repository_Interface::class );
         $league_team_repository->expects( $this->once() )->method( 'find_by_id' )->with( 10 )->willReturn( $team );
 

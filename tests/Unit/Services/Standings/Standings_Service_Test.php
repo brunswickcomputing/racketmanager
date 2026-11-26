@@ -77,10 +77,13 @@ final class Standings_Service_Test extends TestCase {
         )->willReturn( [ (object) [ 'id' => 70 ] ] );
         $fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
         $fixture_repository->expects( $this->once() )->method( 'find_by_id' )->with( 70 )->willReturn( $fixture );
-        $team = new League_Team();
-        $team->id = 10;
-        $team->season = '2026';
-        $team->custom = [];
+        $team = League_Team::from_array(
+            [
+                'id'     => 10,
+                'season' => '2026',
+                'custom' => [],
+            ]
+        );
         $ranking = $this->createMock( League_Service::class );
         $ranking->expects( $this->once() )->method( 'rank_teams_by_points' )->with( [ $team ] )->willReturn( [ $team ] );
         $ranking->expects( $this->once() )->method( 'get_ranking' )->with( $league, [ $team ] )->willReturn( [ $team ] );
@@ -172,11 +175,14 @@ final class Standings_Service_Test extends TestCase {
         $league->method( 'get_season' )->willReturn( '2026' );
         $league->method( 'get_point_rule' )->willReturn( [] );
         $count_queries = [];
-        $team = $this->createStub( League_Team::class );
-        $team->id = 10;
-        $team->league_id = 12;
-        $team->season = '2026';
-        $team->custom = [];
+        $team = League_Team::from_array(
+            [
+                'id'        => 10,
+                'league_id' => 12,
+                'season'    => '2026',
+                'custom'    => [],
+            ]
+        );
         $league_query_service = $this->createMock( League_Query_Service::class );
         $league_query_service->expects( $this->exactly( 2 ) )->method( 'get_league_teams' )->willReturnCallback(
             function ( object $query_league, array $args ) use ( $team, $league ): array {

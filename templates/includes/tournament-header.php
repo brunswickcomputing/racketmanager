@@ -48,7 +48,7 @@ global $racketmanager;
                 <div class="media__aside">
                     <?php
                     if ( ! empty( $entry_option ) ) {
-                        if ( $tournament->is_open ) {
+                        if ( $tournament->is_open || ( $tournament->is_closed && current_user_can( 'manage_racketmanager' ) ) ) {
                             ?>
                             <a href="/tournament/entry-form/<?php echo esc_attr( seo_url( $tournament->name ) ); ?>/" class="btn btn-primary reverse">
                                 <i class="racketmanager-svg-icon">

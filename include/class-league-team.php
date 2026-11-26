@@ -808,4 +808,234 @@ final class League_Team {
             )
         );
     }
+
+    /**
+     * Swap error reason of the last swap attempt (null when successful)
+     *
+     * @var string|null
+     */
+    public ?string $swap_error = null;
+
+    /**
+     * Determine whether a fixture row has been played, scored or completed
+     *
+     * @param object $fixture fixture row.
+     * @return bool
+     */
+    public static function is_fixture_played( object $fixture ): bool {
+        if ( ! empty( $fixture->winner_id ) ) {
+            return true;
+        }
+        if ( isset( $fixture->status ) && 0 !== (int) $fixture->status ) {
+            return true;
+        }
+        if ( isset( $fixture->date_result_entered ) ) {
+            return true;
+        }
+        if ( isset( $fixture->home_points ) && '' !== (string) $fixture->home_points ) {
+            return true;
+        }
+        if ( isset( $fixture->away_points ) && '' !== (string) $fixture->away_points ) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Get fixtures for a team in a league and season, optionally locking the rows
+     *
+     * @param int $league_id league id.
+     * @param string $season season.
+     * @param int $team_id team id.
+     * @param bool $lock lock rows for update (must be inside a transaction).
+     * @return array|null
+     */
+    private static function get_team_fixtures( int $league_id, string $season, int $team_id, bool $lock = false ): ?array {
+        global $wpdb;
+        $sql = "SELECT `id`, `winner_id`, `status`, `date_result_entered`, `home_points`, `away_points` FROM $wpdb->racketmanager_matches WHERE `league_id` = %d AND `season` = %s AND (`home_team` = %s OR `away_team` = %s)";
+        if ( $lock ) {
+            $sql .= ' FOR UPDATE';
+        }
+        $fixtures = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+            $wpdb->prepare( $sql, $league_id, $season, $team_id, $team_id ) //phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+        );
+        return is_array( $fixtures ) ? $fixtures : null;
+    }
+
+    /**
+     * Check whether a team has played, scored or completed fixtures in a league and season
+     *
+     * @param int $league_id league id.
+     * @param string $season season.
+     * @param int $team_id team id.
+     * @return bool true if played fixtures exist (or fixtures cannot be read)
+     */
+    public static function has_played_fixtures( int $league_id, string $season, int $team_id ): bool {
+        $fixtures = self::get_team_fixtures( $league_id, $season, $team_id );
+        if ( null === $fixtures ) {
+            return true;
+        }
+        foreach ( $fixtures as $fixture ) {
+            if ( self::is_fixture_played( $fixture ) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Abort a swap: roll back the transaction and discard cache entries for an uncommitted team
+     *
+     * @param string $reason failure reason code.
+     * @param int|null $new_team_id uncommitted team id, if known.
+     * @return bool always false
+     */
+    private function abort_swap( string $reason, ?int $new_team_id = null ): bool {
+        global $wpdb;
+        $wpdb->query( 'ROLLBACK' ); //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+        if ( $new_team_id ) {
+            wp_cache_delete( $new_team_id, 'teams' );
+            wp_cache_delete( $new_team_id, 'league-teams' );
+        }
+        $this->swap_error = $reason;
+        return false;
+    }
+
+    /**
+     * Swap team in table and eligible unplayed matches atomically
+     *
+     * The table row (and so draw position) is preserved. Everything - including creation of
+     * the new team when a resolver is supplied - happens inside one transaction, which is
+     * rolled back on any failure. Reason is available in $swap_error.
+     *
+     * @param int|callable $new_team new team id, or callable creating/returning the new team id inside the transaction.
+     * @return bool true on success, false on failure or if unsafe
+     */
+    public function swap_team( int|callable $new_team ): bool {
+        global $wpdb;
+
+        $this->swap_error = null;
+        if ( empty( $this->table_id ) || empty( $this->id ) ) {
+            $this->swap_error = 'invalid';
+            return false;
+        }
+        $old_team_id = (int) $this->id;
+        $table_id    = (int) $this->table_id;
+        $league_id   = (int) $this->league_id;
+        $season      = (string) $this->season;
+        $new_team_id = null;
+
+        if ( false === $wpdb->query( 'START TRANSACTION' ) ) { //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+            $this->swap_error = 'transaction';
+            return false;
+        }
+
+        // Lock the table row and verify it is really the row held by this object.
+        $row = $wpdb->get_row( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+            $wpdb->prepare(
+                "SELECT `id`, `team_id`, `league_id`, `season` FROM $wpdb->racketmanager_table WHERE `id` = %d FOR UPDATE",
+                $table_id
+            )
+        );
+        if ( ! $row || (int) $row->team_id !== $old_team_id || (int) $row->league_id !== $league_id || (string) $row->season !== $season ) {
+            return $this->abort_swap( 'stale' );
+        }
+
+        // Lock fixtures and apply the played guard inside the transaction.
+        $fixtures = self::get_team_fixtures( $league_id, $season, $old_team_id, true );
+        if ( null === $fixtures ) {
+            return $this->abort_swap( 'fixtures' );
+        }
+        foreach ( $fixtures as $fixture ) {
+            if ( self::is_fixture_played( $fixture ) ) {
+                return $this->abort_swap( 'played' );
+            }
+        }
+
+        // Resolve (and if necessary create) the new team inside the transaction.
+        try {
+            $new_team_id = is_callable( $new_team ) ? (int) call_user_func( $new_team ) : (int) $new_team;
+        } catch ( \Throwable $e ) {
+            return $this->abort_swap( 'team', is_callable( $new_team ) ? null : (int) $new_team );
+        }
+        if ( $new_team_id <= 0 || $new_team_id === $old_team_id ) {
+            return $this->abort_swap( 'team', $new_team_id > 0 ? $new_team_id : null );
+        }
+
+        // Duplicate guard.
+        $duplicate = $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+            $wpdb->prepare(
+                "SELECT `id` FROM $wpdb->racketmanager_table WHERE `team_id` = %d AND `league_id` = %d AND `season` = %s AND `id` != %d FOR UPDATE",
+                $new_team_id,
+                $league_id,
+                $season,
+                $table_id
+            )
+        );
+        if ( $duplicate ) {
+            return $this->abort_swap( 'duplicate', $new_team_id );
+        }
+
+        // Update racketmanager_table: exactly one row must change.
+        $table_updated = $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+            $wpdb->prepare(
+                "UPDATE $wpdb->racketmanager_table SET `team_id` = %d WHERE `id` = %d AND `team_id` = %d",
+                $new_team_id,
+                $table_id,
+                $old_team_id
+            )
+        );
+        if ( 1 !== $table_updated ) {
+            return $this->abort_swap( 'table', $new_team_id );
+        }
+
+        // Update locked, unplayed fixtures: every locked fixture must be updated.
+        $match_home = $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+            $wpdb->prepare(
+                "UPDATE $wpdb->racketmanager_matches SET `home_team` = %s WHERE `league_id` = %d AND `season` = %s AND `home_team` = %s AND (`winner_id` = 0 OR `winner_id` IS NULL) AND `date_result_entered` IS NULL",
+                $new_team_id,
+                $league_id,
+                $season,
+                $old_team_id
+            )
+        );
+        if ( false === $match_home ) {
+            return $this->abort_swap( 'home_fixtures', $new_team_id );
+        }
+        $match_away = $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+            $wpdb->prepare(
+                "UPDATE $wpdb->racketmanager_matches SET `away_team` = %s WHERE `league_id` = %d AND `season` = %s AND `away_team` = %s AND (`winner_id` = 0 OR `winner_id` IS NULL) AND `date_result_entered` IS NULL",
+                $new_team_id,
+                $league_id,
+                $season,
+                $old_team_id
+            )
+        );
+        if ( false === $match_away ) {
+            return $this->abort_swap( 'away_fixtures', $new_team_id );
+        }
+        if ( (int) $match_home + (int) $match_away !== count( $fixtures ) ) {
+            return $this->abort_swap( 'fixtures', $new_team_id );
+        }
+
+        if ( false === $wpdb->query( 'COMMIT' ) ) { //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+            return $this->abort_swap( 'commit', $new_team_id );
+        }
+
+        $this->id = $new_team_id;
+
+        // Cache invalidation (only after commit).
+        wp_cache_delete( $table_id, 'league-teams' );
+        wp_cache_delete( $old_team_id, 'league-teams' );
+        wp_cache_delete( $new_team_id, 'league-teams' );
+        if ( function_exists( 'wp_cache_flush_group' ) ) {
+            wp_cache_flush_group( 'event_teams' );
+            wp_cache_flush_group( 'leaguetable' );
+            wp_cache_flush_group( 'matches' );
+            wp_cache_flush_group( 'num_matches' );
+            wp_cache_flush_group( 'teams' );
+        }
+
+        return true;
+    }
 }

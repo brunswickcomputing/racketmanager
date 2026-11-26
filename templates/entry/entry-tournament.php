@@ -36,21 +36,21 @@ $entry_is_pending = empty( $player->tournament_entry ) || 0 === intval( $player-
 if ( get_current_user_id() !== intval( $player->id ) && ! current_user_can( 'manage_racketmanager' ) ) {
     $changes_allowed = false;
 } elseif ( ! $tournament->is_open ) {
-    if ( current_user_can( 'manage_racketmanager' ) ) {
-        $changes_allowed = true;
-    } else {
-        $changes_allowed = false;
-    }
     if ( $tournament->is_closed ) {
         $withdrawal_allowed = true;
+        $changes_allowed    = current_user_can( 'manage_racketmanager' );
         if ( $entered ) {
             $confirm_allowed = true;
         }
     } elseif ( $tournament->is_withdrawal || $tournament->is_started ) {
+        $changes_allowed    = false;
         $withdrawal_allowed = false;
         if ( $entered ) {
             $confirm_allowed = true;
         }
+    } else {
+        $changes_allowed    = false;
+        $withdrawal_allowed = false;
     }
 } else {
     $changes_allowed    = true;

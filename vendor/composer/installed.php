@@ -1,19 +1,19 @@
 <?php return array(
     'root' => array(
         'name' => 'brunswickcomputing/racketmanager',
-        'pretty_version' => '9.7.0.x-dev',
-        'version' => '9.7.0.9999999-dev',
-        'reference' => '61b59ee02b9684beee8ddbc72bd89f55b10be39a',
+        'pretty_version' => 'v9.7.13',
+        'version' => '9.7.13.0',
+        'reference' => '86013edce74550b16fa841152fcf7a2f71a968f2',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'dev' => true,
+        'dev' => false,
     ),
     'versions' => array(
         'brunswickcomputing/racketmanager' => array(
-            'pretty_version' => '9.7.0.x-dev',
-            'version' => '9.7.0.9999999-dev',
-            'reference' => '61b59ee02b9684beee8ddbc72bd89f55b10be39a',
+            'pretty_version' => 'v9.7.13',
+            'version' => '9.7.13.0',
+            'reference' => '86013edce74550b16fa841152fcf7a2f71a968f2',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

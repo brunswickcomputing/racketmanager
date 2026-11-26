@@ -233,6 +233,12 @@ final class Tournament {
      */
     public object $fees;
     /**
+     * Entry errors keyed by form field, set when set_player_entry() fails
+     *
+     * @var array
+     */
+    public array $entry_errors = array();
+    /**
      * Charge object
      *
      * @var object
@@ -1783,6 +1789,73 @@ final class Tournament {
     }
 
     /**
+     * Replace the partner of an existing doubles team, preserving the table row
+     *
+     * @param object $team existing team (event team row).
+     * @param object $player entering player.
+     * @param object|null|false $partner new partner.
+     * @param object $club club.
+     * @param object $league league.
+     * @param object $event event.
+     * @return string|null null on success, otherwise error message.
+     */
+    private function swap_doubles_partner( object $team, object $player, mixed $partner, object $club, object $league, object $event ): ?string {
+        global $racketmanager;
+        $error_default = __( 'Partner could not be changed. Please try again', 'racketmanager' );
+        if ( ! $partner || empty( $team->table_id ) ) {
+            return $error_default;
+        }
+        // The league team cache is keyed inconsistently so verify identity before any write.
+        $league_entry = get_league_team( $team->table_id );
+        $is_match     = fn( $lt ): bool => $lt && (int) $lt->table_id === (int) $team->table_id && (int) $lt->id === (int) $team->team_id && (int) $lt->league_id === (int) $league->id && (string) $lt->season === (string) $this->season;
+        if ( ! $is_match( $league_entry ) ) {
+            wp_cache_delete( $team->table_id, 'league-teams' );
+            $league_entry = get_league_team( $team->table_id );
+            if ( ! $is_match( $league_entry ) ) {
+                return $error_default;
+            }
+        }
+        $target_team = null;
+        $resolver    = function () use ( $racketmanager, $player, $partner, $club, $league, &$target_team ): int {
+            $existing_teams = $racketmanager->get_teams(
+                array(
+                    'player'  => $player->id,
+                    'partner' => $partner->id,
+                )
+            );
+            if ( $existing_teams ) {
+                $target_team = $existing_teams[0];
+            } else {
+                $new_team              = new stdClass();
+                $new_team->player_1    = $player->display_name;
+                $new_team->player_1_id = $player->id;
+                $new_team->player_2    = $partner->fullname;
+                $new_team->player_2_id = $partner->id;
+                $new_team->type        = $league->type;
+                $new_team->team_type   = 'P';
+                $new_team->club_id     = $club->id;
+                $target_team           = new Team( $new_team );
+            }
+            if ( empty( $target_team->id ) ) {
+                return 0;
+            }
+            $target_team->set_event( $league->event_id, $player->id, $player->contactno, $player->email );
+            return (int) $target_team->id;
+        };
+        if ( ! $league_entry->swap_team( $resolver ) ) {
+            switch ( $league_entry->swap_error ) {
+                case 'played':
+                    return __( 'Partner cannot be changed because match play has already started', 'racketmanager' );
+                case 'duplicate':
+                    return __( 'Partner cannot be changed because that pairing is already entered in this event', 'racketmanager' );
+                default:
+                    return $error_default;
+            }
+        }
+        $league_entry->set_player_rating( $target_team, $event );
+        return null;
+    }
+    /**
      * Set player entry function
      *
      * @param object $entry entry details.
@@ -1799,16 +1872,30 @@ final class Tournament {
             $updates = true;
         }
         $club               = get_club( $entry->club_id );
-        $fee_due            = 0;
-        $tournament_entries = array();
-        $is_post_closing    = ( ! empty( $this->is_closed ) || ! empty( $this->is_withdrawal ) || ! empty( $this->is_started ) || ! empty( $this->is_complete ) );
+        $fee_due              = 0;
+        $tournament_entries   = array();
+        $is_post_closing      = ( ! empty( $this->is_closed ) || ! empty( $this->is_withdrawal ) || ! empty( $this->is_started ) || ! empty( $this->is_complete ) );
+        $is_withdrawal_closed = ( ! empty( $this->is_withdrawal ) || ! empty( $this->is_started ) || ! empty( $this->is_complete ) );
+        $is_admin_allowed     = current_user_can( 'manage_racketmanager' ) && ! $is_withdrawal_closed;
         if ( $this->set_tournament_entry( $player->id, $club->id, $fee_due ) ) {
             $updates = true;
         }
         if ( ! empty( $entry->comments ) ) {
             $updates = true;
         }
+        $this->entry_errors = array();
+        $ordered_events     = array();
+        $other_events       = array();
         foreach ( $entry->all_events as $event_id ) {
+            $event_check = get_event( $event_id );
+            if ( $event_check && count( $event_check->get_teams( array( 'player' => $entry->player_id, 'season' => $this->season ) ) ) ) {
+                $ordered_events[] = $event_id;
+            } else {
+                $other_events[] = $event_id;
+            }
+        }
+        $ordered_events = array_merge( $ordered_events, $other_events );
+        foreach ( $ordered_events as $event_id ) {
             $event = get_event( $event_id );
             if ( $event ) {
                 if ( ! empty( $event->primary_league ) ) {
@@ -1823,7 +1910,15 @@ final class Tournament {
                         'season' => $this->season,
                     )
                 );
-                if ( isset( $entry->events[ $event_id ] ) ) {
+                $is_selected = false;
+                if ( isset( $entry->events ) ) {
+                    if ( is_array( $entry->events ) ) {
+                        $is_selected = isset( $entry->events[ $event_id ] ) || in_array( $event_id, $entry->events, false ) || in_array( (string) $event_id, $entry->events, true );
+                    } elseif ( is_object( $entry->events ) ) {
+                        $is_selected = isset( $entry->events->$event_id );
+                    }
+                }
+                if ( $is_selected || ( $is_post_closing && count( $teams ) ) ) {
                     $tournament_entry = array();
                     $partner          = '';
                     $partner_name     = null;
@@ -1837,7 +1932,7 @@ final class Tournament {
                         $existing_entry = true;
                         $team           = $teams[0];
                     } else {
-                        $new_entry    = ! $is_post_closing;
+                        $new_entry    = ! $is_post_closing || $is_admin_allowed;
                     }
                     if ( ! $existing_entry && ! $new_entry ) {
                         continue;
@@ -1853,23 +1948,50 @@ final class Tournament {
                             }
                         }
                         if ( $existing_entry ) {
-                            $same_partner = false;
+                            $same_partner   = false;
+                            $old_partner_id = null;
                             if ( ! empty( $team->players ) ) {
                                 foreach ( $team->players as $team_player ) {
                                     if ( ! empty( $partner_id ) && (int) $team_player->id === (int) $partner_id ) {
                                         $same_partner = true;
-                                        break;
+                                    }
+                                    if ( (int) $team_player->id !== (int) $player->id ) {
+                                        $old_partner_id = (int) $team_player->id;
                                     }
                                 }
                             } elseif ( ! empty( $team->player_id ) ) {
                                 foreach ( $team->player_id as $team_player_id ) {
                                     if ( ! empty( $partner_id ) && (int) $team_player_id === (int) $partner_id ) {
                                         $same_partner = true;
-                                        break;
+                                    }
+                                    if ( (int) $team_player_id !== (int) $player->id ) {
+                                        $old_partner_id = (int) $team_player_id;
                                     }
                                 }
                             }
-                            if ( empty( $partner_name ) || ( $is_post_closing && ! $same_partner ) ) {
+                            if ( ! $same_partner && ! empty( $partner_id ) ) {
+                                if ( ! $is_post_closing ) {
+                                    $league->delete_team( $team->team_id, $this->season );
+                                    $new_entry = true;
+                                } elseif ( $is_admin_allowed ) {
+                                    $swap_error = $this->swap_doubles_partner( $team, $player, $partner, $club, $league, $event );
+                                    if ( null !== $swap_error ) {
+                                        $this->entry_errors[ 'partner[' . $event->id . ']' ] = $swap_error;
+                                        return false;
+                                    }
+                                    $this->set_tournament_entry( $partner_id );
+                                    $tournament_entry['partner'] = $partner_name;
+                                    $updates                     = true;
+                                    if ( ! empty( $old_partner_id ) ) {
+                                        $remaining_events = $this->get_player_events( $old_partner_id );
+                                        if ( empty( $remaining_events ) ) {
+                                            $this->cancel_player_invoices( $old_partner_id );
+                                            $this->set_tournament_entry_withdrawn( $old_partner_id );
+                                        }
+                                    }
+                                }
+                            }
+                            if ( empty( $partner_name ) || ( $is_post_closing && ! $same_partner && ! $is_admin_allowed ) ) {
                                 if ( ! empty( $team->players ) ) {
                                     foreach ( $team->players as $team_player ) {
                                         if ( (int) $team_player->id !== (int) $entry->player_id ) {
@@ -1891,17 +2013,13 @@ final class Tournament {
                                     }
                                 }
                             }
-                            if ( ! $is_post_closing && ! $same_partner && ! empty( $partner_id ) ) {
-                                $league->delete_team( $team->team_id, $this->season );
-                                $new_entry    = true;
-                            }
                         }
                     }
-                    if ( $new_entry && ! $is_post_closing ) {
+                    if ( $new_entry && ( ! $is_post_closing || $is_admin_allowed ) ) {
                         if ( $is_doubles ) {
                             $team_args            = array();
                             $team_args['player']  = $player->id;
-                            $team_args['partner'] = $partner->id;
+                            $team_args['partner'] = $partner ? $partner->id : $partner_id;
                             $teams                = $racketmanager->get_teams( $team_args );
                             if ( $teams ) {
                                 $team = $teams[0];

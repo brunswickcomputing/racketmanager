@@ -9,6 +9,7 @@
 namespace Racketmanager\ajax;
 
 use JetBrains\PhpStorm\NoReturn;
+use Racketmanager\League_Team;
 use Racketmanager\Stripe_Settings;
 use Racketmanager\validator\Validator_Entry_Form;
 use stdClass;
@@ -84,7 +85,7 @@ class Ajax_Tournament extends Ajax {
                 $player_id     = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
                 $contactno     = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : '';
                 $contactemail  = isset( $_POST['contactemail'] ) ? sanitize_text_field( wp_unslash( $_POST['contactemail'] ) ) : '';
-                $btm           = isset( $_POST['btm'] ) ? intval( $_POST['btm'] ) : '';
+                $btm           = ! empty( $_POST['btm'] ) ? intval( $_POST['btm'] ) : null;
                 $comments      = isset( $_POST['commentDetails'] ) ? sanitize_textarea_field( wp_unslash( $_POST['commentDetails'] ) ) : '';
                 $validator     = $validator->player( $player_id );
                 if ( ! current_user_can( 'manage_racketmanager' ) ) {
@@ -152,7 +153,9 @@ class Ajax_Tournament extends Ajax {
                         }
                     }
                 }
-                $is_post_closing = $tournament && ( ! empty( $tournament->is_closed ) || ! empty( $tournament->is_withdrawal ) || ! empty( $tournament->is_started ) || ! empty( $tournament->is_complete ) );
+                $is_post_closing      = $tournament && ( ! empty( $tournament->is_closed ) || ! empty( $tournament->is_withdrawal ) || ! empty( $tournament->is_started ) || ! empty( $tournament->is_complete ) );
+                $is_withdrawal_closed = $tournament && ( ! empty( $tournament->is_withdrawal ) || ! empty( $tournament->is_started ) || ! empty( $tournament->is_complete ) );
+                $is_admin_allowed     = current_user_can( 'manage_racketmanager' ) && ! $is_withdrawal_closed;
                 if ( $is_post_closing && empty( $events ) ) {
                     foreach ( $allowed_event_ids as $allowed_id ) {
                         $check_event = get_event( $allowed_id );
@@ -201,11 +204,13 @@ class Ajax_Tournament extends Ajax {
                                 )
                             );
                             if ( empty( $teams ) ) {
-                                $validator->error      = true;
-                                $validator->err_flds[] = 'event';
-                                $validator->err_msgs[] = __( 'Tournament entries are now closed', 'racketmanager' );
-                                $post_closing_rejected = true;
-                                break;
+                                if ( ! $is_admin_allowed ) {
+                                    $validator->error      = true;
+                                    $validator->err_flds[] = 'event';
+                                    $validator->err_msgs[] = __( 'Tournament entries are now closed', 'racketmanager' );
+                                    $post_closing_rejected = true;
+                                    break;
+                                }
                             }
                             if ( substr( $event->type, 1, 1 ) === 'D' ) {
                                 $existing_partner_id = null;
@@ -228,11 +233,25 @@ class Ajax_Tournament extends Ajax {
                                 if ( empty( $submitted_partner_id ) && ! empty( $existing_partner_id ) ) {
                                     $partners[ $event_id ] = $existing_partner_id;
                                 } elseif ( ! empty( $submitted_partner_id ) && ! empty( $existing_partner_id ) && $submitted_partner_id !== $existing_partner_id ) {
-                                    $validator->error      = true;
-                                    $validator->err_flds[] = 'partner[' . $event_id . ']';
-                                    $validator->err_msgs[] = __( 'Partner changes are not permitted after entries close', 'racketmanager' );
-                                    $post_closing_rejected = true;
-                                    break;
+                                    if ( ! $is_admin_allowed ) {
+                                        $validator->error      = true;
+                                        $validator->err_flds[] = 'partner[' . $event_id . ']';
+                                        $validator->err_msgs[] = __( 'Partner changes are not permitted after entries close', 'racketmanager' );
+                                        $post_closing_rejected = true;
+                                        break;
+                                    } else {
+                                        $league_id = ! empty( $event->primary_league ) ? $event->primary_league : ( method_exists( $event, 'get_leagues' ) ? ( $event->get_leagues()[0] ?? null ) : null );
+                                        if ( $league_id && ! empty( $teams[0]->team_id ) ) {
+                                            $played_fixtures = League_Team::has_played_fixtures( (int) $league_id, (string) $tournament->season, (int) $teams[0]->team_id );
+                                            if ( $played_fixtures ) {
+                                                $validator->error      = true;
+                                                $validator->err_flds[] = 'partner[' . $event_id . ']';
+                                                $validator->err_msgs[] = __( 'Partner cannot be changed because match play has already started', 'racketmanager' );
+                                                $post_closing_rejected = true;
+                                                break;
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -242,7 +261,7 @@ class Ajax_Tournament extends Ajax {
                     foreach ( $events as $event ) {
                         $event = get_event( $event );
                         if ( substr( $event->type, 1, 1 ) === 'D' ) {
-                            $partner_id = $partners[$event->id] ?? 0;
+                            $partner_id = (int) ( $partners[ $event->id ] ?? 0 );
                             $field_ref  = $event->id;
                             $field_name = $event->name;
                             $validator  = $validator->partner( $partner_id, $field_ref, $field_name, $event, $season, $player_id, $tournament->date );
@@ -267,6 +286,20 @@ class Ajax_Tournament extends Ajax {
             $tournament_entry->paid         = $paid_fee;
             $tournament_entry->fee          = $entry_fee;
             $entry_status                   = $tournament->set_player_entry( $tournament_entry );
+            if ( false === $entry_status ) {
+                $validator->error = true;
+                foreach ( $tournament->entry_errors as $err_fld => $err_msg ) {
+                    $validator->err_flds[] = $err_fld;
+                    $validator->err_msgs[] = $err_msg;
+                }
+                if ( empty( $tournament->entry_errors ) ) {
+                    $validator->err_msgs[] = __( 'Tournament entry could not be saved', 'racketmanager' );
+                }
+                $validator->msg    = __( 'Errors in entry form', 'racketmanager' );
+                $validator->status = 400;
+                wp_send_json_error( $validator, 400 );
+                return;
+            }
             switch ( $entry_status ) {
                 case 1:
                     $msg              = __( 'Tournament entered and payment outstanding', 'racketmanager' );

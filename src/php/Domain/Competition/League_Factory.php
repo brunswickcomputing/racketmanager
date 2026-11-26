@@ -28,22 +28,11 @@ final class League_Factory {
         }
 
         if ( '' === trim( $dto->title ) ) {
-            throw new InvalidArgumentException( esc_html__( 'League title is required.', 'racketmanager' ) );
+            throw new InvalidArgumentException( 'League title is required.' );
         }
 
         if ( null !== $dto->event_id && isset( $event->id ) && (int) $dto->event_id !== $event->id ) {
-            throw new InvalidArgumentException( esc_html( sprintf( 'League event_id %d does not match Event id %d.', $dto->event_id, $event->id ) ) );
-        }
-
-        // The constructor derives event_id from the Event when the DTO value is null.
-        if ( ! empty( $event->competition->sport ) ) {
-            $sport_class = 'Racketmanager\\sports\\League_' . ucfirst( $event->competition->sport );
-            if ( class_exists( $sport_class ) ) {
-                return new $sport_class(
-                    $dto,
-                    $event
-                );
-            }
+            throw new InvalidArgumentException( 'League event_id does not match Event id' );
         }
 
         return new League(

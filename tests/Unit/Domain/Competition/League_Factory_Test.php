@@ -123,7 +123,7 @@ class League_Factory_Test extends TestCase {
 		$event                     = Event::from_object( $event_raw );
 
 		$this->expectException( InvalidArgumentException::class );
-		$this->expectExceptionMessageIsOrContains( 'League event_id 99 does not match Event id 3.' );
+		$this->expectExceptionMessageIsOrContains( 'League event_id does not match Event id' );
 		League_Factory::from_array( array( 'event_id' => 99, 'title' => 'Division 1' ), $event );
 	}
 

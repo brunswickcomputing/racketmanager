@@ -54,12 +54,12 @@ final class Standings_Service_Test extends TestCase {
     #[DataProvider( 'display_modes' )]
     public function test_read_standings_filters_and_ranks_without_entity_standings_methods( string $mode, string $team_filter ): void {
         $league = League_Test_Factory::from_object( (object) [ 'title' => 'Division 1' ] );
-        $league->id = 12;
-        $league->seasons = [ '2026' => [ 'name' => '2026' ] ];
-        $league->current_season = [ 'name' => '2026' ];
+        $league->set_id( 12 );
+        $league->set_seasons( [ '2026' => [ 'name' => '2026' ] ] );
+        $league->set_current_season( [ 'name' => '2026' ] );
         $league->set_match_query_arg( 'season', '2026' );
-        $league->standings = [ 'status' => 1 ];
-        $league->point_rule = 'three';
+        $league->set_standings( [ 'status' => 1 ] );
+        $league->set_point_rule( 'three' );
         $fixture = Fixture_Factory::from_array( [
             'id' => 70, 'home_team' => '10', 'away_team' => '20',
             'winner_id' => 10, 'loser_id' => 20, 'home_points' => '3', 'away_points' => '1',
@@ -106,8 +106,8 @@ final class Standings_Service_Test extends TestCase {
 
     public function test_manual_standings_persist_through_injected_repository(): void {
         $league = League::from_object( (object) [ 'title' => 'Division 1' ], $this->event( 'manual' ) );
-        $league->id = 12;
-        $league->current_season = [ 'name' => '2026' ];
+        $league->set_id( 12 );
+        $league->set_current_season( [ 'name' => '2026' ] );
         $repository = $this->createMock( League_Repository_Interface::class );
         $repository->expects( $this->once() )->method( 'update_standings_manually' )->with(
             12, '2026', 41,
@@ -132,10 +132,10 @@ final class Standings_Service_Test extends TestCase {
 
     public function test_set_teams_rank_uses_current_season_and_ranks_each_group(): void {
         $league = $this->createStub( League::class );
-        $league->event = $this->event( 'auto' );
-        $league->current_season = [ 'name' => '2026' ];
-        $league->groups = 'A;B';
-        $league->id = 12;
+        League_Test_Factory::set_property( $league, 'event', $this->event( 'auto' ) );
+        League_Test_Factory::set_property( $league, 'current_season', [ 'name' => '2026' ] );
+        League_Test_Factory::set_property( $league, 'groups', 'A;B' );
+        League_Test_Factory::set_property( $league, 'id', 12 );
         $team = new League_Team();
         $groups = [];
         $league_query_service = $this->createMock( League_Query_Service::class );
@@ -166,9 +166,9 @@ final class Standings_Service_Test extends TestCase {
 
     public function test_update_standings_saves_calculated_stats_and_refreshes_ranking(): void {
         $league = $this->createStub( League::class );
-        $league->id = 12;
-        $league->event = $this->event( 'auto' );
-        $league->point_rule = 'three';
+        League_Test_Factory::set_property( $league, 'id', 12 );
+        League_Test_Factory::set_property( $league, 'event', $this->event( 'auto' ) );
+        League_Test_Factory::set_property( $league, 'point_rule', 'three' );
         $league->method( 'get_season' )->willReturn( '2026' );
         $league->method( 'get_point_rule' )->willReturn( [] );
         $count_queries = [];
@@ -220,7 +220,7 @@ final class Standings_Service_Test extends TestCase {
 
     public function test_save_standings_does_not_overwrite_manual_points(): void {
         $league = League_Test_Factory::from_object( (object) [ 'title' => 'Division 1' ] );
-        $league->point_rule = 'manual';
+        $league->set_point_rule( 'manual' );
         $repository = $this->createMock( League_Repository_Interface::class );
         $repository->expects( $this->never() )->method( 'update_team_standings' );
 

@@ -45,9 +45,8 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
             ->with( 'racketmanager_nonce', 'racketmanager_teams-bulk', 'del_teams' )
             ->willThrowException( new Invalid_Status_Exception( 'Security token invalid' ) );
 
-        $league = new class() {
-            public int $id = 5;
-        };
+        $league = new League();
+        $league->set_id( 5 );
 
         $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service, team_repository: $this->team_repository );
         $result     = $dispatcher->handle(
@@ -68,9 +67,8 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
         $league_service = $this->createMock( League_Service::class );
         $guard          = $this->createStub( Action_Guard_Interface::class );
 
-        $league = new class() {
-            public int $id = 5;
-        };
+        $league = new League();
+        $league->set_id( 5 );
 
         $league_service->expects( self::exactly( 2 ) )
             ->method( 'delete_team' )
@@ -102,9 +100,8 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
         $league_service = $this->createMock( League_Service::class );
         $guard          = $this->createStub( Action_Guard_Interface::class );
 
-        $league = new class() {
-            public int $id = 5;
-        };
+        $league = new League();
+        $league->set_id( 5 );
 
         $league_service->expects( self::once() )
             ->method( 'withdraw_team' )
@@ -133,9 +130,9 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
     public function test_withdraw_teams_falls_back_to_team_id_when_team_not_found(): void {
         $league_service = $this->createStub( League_Service::class );
         $guard          = $this->createStub( Action_Guard_Interface::class );
-        $league         = new class() {
-            public int $id = 5;
-        };
+
+        $league = new League();
+        $league->set_id( 5 );
 
         $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service, team_repository: $this->team_repository );
         $result     = $dispatcher->handle(
@@ -160,13 +157,9 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
 
         $guard = $this->createStub( Action_Guard_Interface::class );
 
-        $league = new class() {
-            public int $id = 5;
-            public bool $is_championship = true;
-            public function get_id(): int {
-                return $this->id;
-            }
-        };
+        $league = new League();
+        $league->set_id( 5 );
+        $league->set_is_championship( true );
 
         $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service, team_repository: $this->team_repository );
         $result     = $dispatcher->handle(
@@ -193,12 +186,8 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
 
         $guard = $this->createStub( Action_Guard_Interface::class );
 
-        $league = new class() {
-            public int $id = 5;
-            public function get_id(): int {
-                return $this->id;
-            }
-        };
+        $league = new League();
+        $league->set_id( 5 );
 
         $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service, team_repository: $this->team_repository );
         $result     = $dispatcher->handle(
@@ -231,12 +220,8 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
 
         $guard = $this->createStub( Action_Guard_Interface::class );
 
-        $league = new class() {
-            public int $id = 5;
-            public function get_id(): int {
-                return $this->id;
-            }
-        };
+        $league = new League();
+        $league->set_id( 5 );
 
         $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service, team_repository: $this->team_repository );
         $result     = $dispatcher->handle(
@@ -262,9 +247,8 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
             ->with( 'racketmanager_nonce', 'racketmanager_add-teams-bulk', 'edit_teams' )
             ->willThrowException( new Invalid_Status_Exception( 'Security check failed' ) );
 
-        $league = new class() {
-            public int $id = 5;
-        };
+        $league = new League();
+        $league->set_id( 5 );
 
         $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service, team_repository: $this->team_repository );
         $result     = $dispatcher->handle(
@@ -290,9 +274,8 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
             ->with( 'racketmanager_nonce', 'racketmanager_teams-bulk', 'update_results' )
             ->willThrowException( new Invalid_Status_Exception( 'Ranking forbidden' ) );
 
-        $league = new class() {
-            public int $id = 5;
-        };
+        $league = new League();
+        $league->set_id( 5 );
 
         $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service, team_repository: $this->team_repository );
         $result     = $dispatcher->handle(
@@ -316,9 +299,8 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
             ->with( 'racketmanager_nonce', 'racketmanager_teams-bulk', 'update_results' )
             ->willThrowException( new Invalid_Status_Exception( 'Manual standings forbidden' ) );
 
-        $league = new class() {
-            public int $id = 5;
-        };
+        $league = new League();
+        $league->set_id( 5 );
 
         $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service, team_repository: $this->team_repository );
         $result     = $dispatcher->handle(
@@ -341,9 +323,8 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
 
         $guard = $this->createStub( Action_Guard_Interface::class );
 
-        $league = new class() {
-            public int $id = 5;
-        };
+        $league = new League();
+        $league->set_id( 5 );
 
         $dispatcher = new League_Team_Action_Dispatcher( $league_service, $guard, $this->standings_service, team_repository: $this->team_repository );
 
@@ -374,8 +355,10 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
         $league_service = $this->createMock( League_Service::class );
         $guard          = $this->createStub( Action_Guard_Interface::class );
 
-        $league = League_Test_Factory::from_object( (object) [ 'title' => 'Division 1' ] );
-        $league->id = 5;
+        $league = new League();
+        $league->set_id( 5 );
+        $league->set_name( 'Division 1' );
+
         $this->standings_service->expects( self::once() )->method( 'save_standings_manually' )->with(
             $league,
             [ 1 => 10 ],
@@ -410,9 +393,8 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
         $league_service = $this->createMock( League_Service::class );
         $guard          = $this->createStub( Action_Guard_Interface::class );
 
-        $league = new class() {
-            public int $id = 5;
-        };
+        $league = new League();
+        $league->set_id( 5 );
 
         $league_service->expects( self::once() )
             ->method( 'delete_team' )
@@ -438,9 +420,8 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
         $league_service = $this->createMock( League_Service::class );
         $guard          = $this->createStub( Action_Guard_Interface::class );
 
-        $league = new class() {
-            public int $id = 5;
-        };
+        $league = new League();
+        $league->set_id( 5 );
 
         $league_service->expects( self::once() )
             ->method( 'withdraw_team' )
@@ -466,9 +447,8 @@ final class League_Team_Action_Dispatcher_Test extends TestCase {
         $league_service = $this->createMock( League_Service::class );
         $guard          = $this->createStub( Action_Guard_Interface::class );
 
-        $league = new class() {
-            public int $id = 999;
-        };
+        $league = new League();
+        $league->set_id( 999 );
 
         $league_service->expects( self::once() )
             ->method( 'withdraw_team' )

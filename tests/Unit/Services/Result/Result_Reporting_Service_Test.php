@@ -22,8 +22,7 @@ use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Settings;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Team\Team;
-use Racketmanager\Tests\Helpers\Competition_Test_Factory;
-use Racketmanager\Tests\Helpers\Event_Test_Factory;
+use Racketmanager\Tests\Helpers\{Competition_Test_Factory, Event_Test_Factory, League_Test_Factory};
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
@@ -103,11 +102,11 @@ class Result_Reporting_Service_Test extends TestCase {
 	private function create_standard_league( array $overrides = [] ): League {
 		$league = $this->createStub( League::class );
 		$league->method( 'get_event_id' )->willReturn( $overrides['event_id'] ?? 20 );
-		$league->title = $overrides['title'] ?? 'Test League';
-		$league->num_teams_total = $overrides['num_teams_total'] ?? 8;
-		$league->num_rubbers = $overrides['num_rubbers'] ?? 0;
-		$league->championship = $this->createStub( Championship::class );
-		$league->championship->method( 'num_teams_first_round' )->willReturn( $overrides['first_round_teams'] ?? 8 );
+		League_Test_Factory::set_property( $league, 'title', $overrides['title'] ?? 'Test League' );
+		League_Test_Factory::set_property( $league, 'num_teams_total', $overrides['num_teams_total'] ?? 8 );
+		League_Test_Factory::set_property( $league, 'num_rubbers', $overrides['num_rubbers'] ?? 0 );
+		$championship = $this->createConfiguredStub( Championship::class, array( 'num_teams_first_round' => $overrides['first_round_teams'] ?? 8 ) );
+		League_Test_Factory::set_property( $league, 'championship', $championship );
 		return $league;
 	}
 

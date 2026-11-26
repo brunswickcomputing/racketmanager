@@ -20,6 +20,7 @@ use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 class Competition_Season_Service_Test extends TestCase {
@@ -493,8 +494,8 @@ class Competition_Season_Service_Test extends TestCase {
 			)
 			->willReturn( [ $team_one, $team_two ] );
 
-		$league     = $this->createStub( League::class );
-		$league->id = 22;
+		$league = $this->createStub( League::class );
+		League_Test_Factory::set_property( $league, 'id', 22 );
 
 		$league_repo = $this->createMock( League_Repository_Interface::class );
 		$league_repo->expects( $this->once() )->method( 'find_by_id' )->with( 22 )->willReturn( $league );

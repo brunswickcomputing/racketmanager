@@ -62,9 +62,9 @@ final class Cup_Matches_Admin_Controller_Test extends TestCase {
         $champ_ref = new \ReflectionClass( Championship::class );
         $champ_obj = $champ_ref->newInstanceWithoutConstructor();
 
-        $league->is_championship = true;
-        $league->championship    = $champ_obj;
-        $league->current_season  = array( 'home_away' => 'true' );
+        $league->set_is_championship( true );
+        $league->set_championship( $champ_obj );
+        $league->set_current_season( array( 'home_away' => 'true' ) );
 
         $competition_service = $this->createMock( Competition_Service::class );
         $competition_service->expects( self::once() )

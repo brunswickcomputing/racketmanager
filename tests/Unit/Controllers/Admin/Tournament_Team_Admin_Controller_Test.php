@@ -14,6 +14,7 @@ use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Domain\Team\Team_Factory;
 use Racketmanager\Domain\Tournament\Tournament;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use stdClass;
 
 require_once __DIR__ . '/../../../wp-stubs.php';
@@ -85,7 +86,7 @@ final class Tournament_Team_Admin_Controller_Test extends TestCase {
         $event                        = new \Racketmanager\Domain\Competition\Event();
         $event->set_competition( $competition );
         $league                       = $this->createStub( \Racketmanager\Domain\Competition\League::class );
-        $league->event                = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
 
         $this->league_service->method( 'get_league' )->willReturn( $league );
 
@@ -111,7 +112,7 @@ final class Tournament_Team_Admin_Controller_Test extends TestCase {
         $event                        = new \Racketmanager\Domain\Competition\Event();
         $event->set_competition( $competition );
         $league                       = $this->createStub( \Racketmanager\Domain\Competition\League::class );
-        $league->event                = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
 
         $this->league_service->method( 'get_league' )->willReturn( $league );
 

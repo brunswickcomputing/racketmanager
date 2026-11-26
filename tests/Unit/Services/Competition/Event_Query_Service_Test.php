@@ -24,6 +24,7 @@ use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Competition\Event_Query_Service;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use Racketmanager\Tests\Helpers\Player_Test_Factory;
 
@@ -297,7 +298,7 @@ class Event_Query_Service_Test extends TestCase {
             ->willReturn( [ $row ] );
 
         $league = $this->createMock( League::class );
-        $league->title = 'Division One';
+        League_Test_Factory::set_property( $league, 'title', 'Division One' );
 
         $league_repository->expects( $this->once() )
             ->method( 'find_by_id' )
@@ -329,7 +330,7 @@ class Event_Query_Service_Test extends TestCase {
             ->willReturn( [ $row1, $row2, $row3 ] );
 
         $league = $this->createMock( League::class );
-        $league->name = 'Premier League';
+        League_Test_Factory::set_property( $league, 'name', 'Premier League' );
 
         $league_repository->expects( $this->exactly( 2 ) )
             ->method( 'find_by_id' )

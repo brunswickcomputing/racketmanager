@@ -76,6 +76,7 @@ use Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
 use Racketmanager\Tests\Helpers\Creates_League_Query_Service;
 use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use Racketmanager\Tests\Helpers\Creates_Competition_Season_Service;
 use Racketmanager\Tests\Helpers\Player_Test_Factory;
@@ -262,28 +263,24 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
     }
 
     private function create_league( Event $event, array $matches ): League {
-        $league = new class() extends League {
-            public function __construct() {
-                $this->id             = 3;
-                $this->title          = 'Mens Singles Division';
-                $this->match_day      = -1;
-                $this->current_season = [ 'name' => '2026' ];
-                $this->seasons        = [ '2026' ];
-            }
-            public function set_template( string $type, string $template ): void {}
-            public function set_season( false|string $season = false, bool $force_overwrite = false, ?string $final = null ): void {}
-            public function set_match_day( int $match_day = 1 ): void {}
-            public function set_group( string $group = '', bool $force_overwrite = false ): void {}
-            public function set_num_matches( bool $total = false ): void {}
-        };
-        $league->event        = $event;
-        $league->championship = new class() extends Championship {
+        $championship = new class() extends Championship {
             public function __construct() {}
             public function get_finals( false|int|string $key = false ): ?array {
                 return [ [ 'name' => 'Final', 'key' => 'final' ] ];
             }
         };
-        return $league;
+
+        return League_Test_Factory::create(
+            id: 3,
+            title: 'Mens Singles Division',
+            event: $event,
+            seasons: [ '2026' => [ 'name' => '2026' ] ],
+            overrides: [
+                'match_day'      => -1,
+                'current_season' => [ 'name' => '2026' ],
+                'championship'   => $championship,
+            ]
+        );
     }
 
     private function league_query_service_with_matches( array $fixtures ): League_Query_Service {
@@ -375,8 +372,8 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $competition          = $this->create_competition( Competition_Type::TOURNAMENT );
         $event                = $this->create_event( $competition );
         $league               = $this->create_league( $event, [] );
-        $league->teams        = [ (object) [ 'rank' => 1, 'done_matches' => 1, 'points_formatted' => [ 'primary' => 2 ] ] ];
-        $league->team_index   = [ 10 => 0 ];
+        $league->set_teams( [ (object) [ 'rank' => 1, 'done_matches' => 1, 'points_formatted' => [ 'primary' => 2 ] ] ] );
+        $league->set_team_index( [ 10 => 0 ] );
         [ $fixture, $detail ] = $this->build_played_fixture( $league, $event, $competition );
 
         $league_service = $this->createStub( League_Service::class );
@@ -433,8 +430,8 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $event       = $this->create_event( $competition );
         $fixture     = Fixture_Test_Factory::create( id: 703, league_id: 3 );
         $league      = $this->create_league( $event, [ $fixture ] );
-        $league->teams      = [ (object) [ 'rank' => 1, 'done_matches' => 1, 'points_formatted' => [ 'primary' => 2 ] ] ];
-        $league->team_index = [ 10 => 0 ];
+        $league->set_teams( [ (object) [ 'rank' => 1, 'done_matches' => 1, 'points_formatted' => [ 'primary' => 2 ] ] ] );
+        $league->set_team_index( [ 10 => 0 ] );
 
         $league_service = $this->createStub( League_Service::class );
         $league_service->method( 'get_league' )->willReturn( $league );
@@ -520,7 +517,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
         $competition          = $this->create_competition( Competition_Type::TOURNAMENT );
         $event                = $this->create_event( $competition );
         $league               = $this->create_league( $event, [] );
-        $league->is_championship = true;
+        $league->set_is_championship( true );
         $championship         = new class() extends Championship {
             public function __construct() {}
             public function __get( string $name ): mixed {
@@ -535,7 +532,7 @@ class League_Match_Card_Entry_Points_Test extends TestCase {
                 ];
             }
         };
-        $league->championship = $championship;
+        $league->set_championship( $championship );
 
         [ $fixture, $detail ] = $this->build_played_fixture( $league, $event, $competition );
         $fixture->set_league( $league );

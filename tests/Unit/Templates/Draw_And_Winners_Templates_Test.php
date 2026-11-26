@@ -271,13 +271,13 @@ class Draw_And_Winners_Templates_Test extends TestCase {
             [ 'key' => 'semi', 'name' => 'Semi Final' ],
         ] );
 
-        $league                 = $this->createStub( League::class );
-        $league->id             = 81;
-        $league->title          = 'Mens Jubilee Cup';
-        $league->event          = $event;
-        $league->championship   = $championship;
-        $league->current_season = [ 'name' => '2025' ];
-        $league->seasons        = [ '2025' => [ 'rounds' => [] ] ];
+        $league = new League();
+        $league->set_id( 81 );
+        $league->set_name( 'Mens Jubilee Cup' );
+        $league->set_event( $event );
+        $league->set_championship( $championship );
+        $league->set_current_season( [ 'name' => '2025' ] );
+        $league->set_seasons( [ '2025' => [ 'rounds' => [] ] ] );
         $this->stub_league_query = $this->createStub( League_Query_Service::class );
         $this->stub_league_query->method( 'get_matches' )->willReturnCallback(
             fn( object $league, array $args = [] ) => $matches_by_final[ $args['final'] ] ?? []
@@ -487,19 +487,21 @@ class Draw_And_Winners_Templates_Test extends TestCase {
 
         $championship = $this->createStub( Championship::class );
 
-        $league = $this->createStub( League::class );
-        $league->id = 201;
-        $league->title = 'Mens Doubles';
-        $league->event = $event;
-        $league->championship = $championship;
-        $league->current_season = [ 'name' => '2026' ];
-        $league->seasons = [
-            '2026' => [
-                'rounds' => [
-                    'quarter' => (object) [ 'date' => '2026-07-25' ],
+        $league = new League();
+        $league->set_id( 201 );
+        $league->set_name( 'Mens Doubles' );
+        $league->set_event( $event );
+        $league->set_championship( $championship );
+        $league->set_current_season( [ 'name' => '2026' ] );
+        $league->set_seasons(
+            [
+                '2026' => [
+                    'rounds' => [
+                        'quarter' => (object) [ 'date' => '2026-07-25' ],
+                    ],
                 ],
-            ],
-        ];
+            ]
+        );
 
         // Doubles Pair 1
         $p1 = $this->createStub( Player::class );
@@ -561,7 +563,7 @@ class Draw_And_Winners_Templates_Test extends TestCase {
             'fixtures' => [ $fixture_details ],
         ];
 
-        $league->finals = [ $final ];
+        $league->set_finals_list( [ $final ] );
         $event->set_leagues( [ $league ] );
 
         $tournament_service = $this->createStub( Tournament_Service::class );

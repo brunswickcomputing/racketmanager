@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Admin\Commands;
 
 use InvalidArgumentException;
+use Racketmanager\Domain\Competition\League;
 use stdClass;
 use Racketmanager\Application\Fixture\Ports\Fixture_Maintenance_Service_Interface;
 use Racketmanager\Application\Fixture\Ports\Fixture_Result_Manager_Interface;
@@ -15,7 +16,22 @@ use Racketmanager\Domain\Fixture\Fixture_Time_Parser;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Application\League\Ports\League_Query_Service_Interface;
 
+/**
+ * Coordinates league match administration actions, including deletion, creation or editing,
+ * and result updates through fixture and league services.
+ */
 final readonly class League_Match_Handler {
+    /**
+     * Initialises the service with fixture, maintenance, result, fixture service, and league query dependencies.
+     *
+     * @param Fixture_Repository_Interface          $fixture_repository Fixture repository dependency.
+     * @param Fixture_Maintenance_Service_Interface $fixture_maintenance_service Fixture maintenance service dependency.
+     * @param Fixture_Result_Manager_Interface      $fixture_result_manager Fixture result manager dependency.
+     * @param Fixture_Service_Interface             $fixture_service Fixture service dependency.
+     * @param League_Query_Service_Interface        $league_query_service League query service dependency.
+     *
+     * @return void
+     */
     public function __construct(
         private Fixture_Repository_Interface $fixture_repository,
         private Fixture_Maintenance_Service_Interface $fixture_maintenance_service,
@@ -25,6 +41,13 @@ final readonly class League_Match_Handler {
     ) {
     }
 
+    /**
+     * Handles deletion of selected league matches and returns the resulting action status.
+     *
+     * @param Delete_League_Matches_Command $command Command containing the match identifiers to delete.
+     *
+     * @return Action_Result_DTO Result containing status messaging and the matches tab override.
+     */
     public function handle_delete_matches( Delete_League_Matches_Command $command ): Action_Result_DTO {
         $matches = isset( $command->match ) && is_array( $command->match ) ? $command->match : array();
         if ( empty( $matches ) ) {
@@ -45,8 +68,16 @@ final readonly class League_Match_Handler {
         );
     }
 
-    public function handle_manage_matches( Manage_League_Matches_Command $command, object $league ): Action_Result_DTO {
-        $mode = isset( $command->mode ) ? $command->mode : '';
+    /**
+     * Handles league match management by adding or editing matches based on the command mode.
+     *
+     * @param Manage_League_Matches_Command $command Command containing match management data and mode.
+     * @param League                        $league League object whose matches are being managed.
+     *
+     * @return Action_Result_DTO Result of the add or edit match operation.
+     */
+    public function handle_manage_matches( Manage_League_Matches_Command $command, League $league ): Action_Result_DTO {
+        $mode = $command->mode ?? '';
         if ( 'add' === $mode ) {
             return $this->add_matches( $command, $league );
         }
@@ -54,19 +85,23 @@ final readonly class League_Match_Handler {
         return $this->edit_matches( $command, $league );
     }
 
-    public function handle_update_results( Update_League_Results_Command $command, object $league ): Action_Result_DTO {
+    /**
+     * Handles submitted league match result updates and returns the admin action response.
+     *
+     * @param Update_League_Results_Command $command Command containing match IDs, point values, custom data, and season context.
+     * @param League                        $league League instance whose match results should be updated.
+     *
+     * @return Action_Result_DTO Result DTO containing the response message and target admin tab.
+     */
+    public function handle_update_results( Update_League_Results_Command $command, League $league ): Action_Result_DTO {
         $custom      = isset( $command->custom ) && is_array( $command->custom ) ? $command->custom : array();
         $matches     = isset( $command->matches ) && is_array( $command->matches ) ? $command->matches : array();
         $home_points = isset( $command->home_points ) && is_array( $command->home_points ) ? $command->home_points : array();
         $away_points = isset( $command->away_points ) && is_array( $command->away_points ) ? $command->away_points : array();
-        $season      = isset( $command->season ) ? $command->season : '';
+        $season      = $command->season ?? '';
 
         if ( ! empty( $matches ) && ! empty( $home_points ) && ! empty( $away_points ) && ! empty( $season ) ) {
-            if ( method_exists( $league, 'set_finals' ) ) {
-                $league->set_finals( false );
-            } elseif ( isset( $league->finals ) ) {
-                $league->finals = false;
-            }
+            $league->set_finals( false );
             $num_matches = $this->fixture_result_manager->update_match_results( $league, $matches, $home_points, $away_points, $custom, $season, false );
 
             /* translators: %d: number of matches updated */
@@ -80,17 +115,26 @@ final readonly class League_Match_Handler {
         return new Action_Result_DTO( tab_override: 'matches' );
     }
 
-    private function add_matches( Manage_League_Matches_Command $command, object $league ): Action_Result_DTO {
+    /**
+     * Adds valid matches from the command to the specified league.
+     *
+     * @param Manage_League_Matches_Command $command Command containing match data and related options.
+     * @param League                        $league League to which the matches are added.
+     *
+     * @return Action_Result_DTO Result describing the outcome of the add operation.
+     */
+    private function add_matches( Manage_League_Matches_Command $command, League $league ): Action_Result_DTO {
         $matches = isset( $command->match ) && is_array( $command->match ) ? $command->match : array();
         if ( empty( $matches ) ) {
             return new Action_Result_DTO( tab_override: 'matches' );
         }
 
-        $season = isset( $command->season ) ? $command->season : null;
-        $final  = isset( $command->final ) ? $command->final : null;
+        $season = $command->season ?? null;
+        $final  = $command->final ?? null;
 
         if ( $final ) {
-            $final_exists = $this->league_query_service->get_matches( $league,
+            $final_exists = $this->league_query_service->get_matches(
+                $league,
                 array(
                     'final'  => $final,
                     'season' => $season,
@@ -126,15 +170,15 @@ final readonly class League_Match_Handler {
                         $date_time = $trimmed_date . ' ' . $time;
                         if ( ! Fixture_Time_Parser::is_valid_datetime( $date_time ) ) {
                             return new Action_Result_DTO(
-                                message: sprintf( __( 'Invalid date format provided for match row %d: "%s"', 'racketmanager' ), $i + 1, $date_time ),
+                                message: sprintf( __( 'Invalid date format provided for match row %1$d: "%2$s"', 'racketmanager' ), $i + 1, $date_time ),
                                 message_type: Admin_Message_Type::ERROR,
                                 tab_override: 'matches',
                             );
                         }
 
-                        $match              = new stdClass();
-                        $match->date        = $date_time;
-                        $match->match_day   = '';
+                        $match            = new stdClass();
+                        $match->date      = $date_time;
+                        $match->match_day = '';
                         if ( isset( $command->match_day[ $i ] ) ) {
                             $match->match_day = $command->match_day[ $i ];
                         } elseif ( ! empty( $command->match_day ) ) {
@@ -149,7 +193,7 @@ final readonly class League_Match_Handler {
                         $match->group       = null;
                         $match->final_round = $final;
                         $match->num_rubbers = isset( $command->num_rubbers ) ? intval( $command->num_rubbers ) : null;
-                        $new_matches[] = $match;
+                        $new_matches[]      = $match;
                     }
                 } else {
                     --$num_matches;
@@ -157,7 +201,7 @@ final readonly class League_Match_Handler {
             }
         } catch ( InvalidArgumentException $e ) {
             return new Action_Result_DTO(
-                message: sprintf( __( 'Match row %d: %s', 'racketmanager' ), $i + 1, $e->getMessage() ),
+                message: sprintf( __( 'Match row %1$d: %2$s', 'racketmanager' ), $i + 1, $e->getMessage() ),
                 message_type: Admin_Message_Type::ERROR,
                 tab_override: 'matches',
             );
@@ -175,14 +219,22 @@ final readonly class League_Match_Handler {
         );
     }
 
-    private function edit_matches( Manage_League_Matches_Command $command, object $league ): Action_Result_DTO {
+    /**
+     * Updates existing league matches using values from the command.
+     *
+     * @param Manage_League_Matches_Command $command Command containing match identifiers, dates, teams, and related match data.
+     * @param League                        $league League associated with the matches being edited.
+     *
+     * @return Action_Result_DTO Result describing the outcome of the edit operation.
+     */
+    private function edit_matches( Manage_League_Matches_Command $command, League $league ): Action_Result_DTO {
         $matches = isset( $command->match ) && is_array( $command->match ) ? $command->match : array();
         if ( empty( $matches ) ) {
             return new Action_Result_DTO( tab_override: 'matches' );
         }
 
         $num_matches = count( $matches );
-        $updates = array();
+        $updates     = array();
         try {
             foreach ( $matches as $i => $match_id ) {
                 $match = $this->fixture_repository->find_by_id( (int) $match_id );
@@ -208,7 +260,7 @@ final readonly class League_Match_Handler {
 
                 if ( '' !== $date && ! Fixture_Time_Parser::is_valid_datetime( $date ) ) {
                     return new Action_Result_DTO(
-                        message: sprintf( __( 'Invalid date format provided for match row %d: "%s"', 'racketmanager' ), $i + 1, $date ),
+                        message: sprintf( __( 'Invalid date format provided for match row %1$d: "%2$s"', 'racketmanager' ), $i + 1, $date ),
                         message_type: Admin_Message_Type::ERROR,
                         tab_override: 'matches',
                     );
@@ -218,7 +270,7 @@ final readonly class League_Match_Handler {
             }
         } catch ( InvalidArgumentException $e ) {
             return new Action_Result_DTO(
-                message: sprintf( __( 'Match row %d: %s', 'racketmanager' ), $i + 1, $e->getMessage() ),
+                message: sprintf( __( 'Match row %1$d: %2$s', 'racketmanager' ), $i + 1, $e->getMessage() ),
                 message_type: Admin_Message_Type::ERROR,
                 tab_override: 'matches',
             );

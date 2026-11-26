@@ -342,9 +342,9 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
             ) );
         $event = Event::from_object( (object) array( 'id' => 93, 'name' => 'Mixed U10 Summer', 'type' => 'XD', 'competition_id' => 1 ), $competition );
 
-        $league                  = $this->createStub( League::class );
-        $league->id              = 50;
-        $league->num_teams_total = 4;
+        $league = $this->createStub( League::class );
+        League_Test_Factory::set_property( $league, 'id', 50 );
+        League_Test_Factory::set_property( $league, 'num_teams_total', 4 );
 
         $event_repository = $this->createMock( Event_Repository_Interface::class );
         $event_repository->expects( self::once() )
@@ -420,8 +420,8 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
         ) );
         $event = Event::from_object( (object) array( 'id' => 93, 'name' => 'Mixed U10 Summer', 'type' => 'XD', 'competition_id' => 1 ), $competition );
 
-        $league     = $this->createStub( League::class );
-        $league->id = 50;
+        $league = $this->createStub( League::class );
+        League_Test_Factory::set_property( $league, 'id', 50 );
         $event_repository = $this->createStub( Event_Repository_Interface::class );
         $event_repository->method( 'query_leagues' )->willReturn( array( (object) array( 'id' => 50 ) ) );
         $league_repository = $this->createStub( League_Repository_Interface::class );
@@ -592,8 +592,8 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
         $guard          = $this->createStub( Action_Guard_Interface::class );
         $league_service = $this->createMock( League_Service::class );
 
-        $league     = $this->createMock( \Racketmanager\Domain\Competition\League::class );
-        $league->id = 7;
+        $league = $this->createMock( \Racketmanager\Domain\Competition\League::class );
+        League_Test_Factory::set_property( $league, 'id', 7 );
         $this->league_repository->method( 'find_by_id' )->willReturnCallback( static fn( int $id ) => 7 === $id ? $league : null );
 
         $league_service->expects( self::once() )
@@ -621,8 +621,8 @@ final class League_Constitution_Action_Dispatcher_Test extends TestCase {
         $guard          = $this->createStub( Action_Guard_Interface::class );
         $league_service = $this->createMock( League_Service::class );
 
-        $league     = $this->createMock( \Racketmanager\Domain\Competition\League::class );
-        $league->id = 7;
+        $league = $this->createMock( \Racketmanager\Domain\Competition\League::class );
+        League_Test_Factory::set_property( $league, 'id', 7 );
         $this->league_repository->method( 'find_by_id' )->willReturnCallback( static fn( int $id ) => 7 === $id ? $league : null );
 
         $league_service->expects( self::once() )

@@ -14,6 +14,7 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Tournament\Championship;
 use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 
 final class Event_Query_Handler_Delegation_Test extends TestCase {
 	private function league_with_finals(): League {
@@ -28,9 +29,9 @@ final class Event_Query_Handler_Delegation_Test extends TestCase {
 			]
 		);
 
-		$league               = $this->createStub( League::class );
-		$league->id           = 9;
-		$league->championship = $championship;
+		$league = new League();
+		$league->set_id( 9 );
+		$league->set_championship( $championship );
 
 		return $league;
 	}

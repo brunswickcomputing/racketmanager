@@ -15,6 +15,7 @@ use Racketmanager\Admin\View_Models\Tournament_Plan_Page_View_Model;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
@@ -969,8 +970,8 @@ class Admin_Plan_Templates_Test extends TestCase {
         $fixture->set_home_team( $home_team );
         $fixture->set_away_team( $away_team );
 
-        $league        = $this->createStub( League::class );
-        $league->title = 'Mens Open';
+        $league = $this->createStub( League::class );
+        League_Test_Factory::set_property( $league, 'title', 'Mens Open' );
 
         return new Fixture_Details_DTO(
             $fixture,

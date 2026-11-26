@@ -120,7 +120,7 @@ readonly class Get_Event_Matches_Handler {
                         unset( $finals[ $f ] );
                     }
                 }
-                $league_obj->finals = $finals;
+                $league_obj->set_finals_list( $finals );
             }
             $leagues[ $l ] = $league_obj;
         }

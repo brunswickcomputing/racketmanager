@@ -19,6 +19,7 @@ use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Services\Result_Service;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use stdClass;
 
 #[AllowMockObjectsWithoutExpectations]
@@ -315,7 +316,7 @@ class Championship_Manager_Test extends TestCase {
             32 => $this->createMock( League::class ),
         ];
         foreach ( $consolation_leagues as $league_id => $consolation_league ) {
-            $consolation_league->id = $league_id;
+            League_Test_Factory::set_property( $consolation_league, 'id', $league_id );
         }
         $league_query_service = $this->createMock( League_Query_Service::class );
         $queried_leagues      = [];

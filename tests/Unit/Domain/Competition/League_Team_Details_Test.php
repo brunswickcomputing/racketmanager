@@ -80,7 +80,7 @@ final class League_Team_Details_Test extends TestCase {
             'settings' => [],
             'seasons'  => [ '2026' => [ 'name' => '2026' ] ],
         ] );
-        $league->current_season = [ 'name' => '2026' ];
+        $league->set_current_season( [ 'name' => '2026' ] );
 
         $captain = Player_Test_Factory::create(
             id: 55,

@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Presenters\Admin_Date_Presenter;
 use Racketmanager\Admin\Presenters\Admin_Results_Match_Presenter;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use stdClass;
 
 require_once dirname( __DIR__, 3 ) . '/wp-stubs.php';
@@ -110,8 +111,8 @@ final class Admin_Results_Match_Presenter_Test extends TestCase {
         $match->date      = '2026-05-01 10:00:00';
 
         $league = $this->createStub( \Racketmanager\Domain\Competition\League::class );
-        $league->id = 12;
-        $league->title = 'Division 1';
+        League_Test_Factory::set_property( $league, 'id', 12 );
+        League_Test_Factory::set_property( $league, 'title', 'Division 1' );
         $repository = $this->createMock( League_Repository_Interface::class );
         $repository->expects( $this->once() )->method( 'find_by_id' )->with( 12 )->willReturn( $league );
         $presenter = new Admin_Results_Match_Presenter( new Admin_Date_Presenter(), $repository );
@@ -127,8 +128,8 @@ final class Admin_Results_Match_Presenter_Test extends TestCase {
         $fixture->set_league_id( 7 );
 
         $league = $this->createStub( \Racketmanager\Domain\Competition\League::class );
-        $league->id    = 7;
-        $league->title = 'Division 7';
+        League_Test_Factory::set_property( $league, 'id', 7 );
+        League_Test_Factory::set_property( $league, 'title', 'Division 7' );
         $repository = $this->createMock( League_Repository_Interface::class );
         $repository->expects( $this->once() )->method( 'find_by_id' )->with( 7 )->willReturn( $league );
         $presenter = new Admin_Results_Match_Presenter( new Admin_Date_Presenter(), $repository );

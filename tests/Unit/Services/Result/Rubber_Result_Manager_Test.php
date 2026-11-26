@@ -15,6 +15,7 @@ use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Enums\Fixture_Status;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Domain\DTO\Rubber\Rubber_Update_Request;
 use Racketmanager\Services\Result\Rubber_Result_Manager;
@@ -56,8 +57,8 @@ class Rubber_Result_Manager_Test extends TestCase {
         $league = $this->createMock(League::class);
         $league->method('get_id')->willReturn(456);
         $league->method('get_point_rule')->willReturn(['match_result' => 'sets']);
-        $league->num_sets_to_win = 2;
-        $league->num_sets = 3;
+        League_Test_Factory::set_property( $league, 'num_sets_to_win', 2 );
+        League_Test_Factory::set_property( $league, 'num_sets', 3 );
         $this->league_service->expects($this->once())->method('get_league')->with(456)->willReturn($league);
 
         $rubber_mock = $this->createMock(Rubber::class);
@@ -128,8 +129,8 @@ class Rubber_Result_Manager_Test extends TestCase {
         $league = $this->createMock( League::class );
         $league->method( 'get_id' )->willReturn( 456 );
         $league->method( 'get_point_rule' )->willReturn( [ 'match_result' => 'sets' ] );
-        $league->num_sets_to_win = 2;
-        $league->num_sets        = 3;
+        League_Test_Factory::set_property( $league, 'num_sets_to_win', 2 );
+        League_Test_Factory::set_property( $league, 'num_sets', 3 );
         $this->league_service->expects( $this->once() )->method( 'get_league' )->with( 456 )->willReturn( $league );
 
         $rubber_mock = $this->createMock( Rubber::class );
@@ -217,9 +218,9 @@ class Rubber_Result_Manager_Test extends TestCase {
         $league = $this->createMock(League::class);
         $league->method('get_id')->willReturn(456);
         $league->method('get_point_rule')->willReturn(['match_result' => 'sets']);
-        $league->num_sets_to_win = 2;
-        $league->num_sets = 3;
-        $league->type = 'MT';
+        League_Test_Factory::set_property( $league, 'num_sets_to_win', 2 );
+        League_Test_Factory::set_property( $league, 'num_sets', 3 );
+        League_Test_Factory::set_property( $league, 'type', 'MT' );
         $this->league_service->expects($this->once())->method('get_league')->with(456)->willReturn($league);
 
         $request = new Rubber_Update_Request(

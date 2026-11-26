@@ -20,6 +20,7 @@ use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Event_Test_Factory;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 
 class Fixture_Presenter_Phase2_Test extends TestCase {
     private Fixture_Presenter $presenter;
@@ -53,8 +54,8 @@ class Fixture_Presenter_Phase2_Test extends TestCase {
         $fixture->method('get_away_points')->willReturn('3');
         $fixture->method('is_pending')->willReturn(false);
 
-        $league = $this->createStub(League::class);
-        $league->title = 'Division 1';
+        $league = $this->createStub( League::class );
+        League_Test_Factory::set_property( $league, 'title', 'Division 1' );
         
         $event = Event_Test_Factory::create( name: 'Summer League' );
         

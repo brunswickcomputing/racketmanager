@@ -238,7 +238,7 @@ class League_Repository implements League_Repository_Interface {
         $league = League_Factory::from_object( $row, $event );
         if ( $league ) {
             $league->set_season();
-            $league->num_teams_total = (int) $this->query_league_teams(
+            $num_teams_total = (int) $this->query_league_teams(
                 (int) $league->id,
                 array(
                     'count'            => true,
@@ -248,12 +248,13 @@ class League_Repository implements League_Repository_Interface {
                 ),
                 true
             );
+            $league->set_num_teams_total( $num_teams_total );
 
             if ( 'championship' === ( $league->mode ?? '' ) ) {
-                $settings_data        = isset( $league->settings ) ? (array) $league->settings : array();
-                $settings             = Championship_Settings::from_array( $settings_data );
-                $factory              = new Championship_Factory( $this, $this->league_query_service_resolver );
-                $league->championship = $factory->create( $league, $settings );
+                $settings_data = isset( $league->settings ) ? (array) $league->settings : array();
+                $settings      = Championship_Settings::from_array( $settings_data );
+                $factory       = new Championship_Factory( $this, $this->league_query_service_resolver );
+                $league->set_championship( $factory->create( $league, $settings ) );
             }
         }
         return $league;

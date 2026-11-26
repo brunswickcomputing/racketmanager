@@ -21,6 +21,7 @@ use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use ReflectionClass;
 
 require_once __DIR__ . '/../../../wp-stubs.php';
@@ -90,8 +91,8 @@ final class Contact_Admin_Controller_Test extends TestCase {
 
     private function league( int $id = 5, string $name = 'Premier League', string $season = '2025' ): League {
         $league = $this->createMock( League::class );
-        $league->id = $id;
-        $league->name = $name;
+        League_Test_Factory::set_property( $league, 'id', $id );
+        League_Test_Factory::set_property( $league, 'name', $name );
         $league->method( 'get_season' )->willReturn( $season );
         return $league;
     }

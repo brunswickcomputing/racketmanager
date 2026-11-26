@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\DTO\Team\Team_Hydration_DTO;
@@ -122,7 +123,7 @@ final class Email_Templates_Render_Test extends TestCase {
     ): void {
         $league = $this->createStub( League::class );
         $league->method( 'get_name' )->willReturn( $league_name );
-        $league->title = $league_name;
+        League_Test_Factory::set_property( $league, 'title', $league_name );
         if ( null !== $event_id ) {
             $league->method( 'get_event_id' )->willReturn( $event_id );
         }

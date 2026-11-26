@@ -12,6 +12,7 @@ use Racketmanager\Services\Admin\League\League_Event_Action_Dispatcher;
 use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
 use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 
 require_once __DIR__ . '/../../../../wp-stubs.php';
 
@@ -136,7 +137,7 @@ final class League_Event_Action_Dispatcher_Test extends TestCase {
 
     public function test_delete_leagues_delegates_to_league_service(): void {
         $league = $this->createMock( \Racketmanager\Domain\Competition\League::class );
-        $league->title = 'Division 1';
+        League_Test_Factory::set_property( $league, 'title', 'Division 1' );
         $service = $this->createMock( League_Service::class );
         $service->expects( self::once() )->method( 'get_league' )->with( 51 )->willReturn( $league );
         $service->expects( self::once() )->method( 'delete_league' )->with( $league );

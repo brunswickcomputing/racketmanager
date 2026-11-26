@@ -57,7 +57,7 @@ final class Cup_Setup_Event_Admin_Controller_Test extends TestCase {
         $competition = Competition_Test_Factory::create( id: 1, type: Competition_Type::CUP );
         $league      = League_Test_Factory::from_object( (object) array( 'id' => 10, 'title' => 'Men Cup' ) );
         $event       = Event::from_object( (object) array( 'id' => 20, 'name' => 'Men Singles', 'type' => 'singles' ), $competition );
-        $league->event = $event;
+        $league->set_event( $event );
 
         $league_repo = $this->createMock( League_Repository_Interface::class );
         $league_repo->method( 'find_by_id' )->willReturn( $league );
@@ -82,7 +82,7 @@ final class Cup_Setup_Event_Admin_Controller_Test extends TestCase {
         );
         $league      = League_Test_Factory::from_object( (object) array( 'id' => 10, 'title' => 'Men Cup' ) );
         $event       = Event::from_object( (object) array( 'id' => 20, 'name' => 'Men Singles', 'type' => 'singles' ), $competition );
-        $league->event = $event;
+        $league->set_event( $event );
 
         $league_repo = $this->createMock( League_Repository_Interface::class );
         $league_repo->method( 'find_by_id' )->willReturn( $league );
@@ -107,7 +107,7 @@ final class Cup_Setup_Event_Admin_Controller_Test extends TestCase {
         );
         $league      = League_Test_Factory::from_object( (object) array( 'id' => 10, 'title' => 'Men Cup' ) );
         $event       = Event::from_object( (object) array( 'id' => 20, 'name' => 'Men Singles', 'type' => 'singles' ), $competition );
-        $league->event = $event;
+        $league->set_event( $event );
 
         $league_repo = $this->createMock( League_Repository_Interface::class );
         $league_repo->method( 'find_by_id' )->willReturn( $league );
@@ -141,7 +141,7 @@ final class Cup_Setup_Event_Admin_Controller_Test extends TestCase {
         $league        = League_Test_Factory::from_object( (object) array( 'id' => 10, 'title' => 'Men Cup' ) );
         $event         = Event::from_object( (object) array( 'id' => 20, 'name' => 'Men Singles', 'type' => 'singles' ), $competition );
         $event->set_offset( 1 );
-        $league->event = $event;
+        $league->set_event( $event );
 
         $league_repo = $this->createMock( League_Repository_Interface::class );
         $league_repo->method( 'find_by_id' )->willReturn( $league );
@@ -175,7 +175,7 @@ final class Cup_Setup_Event_Admin_Controller_Test extends TestCase {
                 'match_dates' => array( '2026-07-01', '2026-07-15' ),
             ),
         ) );
-        $league->event = $event;
+        $league->set_event( $event );
 
         $league_repo = $this->createMock( League_Repository_Interface::class );
         $league_repo->method( 'find_by_id' )->willReturn( $league );
@@ -201,7 +201,7 @@ final class Cup_Setup_Event_Admin_Controller_Test extends TestCase {
             seasons: Competition_Test_Factory::season_map( '2026' )
         );
         $league          = League_Test_Factory::from_object( (object) array( 'id' => 10, 'title' => 'Men Cup' ) );
-        $league->seasons = array(
+        $league->set_seasons( array(
             '2026' => array(
                 'rounds' => array(
                     (object) array( 'date' => '2026-05-01' ),
@@ -209,9 +209,9 @@ final class Cup_Setup_Event_Admin_Controller_Test extends TestCase {
                     (object) array( 'date' => '2026-06-01' ),
                 ),
             ),
-        );
+        ) );
         $event           = Event::from_object( (object) array( 'id' => 20, 'name' => 'Men Singles', 'type' => 'singles' ), $competition );
-        $league->event   = $event;
+        $league->set_event( $event );
 
         $league_repo = $this->createMock( League_Repository_Interface::class );
         $league_repo->method( 'find_by_id' )->willReturn( $league );

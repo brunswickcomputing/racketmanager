@@ -46,6 +46,7 @@ use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use Racketmanager\Tests\Helpers\Creates_Test_Container;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use Racketmanager\Tests\Helpers\Player_Test_Factory;
 
@@ -328,12 +329,12 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
     // ---------------------------------------------------------------------
 
     public function test_show_match_header_renders_via_handler_and_presenter(): void {
-        $league        = $this->createStub( League::class );
-        $league->title = 'Division 1 Men';
-        $event         = new Event();
+        $league = $this->createStub( League::class );
+        League_Test_Factory::set_property( $league, 'title', 'Division 1 Men' );
+        $event  = new Event();
         $event->set_name( 'Division 1' );
-        $competition   = Competition_Test_Factory::create( type: Competition_Type::LEAGUE );
-        $dto           = $this->details_dto( $this->fixture( 42, '1', '2', 10 ), $league, $event, $competition );
+        $competition = Competition_Test_Factory::create( type: Competition_Type::LEAGUE );
+        $dto         = $this->details_dto( $this->fixture( 42, '1', '2', 10 ), $league, $event, $competition );
 
         $output = $this->build_native_adapter( $this->details_service( $dto ) )->show_match_header( [ 'id' => 42 ] );
 
@@ -368,9 +369,9 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
             ]
         );
         $rubbers = $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class );
-        $league              = $this->createStub( League::class );
-        $league->num_rubbers = 4;
-        $dto                 = $this->details_dto( $fixture, $league );
+        $league  = $this->createStub( League::class );
+        League_Test_Factory::set_property( $league, 'num_rubbers', 4 );
+        $dto     = $this->details_dto( $fixture, $league );
 
         $player  = Player_Test_Factory::create( id: 9 );
         $players = $this->createStub( Player_Service::class );

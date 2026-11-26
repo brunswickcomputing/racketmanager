@@ -79,9 +79,9 @@ trait Creates_Test_Container {
         $comp_mock               = (object) [ 'type' => $type ];
         $event_mock->set_competition( $comp_mock );
         $league_mock->method( 'get_name' )->willReturn( $title );
-        $league_mock->title = $title;
-        $league_mock->id    = $league_id;
-        $league_mock->event = $event_mock;
+        League_Test_Factory::set_property( $league_mock, 'title', $title );
+        League_Test_Factory::set_property( $league_mock, 'id', $league_id );
+        League_Test_Factory::set_property( $league_mock, 'event', $event_mock );
 
         $league_repo->method( 'find_by_id' )->willReturn( $league_mock );
         $comp_service->method( 'get_league_repository' )->willReturn( $league_repo );

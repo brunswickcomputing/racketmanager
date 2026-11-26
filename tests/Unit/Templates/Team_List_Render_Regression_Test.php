@@ -150,29 +150,18 @@ class Team_List_Render_Regression_Test extends TestCase {
         );
         $adapter = $this->create_league_adapter();
 
-        $league = new class extends League {
-            public function __construct() {
-                $this->id             = 10;
-                $this->title          = 'Premier Division';
-                $this->current_season = [ 'name' => '2026' ];
-                $this->event          = new class extends Event {
-                    public function __construct() {
-                        $this->set_id( 20 );
-                        $this->set_name( 'Men Premier' );
-                        $comp = new class() extends Competition {
-                            public function __construct() {
-                                parent::__construct( name: 'Premier Division', type: Competition_Type::LEAGUE, age_group: 'adults' );
-                                $this->set_is_team_entry( true );
-                                $this->set_is_player_entry( false );
-                            }
-                        };
-                        $this->set_competition( $comp );
-                    }
-                };
-            }
-            public function set_template( string $type, string $template ): void {}
-            public function set_group( string $group = '', bool $force_overwrite = false ): void {}
-        };
+        $league = new League();
+        $league->set_id( 10 );
+        $league->set_name( 'Premier Division' );
+        $league->set_current_season( [ 'name' => '2026' ] );
+        $event = new Event();
+        $event->set_id( 20 );
+        $event->set_name( 'Men Premier' );
+        $comp = new Competition( name: 'Premier Division', type: Competition_Type::LEAGUE, age_group: 'adults' );
+        $comp->set_is_team_entry( true );
+        $comp->set_is_player_entry( false );
+        $event->set_competition( $comp );
+        $league->set_event( $event );
 
         $league_service->method( 'get_league' )->willReturn( $league );
 

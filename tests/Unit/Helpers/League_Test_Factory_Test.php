@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Helpers;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
@@ -135,5 +136,103 @@ class League_Test_Factory_Test extends TestCase {
 		self::assertSame( $from_object->id, $from_array->id );
 		self::assertSame( $from_object->title, $from_array->title );
 		self::assertSame( $from_object->event_id, $from_array->event_id );
+	}
+
+	public function test_create_applies_overrides_to_private_set_properties(): void {
+		$league = League_Test_Factory::create(
+			id: 20,
+			title: 'Championship Division',
+			overrides: array(
+				'sport'           => 'squash',
+				'num_teams_total' => 12,
+				'is_championship' => true,
+				'match_day'       => 4,
+			)
+		);
+
+		self::assertSame( 20, $league->id );
+		self::assertSame( 'Championship Division', $league->title );
+		self::assertSame( 'squash', $league->sport );
+		self::assertSame( 12, $league->num_teams_total );
+		self::assertTrue( $league->is_championship );
+		self::assertSame( 4, $league->match_day );
+	}
+
+	public function test_set_property_mutates_stub_and_real_entity(): void {
+		$stub = $this->createStub( League::class );
+		League_Test_Factory::set_property( $stub, 'id', 99 );
+		League_Test_Factory::set_property( $stub, 'title', 'Stub League' );
+
+		self::assertSame( 99, $stub->id );
+		self::assertSame( 'Stub League', $stub->title );
+		self::assertSame( 'Stub League', $stub->name );
+
+		$league = League_Test_Factory::create();
+		League_Test_Factory::set_property( $league, 'title', 'Updated League' );
+
+		self::assertSame( 'Updated League', $league->title );
+		self::assertSame( 'Updated League', $league->name );
+	}
+
+	public function test_set_property_routes_season_to_set_season_name_on_real_entity(): void {
+		$league = League_Test_Factory::create();
+		League_Test_Factory::set_property( $league, 'season', '2027' );
+
+		self::assertSame( '2027', $league->season );
+	}
+
+	public function test_set_property_routes_finals_to_set_finals_list_on_real_entity(): void {
+		$league = League_Test_Factory::create();
+		$finals = array( array( 'key' => 'final', 'name' => 'Final' ) );
+		League_Test_Factory::set_property( $league, 'finals', $finals );
+
+		self::assertSame( $finals, $league->finals );
+	}
+
+	public function test_set_property_routes_num_teams_to_set_num_teams_count_on_real_entity(): void {
+		$league = League_Test_Factory::create();
+		League_Test_Factory::set_property( $league, 'num_teams', 6 );
+
+		self::assertSame( 6, $league->num_teams );
+	}
+
+	public function test_set_property_writes_special_names_through_reflection_on_stubs(): void {
+		$stub = $this->createStub( League::class );
+		League_Test_Factory::set_property( $stub, 'season', '2027' );
+		League_Test_Factory::set_property( $stub, 'finals', array( array( 'key' => 'final' ) ) );
+		League_Test_Factory::set_property( $stub, 'num_teams', 4 );
+
+		self::assertSame( '2027', $stub->season );
+		self::assertSame( array( array( 'key' => 'final' ) ), $stub->finals );
+		self::assertSame( 4, $stub->num_teams );
+	}
+
+	public function test_set_property_rejects_unknown_property_on_real_entity(): void {
+		$league = League_Test_Factory::create();
+
+		$this->expectException( InvalidArgumentException::class );
+		$this->expectExceptionMessage( 'Unknown League test property: not_a_league_property' );
+		League_Test_Factory::set_property( $league, 'not_a_league_property', 1 );
+	}
+
+	public function test_set_property_rejects_unknown_property_on_stub(): void {
+		$stub = $this->createStub( League::class );
+
+		$this->expectException( InvalidArgumentException::class );
+		$this->expectExceptionMessage( 'Unknown League test property: not_a_league_property' );
+		League_Test_Factory::set_property( $stub, 'not_a_league_property', 1 );
+	}
+
+	public function test_set_property_rejects_non_public_property(): void {
+		$league = League_Test_Factory::create();
+
+		$this->expectException( InvalidArgumentException::class );
+		$this->expectExceptionMessage( 'Non-public League test property: match_query_args' );
+		League_Test_Factory::set_property( $league, 'match_query_args', array() );
+	}
+
+	public function test_create_rejects_unknown_override(): void {
+		$this->expectException( InvalidArgumentException::class );
+		League_Test_Factory::create( overrides: array( 'not_a_league_property' => 1 ) );
 	}
 }

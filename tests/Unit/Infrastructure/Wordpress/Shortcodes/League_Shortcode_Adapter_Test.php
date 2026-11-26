@@ -24,6 +24,7 @@ use Racketmanager\Application\League\Queries\Get_League_Season_Dropdown_Handler;
 use Racketmanager\Application\League\Queries\Get_League_Standings_Handler;
 use Racketmanager\Application\League\Queries\Get_League_Teams_Handler;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\League_Shortcode_Adapter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
@@ -110,11 +111,11 @@ class League_Shortcode_Adapter_Test extends TestCase {
     ): League {
         $team       = $this->create_standings_team_row( $team_overrides );
         $league_obj = $this->createStub( League::class );
-        $league_obj->id        = 1;
-        $league_obj->title     = $title;
-        $league_obj->sport     = 'tennis';
-        $league_obj->standings = $standings_cols;
-        $league_obj->teams     = [ $team ];
+        League_Test_Factory::set_property( $league_obj, 'id', 1 );
+        League_Test_Factory::set_property( $league_obj, 'title', $title );
+        League_Test_Factory::set_property( $league_obj, 'sport', 'tennis' );
+        League_Test_Factory::set_property( $league_obj, 'standings', $standings_cols );
+        League_Test_Factory::set_property( $league_obj, 'teams', [ $team ] );
 
         return $league_obj;
     }

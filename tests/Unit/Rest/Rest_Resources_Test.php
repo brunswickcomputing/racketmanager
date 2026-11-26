@@ -352,7 +352,7 @@ class Rest_Resources_Test extends TestCase {
         );
 
         $league = League_Test_Factory::from_object( (object) array( 'id' => 3, 'title' => 'Premier "Division"' ) );
-        $league->seasons = [ '2026' ];
+        $league->set_seasons( [ '2026' ] );
         $league_repo = $this->createStub( League_Repository_Interface::class );
         $league_repo->method( 'find_by_id' )->willReturn( $league );
         $this->competition_service->method( 'get_league_repository' )->willReturn( $league_repo );
@@ -464,7 +464,7 @@ class Rest_Resources_Test extends TestCase {
 
         $this->configure_league_match_fixtures( [ $fixture1, $fixture2, $fixture3, $fixture4 ], $league_repo );
         $GLOBALS['wp_stubs_leagues']['division 1'] = $league;
-        $league->seasons = [ '2026' ];
+        $league->set_seasons( [ '2026' ] );
 
         $request = new WP_REST_Request( 'GET', '/racketmanager/v1/fixtures' );
         $request->set_param( 'league', 'division-1' );
@@ -510,7 +510,7 @@ class Rest_Resources_Test extends TestCase {
 
         $league_lookup_count = 0;
         $league = League_Test_Factory::from_object( (object) array( 'id' => 100, 'title' => 'Memoized League' ) );
-        $league->seasons = [ '2026' ];
+        $league->set_seasons( [ '2026' ] );
         $league_repo = $this->createStub( League_Repository_Interface::class );
         $league_repo->method( 'find_by_id' )->willReturnCallback( function( int $id ) use ( $league, &$league_lookup_count ) {
             $league_lookup_count++;
@@ -598,8 +598,8 @@ class Rest_Resources_Test extends TestCase {
         $event->set_id( 50 );
 
         $league = League_Test_Factory::from_object( (object) [ 'id' => 10, 'title' => 'Premier League', 'seasons' => [ '2026' => [ 'name' => '2026' ] ] ] );
-        $league->current_season = [ 'name' => '2026' ];
-        $league->event = $event;
+        $league->set_current_season( [ 'name' => '2026' ] );
+        $league->set_event( $event );
 
         $team_item = new \stdClass();
         $team_item->table_id = 1;

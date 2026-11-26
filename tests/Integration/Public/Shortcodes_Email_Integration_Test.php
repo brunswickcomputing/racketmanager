@@ -38,6 +38,7 @@ use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 #[AllowMockObjectsWithoutExpectations]
@@ -115,7 +116,7 @@ class Shortcodes_Email_Integration_Test extends TestCase {
         $league->method( 'get_id' )->willReturn( 10 );
         $league->method( 'get_event_id' )->willReturn( 20 );
         $league->method( 'get_name' )->willReturn( 'Division 1' );
-        $league->current_season = [ 'name' => '2026' ];
+        League_Test_Factory::set_property( $league, 'current_season', [ 'name' => '2026' ] );
         $league_repo->method( 'find_by_id' )->willReturn( $league );
 
         $event = $this->createMock( Event::class );

@@ -15,6 +15,7 @@ use Racketmanager\Domain\Team\Team;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Presentation\Presenters\Tournament_Presenter;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 
 final class Tournament_Presenter_Test extends TestCase {
 	public function test_formats_dates_with_configured_format(): void {
@@ -164,10 +165,10 @@ final class Tournament_Presenter_Test extends TestCase {
 		);
 
 		$league = $this->createStub( League::class );
-		$league->title = 'Men Singles';
+		League_Test_Factory::set_property( $league, 'title', 'Men Singles' );
 		$event = new Event();
 		$event->set_name( 'Singles Event' );
-		$league->event = $event;
+		League_Test_Factory::set_property( $league, 'event', $event );
 
         $tournament = new Tournament();
         $tournament->set_id( 5 );

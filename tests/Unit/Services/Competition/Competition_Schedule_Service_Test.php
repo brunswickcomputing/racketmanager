@@ -66,10 +66,10 @@ class Competition_Schedule_Service_Test extends TestCase {
 	}
 
 	private function make_league( int $id, string $title, string $season = '2026' ): League {
-		$league        = ( new \ReflectionClass( League::class ) )->newInstanceWithoutConstructor();
-		$league->id    = $id;
-		$league->title = $title;
-		$league->seasons[ $season ] = array();
+		$league = new League();
+		$league->set_id( $id );
+		$league->set_title( $title );
+		$league->set_seasons( array( $season => array() ) );
 		return $league;
 	}
 

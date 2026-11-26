@@ -53,7 +53,7 @@ final class League_Read_Api_Characterization_Test extends TestCase {
 			'sport'   => 'tennis',
 			'seasons' => array( '2026' => array( 'name' => '2026' ) ),
 		), $overrides ) );
-		$league->current_season = array( 'name' => '2026' );
+		$league->set_current_season( array( 'name' => '2026' ) );
 		return $league;
 	}
 

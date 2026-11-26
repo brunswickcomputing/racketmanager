@@ -79,7 +79,6 @@ final class League_Purity_Test extends TestCase {
 			'get_fixture_repository',
 			'get_league_repository',
 			'get_crosstable_field',
-			'get_players',
 			'get_league_team',
 			'get_team_dtls',
 			'get_league_teams',
@@ -274,17 +273,28 @@ final class League_Purity_Test extends TestCase {
 		$this->assertFalse( $reflection->hasMethod( 'get_num_teams' ), 'League::get_num_teams must not exist.' );
 	}
 
+	public function test_get_players_is_a_pure_in_memory_accessor(): void {
+		$league = League_Test_Factory::from_object( (object) array( 'id' => 10 ) );
+		$this->assertSame( 0, ( new \ReflectionMethod( League::class, 'get_players' ) )->getNumberOfParameters() );
+		$league->set_players( array( (object) array( 'id' => 1 ) ) );
+		$this->assertCount( 1, $league->get_players() );
+	}
+
 	public function test_set_num_teams_is_a_pure_in_memory_mutator_without_repository_parameter(): void {
 		$league = League_Test_Factory::from_object( (object) array( 'id' => 10 ) );
-		$league->num_teams_total = 8;
+		$league->set_num_teams_total( 8 );
 		$this->assertSame( 1, ( new \ReflectionMethod( League::class, 'set_num_teams' ) )->getNumberOfParameters() );
 
 		$league->set_num_teams( false );
 		$this->assertSame( 8, $league->num_teams );
 	}
 
-	public function test_set_num_matches_is_removed_from_entity(): void {
-		$this->assertFalse( ( new \ReflectionClass( League::class ) )->hasMethod( 'set_num_matches' ) );
+	public function test_set_num_matches_is_a_pure_in_memory_mutator(): void {
+		$league = League_Test_Factory::from_object( (object) array( 'id' => 10 ) );
+		$this->assertSame( 1, ( new \ReflectionMethod( League::class, 'set_num_matches' ) )->getNumberOfParameters() );
+
+		$league->set_num_matches( 12 );
+		$this->assertSame( 12, $league->num_matches );
 	}
 
 	public function test_update_is_a_pure_in_memory_mutator_without_repository_parameter(): void {

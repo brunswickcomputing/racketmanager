@@ -34,7 +34,7 @@ class Standings_Match_Counts_Test extends TestCase {
 
     private function league(): League {
         $league = League_Test_Factory::from_object( (object) [ 'id' => 100, 'sport' => 'tennis', 'seasons' => [ '2026' => [ 'name' => '2026' ] ] ] );
-        $league->current_season = [ 'name' => '2026' ];
+        $league->set_current_season( [ 'name' => '2026' ] );
 
         return $league;
     }

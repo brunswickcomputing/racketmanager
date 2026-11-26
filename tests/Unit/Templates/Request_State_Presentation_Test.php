@@ -145,7 +145,7 @@ class Request_State_Presentation_Test extends TestCase {
 
     public function test_league_matches_handler_supplies_selection_form_target(): void {
         $league = $this->league();
-        $league->num_match_days = 3;
+        $league->set_num_match_days( 3 );
         $league_query = $this->createStub( League_Query_Service::class );
         $league_query->method( 'get_matches' )->willReturn( [] );
         $league_query->method( 'get_league_teams' )->willReturn( [] );
@@ -215,7 +215,7 @@ class Request_State_Presentation_Test extends TestCase {
         // Rendering must not recompute these values from user or domain state.
         $GLOBALS['wp_stubs_current_user_can'] = ! $can_edit;
         $GLOBALS['wp_stubs_is_user_logged_in'] = ! $can_edit;
-        $league->current_season = [ 'name' => '2027' ];
+        $league->set_current_season( [ 'name' => '2027' ] );
         $html = $this->renderer->render( $result->template, $result->vars, $result->template_type );
 
         self::assertSame( $can_edit, str_contains( $html, 'id="teamEditLink"' ) );
@@ -233,16 +233,16 @@ class Request_State_Presentation_Test extends TestCase {
     }
 
     private function league(): League {
-        $league = $this->createStub( League::class );
-        $league->id = 1;
-        $league->title = 'Division 1';
-        $league->current_season = [ 'name' => '2026' ];
-        $league->is_championship = false;
+        $league = new League();
+        $league->set_id( 1 );
+        $league->set_name( 'Division 1' );
+        $league->set_current_season( [ 'name' => '2026' ] );
+        $league->set_is_championship( false );
         $event = new Event();
         $event->set_id( 5 );
         $event->set_is_box( false );
         $event->set_competition( (object) [ 'type' => 'league', 'is_championship' => false, 'is_team_entry' => true, 'is_player_entry' => false ] );
-        $league->event = $event;
+        $league->set_event( $event );
         return $league;
     }
 }

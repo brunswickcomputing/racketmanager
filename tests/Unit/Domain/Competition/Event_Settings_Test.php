@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Fixture\Rubber;
@@ -94,7 +95,7 @@ class Event_Settings_Test extends TestCase {
             ->willReturn( 2 );
 
         $league              = $this->createMock( League::class );
-        $league->num_rubbers = 2;
+        League_Test_Factory::set_property( $league, 'num_rubbers', 2 );
         $this->league_repository->expects( $this->once() )
             ->method( 'find_by_id' )
             ->with( 50 )

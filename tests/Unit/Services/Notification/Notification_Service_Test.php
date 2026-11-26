@@ -88,7 +88,8 @@ use Racketmanager\Services\Settings_Service;
 use Racketmanager\Infrastructure\Wordpress\Options\Option_Service;
 use Racketmanager\RacketManager;
 use Racketmanager\Application\Ports\View_Renderer_Interface;
-use Racketmanager\Tests\Helpers\Club_Test_Factory;
+    use Racketmanager\Tests\Helpers\Club_Test_Factory;
+    use Racketmanager\Tests\Helpers\League_Test_Factory;
     use Racketmanager\Services\Competition\League_Query_Service;
     use stdClass;
 
@@ -201,10 +202,10 @@ class Notification_Service_Test extends TestCase {
         bool $is_tournament = false,
         int $competition_id = 123
     ): League {
-        $league                  = $this->createMock( League::class );
-        $league->id              = $id;
-        $league->title           = $title;
-        $league->is_championship = $is_championship;
+        $league = $this->createMock( League::class );
+        League_Test_Factory::set_property( $league, 'id', $id );
+        League_Test_Factory::set_property( $league, 'title', $title );
+        League_Test_Factory::set_property( $league, 'is_championship', $is_championship );
 
         $competition = (object) [
             'type'          => $comp_type,
@@ -217,7 +218,7 @@ class Notification_Service_Test extends TestCase {
         $event = new Event();
         $event->set_competition( $competition );
         $event->set_competition_id( $competition_id );
-        $league->event         = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
 
         return $league;
     }
@@ -532,7 +533,7 @@ class Notification_Service_Test extends TestCase {
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $event = new Event();
         $event->set_competition( (object)['type' => 'league'] );
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
         $this->league_repository->method('find_by_id')->willReturn($league);
         $this->option_service->method('get_confirmation_email')->willReturn('');
         $GLOBALS['wp_mail_calls'] = [];

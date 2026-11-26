@@ -41,7 +41,7 @@ class League_Schedule_Service_Import_Test extends TestCase {
 
 	public function test_create_match_schedule_throws_when_fixture_service_is_missing(): void {
 		$service = new League_Schedule_Service();
-		$league  = ( new \ReflectionClass( League::class ) )->newInstanceWithoutConstructor();
+		$league  = new League();
 
 		$this->expectException( RuntimeException::class );
 		$this->expectExceptionMessage( 'Cannot create match schedule: Fixture_Service collaborator is required.' );
@@ -53,8 +53,8 @@ class League_Schedule_Service_Import_Test extends TestCase {
 		$service         = new League_Schedule_Service( $fixture_service );
 		$this->assertSame( $fixture_service, $service->get_fixture_service() );
 
-		$league     = ( new \ReflectionClass( League::class ) )->newInstanceWithoutConstructor();
-		$league->id = 10;
+		$league = new League();
+		$league->set_id( 10 );
 		$teams      = [
 			(object) [ 'id' => 1, 'match_day' => 'Saturday', 'match_time' => '10:00', 'club' => (object) [ 'shortcode' => 'CL1' ] ],
 			(object) [ 'id' => 2, 'match_day' => 'Sunday', 'match_time' => '14:00', 'club' => (object) [ 'shortcode' => 'CL2' ] ],
@@ -74,10 +74,10 @@ class League_Schedule_Service_Import_Test extends TestCase {
 	}
 
 	public function test_generate_box_league_matches_schedules_valid_leagues(): void {
-		$league1 = ( new \ReflectionClass( League::class ) )->newInstanceWithoutConstructor();
-		$league1->id = 101;
-		$league2 = ( new \ReflectionClass( League::class ) )->newInstanceWithoutConstructor();
-		$league2->id = 102;
+		$league1 = new League();
+		$league1->set_id( 101 );
+		$league2 = new League();
+		$league2->set_id( 102 );
 
 		$event = new class( $league1, $league2 ) {
 			public function __construct( private League $league1, private League $league2 ) {}
@@ -105,8 +105,8 @@ class League_Schedule_Service_Import_Test extends TestCase {
 	}
 
 	public function test_generate_box_league_matches_resolves_numeric_league_ids_from_repository(): void {
-		$league = ( new \ReflectionClass( League::class ) )->newInstanceWithoutConstructor();
-		$league->id = 55;
+		$league = new League();
+		$league->set_id( 55 );
 
 		$event = (object) [
 			'leagues' => [ 55, 999 ],
@@ -129,8 +129,8 @@ class League_Schedule_Service_Import_Test extends TestCase {
 	}
 
 	public function test_generate_box_league_matches_resolves_raw_db_rows_via_repository(): void {
-		$league = ( new \ReflectionClass( League::class ) )->newInstanceWithoutConstructor();
-		$league->id = 55;
+		$league = new League();
+		$league->set_id( 55 );
 		$row = (object) array( 'id' => 55, 'event_id' => 12, 'title' => 'Division 1' );
 		$repository = $this->createMock( League_Repository_Interface::class );
 		$repository->expects( $this->once() )->method( 'find_by_id' )->with( 55 )->willReturn( $league );

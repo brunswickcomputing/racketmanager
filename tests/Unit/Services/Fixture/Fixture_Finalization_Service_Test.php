@@ -21,6 +21,7 @@ use Racketmanager\Services\Competition\Knockout_Progression_Service;
 use Racketmanager\Services\Fixture\Fixture_Finalization_Service;
 use Racketmanager\Services\Result\Result_Reporting_Service;
 use Racketmanager\Services\Standings\Standings_Service;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 #[AllowMockObjectsWithoutExpectations]
@@ -91,7 +92,7 @@ class Fixture_Finalization_Service_Test extends TestCase {
         $this->fixture->method( 'get_league_id' )->willReturn( 123 );
         $this->league->method( 'get_competition_type' )->willReturn( 'tournament' );
 
-        $this->league->is_championship = true;
+        League_Test_Factory::set_property( $this->league, 'is_championship', true );
         $this->league->method( 'get_id' )->willReturn( 123 );
         $this->league->method( 'get_name' )->willReturn( 'Tournament Draw' );
         $this->league->method( 'get_event_id' )->willReturn( 789 );

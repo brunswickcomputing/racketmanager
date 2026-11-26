@@ -71,9 +71,8 @@ class Admin_Import_Fixtures_Test extends TestCase {
         );
 
         $mock_league = (new \ReflectionClass( League::class ))->newInstanceWithoutConstructor();
-        $mock_league->id = 99;
-        $mock_league->title = 'Test League';
-        $mock_league->name = 'Test League';
+        $mock_league->set_id( 99 );
+        $mock_league->set_name( 'Test League' );
         $league_repository->expects( $this->once() )
             ->method( 'find_by_id' )
             ->with( 99 )

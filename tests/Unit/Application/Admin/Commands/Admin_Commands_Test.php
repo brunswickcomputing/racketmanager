@@ -24,6 +24,7 @@ use Racketmanager\Application\Fixture\Ports\Fixture_Result_Manager_Interface;
 use Racketmanager\Application\Fixture\Ports\Fixture_Service_Interface;
 use Racketmanager\Application\Fixture\Ports\Results_Checker_Manager_Interface;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Result\Results_Checker_Data;
 use Racketmanager\Domain\Fixture\Fixture;
@@ -116,13 +117,8 @@ final class Admin_Commands_Test extends TestCase {
         $manager->expects( self::once() )->method( 'update_match_results' )
             ->with( $league, [ '7' ], [ 7 => '0.0' ], [ 7 => '' ], [ 7 => [ 'sets' => '2' ] ], '2026', false )->willReturn( 1 );
         $dispatcher = new League_Match_Action_Dispatcher(
-            $this->createStub( Fixture_Repository_Interface::class ),
-            $this->createStub( Fixture_Maintenance_Service::class ),
             $this->createStub( Action_Guard_Interface::class ),
-            $manager,
-            $this->createStub( Fixture_Service::class ),
-            new League_Match_Handler( $this->createStub( Fixture_Repository_Interface::class ), $this->createStub( Fixture_Maintenance_Service::class ), $manager, $this->createStub( Fixture_Service::class ), $this->createStub( League_Query_Service::class ) ),
-            league_query_service: $this->createStub( League_Query_Service::class )
+            new League_Match_Handler( $this->createStub( Fixture_Repository_Interface::class ), $this->createStub( Fixture_Maintenance_Service::class ), $manager, $this->createStub( Fixture_Service::class ), $this->createStub( League_Query_Service::class ) )
         );
         $result = $dispatcher->handle( [], [ 'updateLeague' => 'results', 'matches' => [ '7' ], 'season' => '2026', 'home_points' => [ 7 => '0.0' ], 'away_points' => [ 7 => '' ], 'custom' => [ 7 => [ 'sets' => '2' ] ], 'myDatePicker' => 'unused' ], $league );
         self::assertSame( 'Updated Results of 1 matches', $result->message );
@@ -197,13 +193,8 @@ final class Admin_Commands_Test extends TestCase {
         $maintenance = $this->createMock( Fixture_Maintenance_Service::class );
         $maintenance->expects( self::once() )->method( 'delete_fixture' )->with( 7 );
         $dispatcher = new League_Match_Action_Dispatcher(
-            $this->createStub( Fixture_Repository_Interface::class ),
-            $maintenance,
             $this->createStub( Action_Guard_Interface::class ),
-            $this->createStub( Fixture_Result_Manager::class ),
-            $this->createStub( Fixture_Service::class ),
-            new League_Match_Handler( $this->createStub( Fixture_Repository_Interface::class ), $maintenance, $this->createStub( Fixture_Result_Manager::class ), $this->createStub( Fixture_Service::class ), $this->createStub( League_Query_Service::class ) ),
-            league_query_service: $this->createStub( League_Query_Service::class )
+            new League_Match_Handler( $this->createStub( Fixture_Repository_Interface::class ), $maintenance, $this->createStub( Fixture_Result_Manager::class ), $this->createStub( Fixture_Service::class ), $this->createStub( League_Query_Service::class ) )
         );
         $result = $dispatcher->handle( [], [ 'delMatches' => 1, 'match' => [ '7' ], 'season' => [], 'home_points' => [ new \stdClass() ] ], $this->createStub( League::class ) );
         self::assertSame( 'Match id 7 deleted', $result->message );
@@ -214,13 +205,8 @@ final class Admin_Commands_Test extends TestCase {
         $service = $this->createMock( Fixture_Service::class );
         $service->expects( self::once() )->method( 'add_match' )->with( self::callback( static fn( object $fixture ): bool => "O'Brien" === $fixture->location && '2026-06-01 19:30:00' === $fixture->date ), self::isInstanceOf( League::class ) );
         $dispatcher = new League_Match_Action_Dispatcher(
-            $this->createStub( Fixture_Repository_Interface::class ),
-            $this->createStub( Fixture_Maintenance_Service::class ),
             $this->createStub( Action_Guard_Interface::class ),
-            $this->createStub( Fixture_Result_Manager::class ),
-            $service,
-            new League_Match_Handler( $this->createStub( Fixture_Repository_Interface::class ), $this->createStub( Fixture_Maintenance_Service::class ), $this->createStub( Fixture_Result_Manager::class ), $service, $this->createStub( League_Query_Service::class ) ),
-            league_query_service: $this->createStub( League_Query_Service::class )
+            new League_Match_Handler( $this->createStub( Fixture_Repository_Interface::class ), $this->createStub( Fixture_Maintenance_Service::class ), $this->createStub( Fixture_Result_Manager::class ), $service, $this->createStub( League_Query_Service::class ) )
         );
         $result = $dispatcher->handle( [], [
             'updateLeague' => 'match', 'mode' => 'add', 'match' => [ 0 ], 'league_id' => '5', 'season' => '2026',
@@ -358,7 +344,7 @@ final class Admin_Commands_Test extends TestCase {
 
     public function test_direct_league_match_handler_edits_match_via_fixture_service_port(): void {
         $league = $this->createStub( League::class );
-        $league->id = 5;
+        League_Test_Factory::set_property( $league, 'id', 5 );
 
         $fixture = new Fixture();
         $fixture->set_id( 7 );

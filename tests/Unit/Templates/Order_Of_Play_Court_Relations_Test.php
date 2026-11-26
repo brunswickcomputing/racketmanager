@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Unit\Templates;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Club\Club;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture_Team_Resolver_Interface;
 use Racketmanager\Domain\Team\Team;
@@ -47,7 +48,7 @@ final class Order_Of_Play_Court_Relations_Test extends TestCase {
 
 	private function repository(): Fixture_Repository {
 		$league = $this->createStub( League::class );
-		$league->title = 'Division 1';
+		League_Test_Factory::set_property( $league, 'title', 'Division 1' );
 		$league_repo = $this->createStub( League_Repository_Interface::class );
 		$league_repo->method( 'find_by_id' )->willReturn( $league );
 

@@ -17,6 +17,7 @@ use Racketmanager\Services\Competition\League_Query_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Standings\Standings_Service;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 /**
@@ -48,12 +49,12 @@ final class Standings_Service_Resolve_League_Team_Test extends TestCase {
     }
 
     private function league(): League {
-        $league             = $this->createStub( League::class );
-        $league->id         = 12;
-        $league->event      = $this->event();
-        $league->point_rule = 'three';
-        $league->num_rubbers = 0;
-        $league->standings  = [];
+        $league = $this->createStub( League::class );
+        League_Test_Factory::set_property( $league, 'id', 12 );
+        League_Test_Factory::set_property( $league, 'event', $this->event() );
+        League_Test_Factory::set_property( $league, 'point_rule', 'three' );
+        League_Test_Factory::set_property( $league, 'num_rubbers', 0 );
+        League_Test_Factory::set_property( $league, 'standings', [] );
         $league->method( 'get_season' )->willReturn( '2026' );
         $league->method( 'get_point_rule' )->willReturn( [] );
         return $league;

@@ -709,8 +709,8 @@ class Shortcodes {
                     unset( $finals[ $f ] );
                 }
             }
-            $league->finals = $finals;
-            $leagues[ $l ]  = $league;
+            $league->set_finals_list( $finals );
+            $leagues[ $l ] = $league;
         }
 
         return $leagues;

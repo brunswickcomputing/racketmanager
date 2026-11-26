@@ -26,6 +26,7 @@ use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use ReflectionClass;
 use stdClass;
 use TypeError;
@@ -55,7 +56,7 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
         $league->method( 'get_id' )->willReturn( 10 );
         $league->method( 'get_name' )->willReturn( 'Division 1' );
         $league->method( 'get_event_id' )->willReturn( 20 );
-        $league->num_rubbers = 2;
+        League_Test_Factory::set_property( $league, 'num_rubbers', 2 );
 
         $event = $this->createMock( Event::class );
         $event->method( 'get_id' )->willReturn( 20 );

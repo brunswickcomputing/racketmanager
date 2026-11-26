@@ -26,6 +26,7 @@ use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Result_Service;
 use Racketmanager\Services\Tournament_Service;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use ReflectionClass;
 use ReflectionMethod;
@@ -141,7 +142,7 @@ class Championship_Admin_Integration_Test extends TestCase {
         $league_team_id = 456;
 
         $league = $this->create_real_instance_without_constructor( League::class );
-        $league->id = $league_id;
+        $league->set_id( $league_id );
 
         $league_service = $this->createMock( League_Service::class );
         $league_service->expects( self::once() )
@@ -266,7 +267,7 @@ class Championship_Admin_Integration_Test extends TestCase {
     public function test_update_final_results_includes_updated_fixture_count_in_message(): void {
         $championship = $this->createStub( Championship::class );
         $league = $this->createMock( League::class );
-        $league->championship = $championship;
+        League_Test_Factory::set_property( $league, 'championship', $championship );
 
         $league_service = $this->createMock( League_Service::class );
         $league_service->expects( self::once() )
@@ -317,7 +318,7 @@ class Championship_Admin_Integration_Test extends TestCase {
 
     public function test_withdraw_teams_from_league_success(): void {
         $league = $this->create_real_instance_without_constructor( League::class );
-        $league->id = 123;
+        $league->set_id( 123 );
 
         $league_team = $this->createMock( League_Team::class );
         $league_team->method( 'get_team_id' )->willReturn( 70 );
@@ -370,7 +371,7 @@ class Championship_Admin_Integration_Test extends TestCase {
 
     public function test_withdraw_teams_from_league_keeps_earlier_messages_on_error(): void {
         $league = $this->create_real_instance_without_constructor( League::class );
-        $league->id = 123;
+        $league->set_id( 123 );
 
         $first_league_team = $this->createMock( League_Team::class );
         $first_league_team->method( 'get_team_id' )->willReturn( 70 );

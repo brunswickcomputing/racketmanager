@@ -89,8 +89,8 @@ final class Admin_Event_Delivery_Test extends TestCase {
     }
 
     private function make_league(): \Racketmanager\Domain\Competition\League {
-        $league     = $this->createStub( \Racketmanager\Domain\Competition\League::class );
-        $league->id = 7;
+        $league = $this->createStub( \Racketmanager\Domain\Competition\League::class );
+        \Racketmanager\Tests\Helpers\League_Test_Factory::set_property( $league, 'id', 7 );
         return $league;
     }
 

@@ -66,24 +66,22 @@ final class Standings_Templates_Render_Test extends TestCase {
             'bonus'        => 0,
         ];
 
-        $league = new class( $event, $team1 ) extends League {
-            public function __construct( Event $event, object $team1 ) {
-                $this->id        = 10;
-                $this->title     = 'Division 1';
-                $this->event     = $event;
-                $this->teams     = [ $team1 ];
-                $this->standings = [
-                    'pld'        => 1,
-                    'won'        => 1,
-                    'tie'        => 0,
-                    'lost'       => 0,
-                    'winPercent' => 0,
-                    'sets'       => 1,
-                    'games'      => 1,
-                    'pts'        => 1,
-                ];
-            }
-        };
+        $league = new League();
+        $league->set_id( 10 );
+        $league->set_name( 'Division 1' );
+        $league->set_event( $event );
+        $league->set_teams( [ $team1 ] );
+        $standings = [
+            'pld'        => 1,
+            'won'        => 1,
+            'tie'        => 0,
+            'lost'       => 0,
+            'winPercent' => 0,
+            'sets'       => 1,
+            'games'      => 1,
+            'pts'        => 1,
+        ];
+        $league->set_standings( $standings );
 
         $team_links = [ 101 => '/league/division-1/team/alpha/' ];
 
@@ -142,24 +140,22 @@ final class Standings_Templates_Render_Test extends TestCase {
             'bonus'        => 0,
         ];
 
-        $league = new class( $event, $team1 ) extends League {
-            public function __construct( Event $event, object $team1 ) {
-                $this->id        = 10;
-                $this->title     = 'Division 1';
-                $this->event     = $event;
-                $this->teams     = [ $team1 ];
-                $this->standings = [
-                    'pld'        => 1,
-                    'won'        => 1,
-                    'tie'        => 1,
-                    'lost'       => 1,
-                    'winPercent' => 1,
-                    'sets'       => 0,
-                    'games'      => 0,
-                    'pts'        => 1,
-                ];
-            }
-        };
+        $league = new League();
+        $league->set_id( 10 );
+        $league->set_name( 'Division 1' );
+        $league->set_event( $event );
+        $league->set_teams( [ $team1 ] );
+        $standings = [
+            'pld'        => 1,
+            'won'        => 1,
+            'tie'        => 1,
+            'lost'       => 1,
+            'winPercent' => 1,
+            'sets'       => 0,
+            'games'      => 0,
+            'pts'        => 1,
+        ];
+        $league->set_standings( $standings );
 
         $team_links = [ 101 => '/league/division-1/team/beta/' ];
 
@@ -215,24 +211,22 @@ final class Standings_Templates_Render_Test extends TestCase {
             'bonus'        => 0,
         ];
 
-        $league = new class( $event, $team1 ) extends League {
-            public function __construct( Event $event, object $team1 ) {
-                $this->id        = 10;
-                $this->title     = 'Division 1';
-                $this->event     = $event;
-                $this->teams     = [ $team1 ];
-                $this->standings = [
-                    'pld'        => 1,
-                    'won'        => 1,
-                    'tie'        => 0,
-                    'lost'       => 0,
-                    'winPercent' => 0,
-                    'sets'       => 1,
-                    'games'      => 0,
-                    'pts'        => 1,
-                ];
-            }
-        };
+        $league = new League();
+        $league->set_id( 10 );
+        $league->set_name( 'Division 1' );
+        $league->set_event( $event );
+        $league->set_teams( [ $team1 ] );
+        $standings = [
+            'pld'        => 1,
+            'won'        => 1,
+            'tie'        => 0,
+            'lost'       => 0,
+            'winPercent' => 0,
+            'sets'       => 1,
+            'games'      => 0,
+            'pts'        => 1,
+        ];
+        $league->set_standings( $standings );
 
         $GLOBALS['league'] = $league;
 
@@ -276,20 +270,18 @@ final class Standings_Templates_Render_Test extends TestCase {
             'history'      => [],
         ];
 
-        $league = new class( $event, $team1 ) extends League {
-            public function __construct( Event $event, object $team1 ) {
-                $this->id        = 10;
-                $this->title     = 'Division 1';
-                $this->event     = $event;
-                $this->teams     = [ $team1 ];
-                $this->standings = [
-                    'status' => 1,
-                    'pld'    => 1,
-                    'last5'  => 1,
-                    'pts'    => 1,
-                ];
-            }
-        };
+        $league = new League();
+        $league->set_id( 10 );
+        $league->set_name( 'Division 1' );
+        $league->set_event( $event );
+        $league->set_teams( [ $team1 ] );
+        $standings = [
+            'status' => 1,
+            'pld'    => 1,
+            'last5'  => 1,
+            'pts'    => 1,
+        ];
+        $league->set_standings( $standings );
 
         $vm = new League_Standings_View_Model(
             template: 'standings-last5',

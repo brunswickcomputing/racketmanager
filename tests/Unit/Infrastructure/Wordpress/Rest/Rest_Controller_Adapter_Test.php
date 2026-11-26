@@ -5,6 +5,7 @@ namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Rest;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Team\Team;
@@ -283,7 +284,7 @@ final class Rest_Controller_Adapter_Test extends TestCase {
         );
 
         $league = $this->createStub( League::class );
-        $league->title = 'Men\'s Division 2';
+        League_Test_Factory::set_property( $league, 'title', 'Men\'s Division 2' );
         $league_repo = $this->createStub( League_Repository_Interface::class );
         $league_repo->method( 'find_by_id' )->willReturn( $league );
 
@@ -378,8 +379,8 @@ final class Rest_Controller_Adapter_Test extends TestCase {
     }
 
     public function test_build_match_response_resolves_league_title_through_competition_service(): void {
-        $league        = $this->createStub( League::class );
-        $league->title = 'Division 1';
+        $league = $this->createStub( League::class );
+        League_Test_Factory::set_property( $league, 'title', 'Division 1' );
         $league->method( 'get_name' )->willReturn( '' );
 
         $league_repo = $this->createMock( League_Repository_Interface::class );
@@ -397,8 +398,8 @@ final class Rest_Controller_Adapter_Test extends TestCase {
     }
 
     public function test_build_match_response_resolves_league_title_through_injected_repository_and_caches_it(): void {
-        $league        = $this->createStub( League::class );
-        $league->title = 'Men\'s "Division" 2';
+        $league = $this->createStub( League::class );
+        League_Test_Factory::set_property( $league, 'title', 'Men\'s "Division" 2' );
         $league->method( 'get_name' )->willReturn( '' );
 
         $league_repo = $this->createMock( League_Repository_Interface::class );

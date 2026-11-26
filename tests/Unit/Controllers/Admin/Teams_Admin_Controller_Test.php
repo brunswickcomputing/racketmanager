@@ -10,6 +10,7 @@ use Racketmanager\Admin\Controllers\Teams_Admin_Controller;
 use Racketmanager\Admin\View_Models\Teams_List_Page_View_Model;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Services\Admin\League_Team_Admin_Service;
 use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
@@ -48,7 +49,7 @@ final class Teams_Admin_Controller_Test extends TestCase {
         $league        = $this->createMock( League::class );
         $event = new Event();
         $event->set_competition( (object) array( 'id' => 55 ) );
-        $league->event      = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
         return $league;
     }
 

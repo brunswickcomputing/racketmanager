@@ -59,6 +59,7 @@ namespace Racketmanager\Tests\Integration\Public {
     use Racketmanager\Application\Ports\View_Renderer_Interface;
     use Racketmanager\Tests\Helpers\Competition_Test_Factory;
     use Racketmanager\Tests\Helpers\Creates_Test_Container;
+    use Racketmanager\Tests\Helpers\League_Test_Factory;
 
     #[AllowMockObjectsWithoutExpectations]
     class Shortcodes_Match_Integration_Test extends TestCase {
@@ -127,7 +128,7 @@ namespace Racketmanager\Tests\Integration\Public {
             $league = $this->createMock( League::class );
             $league->method( 'get_id' )->willReturn( 10 );
             $league->method( 'get_event_id' )->willReturn( 20 );
-            $league->title = 'Premier League';
+            League_Test_Factory::set_property( $league, 'title', 'Premier League' );
             $league_repo->method( 'find_by_id' )->willReturn( $league );
 
             $event = $this->getMockBuilder( Event::class )->disableOriginalConstructor()->onlyMethods( array( 'get_id', 'get_competition_id' ) )->getMock();

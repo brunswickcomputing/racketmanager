@@ -11,6 +11,7 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Tests\Helpers\Event_Test_Factory;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Response_DTO;
@@ -40,7 +41,7 @@ final class Tournament_Setup_Event_Admin_Controller_Test extends TestCase {
         $event = Event_Test_Factory::create( competition: $competition );
 
         $league = $this->createStub( League::class );
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
         $league_query_service = $this->createMock( League_Query_Service::class );
         $league_query_service->expects( self::once() )->method( 'get_matches' )->with( $league, self::isArray() )->willReturn( 5 );
 

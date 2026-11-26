@@ -188,7 +188,7 @@ final class Competition_Request_Boundary_Test extends TestCase {
         $repository->method( 'query_matches' )->willReturn( 100 );
         $service = $this->league_query_service( $repository );
         $league = $this->league();
-        $league->num_teams_total = 100;
+        $league->set_num_teams_total( 100 );
         $league->set_match_query_arg( 'limit', 5 );
         $league->set_team_query_arg( 'limit', 5 );
         $_GET = [ $key => '2', $key . '_42' => '4' ];
@@ -290,8 +290,8 @@ final class Competition_Request_Boundary_Test extends TestCase {
     public function test_requested_final_is_passed_to_championship_factory(): void {
         $_GET['final'] = 'semi';
         $league = $this->league();
-        $league->event = Event::from_object( (object) [ 'id' => 93, 'name' => 'Event', 'type' => 'singles', 'seasons' => $league->seasons ], \Racketmanager\Tests\Helpers\Competition_Test_Factory::create() );
-        $league->mode = 'championship';
+        $league->set_event( Event::from_object( (object) [ 'id' => 93, 'name' => 'Event', 'type' => 'singles', 'seasons' => $league->seasons ], \Racketmanager\Tests\Helpers\Competition_Test_Factory::create() ) );
+        $league->set_mode( 'championship' );
         $repository = $this->createStub( League_Repository_Interface::class );
         $repository->method( 'query_league_teams' )->willReturn( 8 );
         $this->league_query_service( $repository )->set_season( $league );
@@ -377,7 +377,7 @@ final class Competition_Request_Boundary_Test extends TestCase {
     #[DataProvider( 'unusable_limits' )]
     public function test_page_size_falls_back_to_30_matches_and_10_teams_for_unusable_limit( mixed $limit ): void {
         $league = $this->league();
-        $league->num_teams_total = 25;
+        $league->set_num_teams_total( 25 );
         $league->set_match_query_arg( 'limit', $limit );
         $league->set_team_query_arg( 'limit', $limit );
         $repository = $this->createStub( League_Repository_Interface::class );
@@ -396,8 +396,8 @@ final class Competition_Request_Boundary_Test extends TestCase {
     public function test_set_num_teams_uses_custom_limit_clamps_page_and_counts_teams(): void {
         $_GET = [ 'team_paged_42' => '50' ];
         $league = $this->league();
-        $league->num_teams_total = 7;
-        $league->num_matches     = 1000;
+        $league->set_num_teams_total( 7 );
+        $league->set_num_matches( 1000 );
         $league->set_team_query_arg( 'limit', 3 );
 
         $view_state = $this->league_query_service()->set_num_teams( $league );
@@ -428,8 +428,8 @@ final class Competition_Request_Boundary_Test extends TestCase {
         $_GET = [ 'match_day' => '2', 'match_paged_42' => '3' ];
         $_POST['match_day'] = '4';
         $league = $this->league();
-        $league->id = 42;
-        $league->num_matches = 100;
+        $league->set_id( 42 );
+        $league->set_num_matches( 100 );
         $league->set_match_query_arg( 'limit', 5 );
         $links = $this->league_query_service()->get_page_links( $league );
         $args = $GLOBALS['paginate_links_last_args'] ?? [];

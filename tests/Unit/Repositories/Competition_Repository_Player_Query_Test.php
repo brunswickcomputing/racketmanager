@@ -17,6 +17,7 @@ use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Fixture\Fixture_Relation_Loader;
 use Racketmanager\Services\Player_Query_Service;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use wpdb;
 
@@ -59,8 +60,8 @@ final class Competition_Repository_Player_Query_Test extends TestCase {
 		$fixture->set_season( '2026' );
 
 		$league = $this->createStub( League::class );
-		$league->id    = 7;
-		$league->title = 'Division 7';
+		League_Test_Factory::set_property( $league, 'id', 7 );
+		League_Test_Factory::set_property( $league, 'title', 'Division 7' );
 
 		$fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
 		$fixture_repository->expects( $this->exactly( 2 ) )
@@ -505,17 +506,17 @@ final class Competition_Repository_Player_Query_Test extends TestCase {
 			return $f;
 		};
 
-		$league_1        = $this->createStub( League::class );
-		$league_1->id    = 1;
-		$league_1->title = 'Premier Division';
+		$league_1 = $this->createStub( League::class );
+		League_Test_Factory::set_property( $league_1, 'id', 1 );
+		League_Test_Factory::set_property( $league_1, 'title', 'Premier Division' );
 
-		$league_2        = $this->createStub( League::class );
-		$league_2->id    = 2;
-		$league_2->title = 'Division 1';
+		$league_2 = $this->createStub( League::class );
+		League_Test_Factory::set_property( $league_2, 'id', 2 );
+		League_Test_Factory::set_property( $league_2, 'title', 'Division 1' );
 
-		$league_3        = $this->createStub( League::class );
-		$league_3->id    = 3;
-		$league_3->title = 'Division 2';
+		$league_3 = $this->createStub( League::class );
+		League_Test_Factory::set_property( $league_3, 'id', 3 );
+		League_Test_Factory::set_property( $league_3, 'title', 'Division 2' );
 
 		// 4 fixtures are loaded during unfiltered query (101, 102, 201, 301) and 2 during filtered query (101, 201).
 		$fixture_repository = $this->createMock( Fixture_Repository_Interface::class );

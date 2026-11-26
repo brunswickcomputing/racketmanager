@@ -41,6 +41,7 @@ use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use stdClass;
 
 class Match_Detail_And_Tournament_Templates_Test extends TestCase {
@@ -169,12 +170,12 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$fixture->set_start_time( '09:05' );
 		$fixture->set_season( '2026' );
 
-		$league                  = $this->createStub( League::class );
-		$league->title           = 'Championship Singles';
-		$league->is_championship = true;
-		$league->scoring         = '3_sets';
-		$league->num_sets        = 3;
-		$league->num_rubbers     = 1;
+		$league = $this->createStub( League::class );
+		League_Test_Factory::set_property( $league, 'title', 'Championship Singles' );
+		League_Test_Factory::set_property( $league, 'is_championship', true );
+		League_Test_Factory::set_property( $league, 'scoring', '3_sets' );
+		League_Test_Factory::set_property( $league, 'num_sets', 3 );
+		League_Test_Factory::set_property( $league, 'num_rubbers', 1 );
 
 		$event = new Event();
 		$event->set_name( 'Mens Singles' );
@@ -271,12 +272,12 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$fixture->set_start_time( '09:05' );
 		$fixture->set_season( '2026' );
 
-		$league                  = $this->createStub( League::class );
-		$league->title           = 'Championship Singles';
-		$league->is_championship = true;
-		$league->scoring         = '3_sets';
-		$league->num_sets        = 3;
-		$league->num_rubbers     = 1;
+		$league = $this->createStub( League::class );
+		League_Test_Factory::set_property( $league, 'title', 'Championship Singles' );
+		League_Test_Factory::set_property( $league, 'is_championship', true );
+		League_Test_Factory::set_property( $league, 'scoring', '3_sets' );
+		League_Test_Factory::set_property( $league, 'num_sets', 3 );
+		League_Test_Factory::set_property( $league, 'num_rubbers', 1 );
 
 		$event = new Event();
 		$event->set_name( 'Mens Singles' );
@@ -367,12 +368,12 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$fixture->set_start_time( '' );
 		$fixture->set_season( '2' );
 
-		$league                  = $this->createStub( League::class );
-		$league->title           = 'Box Division 1';
-		$league->is_championship = false;
-		$league->scoring         = '3_sets';
-		$league->num_sets        = 3;
-		$league->num_rubbers     = 1;
+		$league = $this->createStub( League::class );
+		League_Test_Factory::set_property( $league, 'title', 'Box Division 1' );
+		League_Test_Factory::set_property( $league, 'is_championship', false );
+		League_Test_Factory::set_property( $league, 'scoring', '3_sets' );
+		League_Test_Factory::set_property( $league, 'num_sets', 3 );
+		League_Test_Factory::set_property( $league, 'num_rubbers', 1 );
 
 		$event = new Event();
 		$event->set_name( 'Box League' );
@@ -483,12 +484,12 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 
 		$fixture->set_rubbers( [ $rubber_1, $rubber_2 ] );
 
-		$league                  = $this->createStub( League::class );
-		$league->scoring         = 'pairs';
-		$league->num_rubbers     = 2;
-		$league->num_sets        = 2;
-		$league->is_championship = false;
-		$league->title           = 'Mens Doubles Premier';
+		$league = $this->createStub( League::class );
+		League_Test_Factory::set_property( $league, 'scoring', 'pairs' );
+		League_Test_Factory::set_property( $league, 'num_rubbers', 2 );
+		League_Test_Factory::set_property( $league, 'num_sets', 2 );
+		League_Test_Factory::set_property( $league, 'is_championship', false );
+		League_Test_Factory::set_property( $league, 'title', 'Mens Doubles Premier' );
 
 		$event = new Event();
 		$event->set_name( 'Mens Doubles' );
@@ -577,12 +578,12 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$home_team = Team::from_object( (object) [ 'id' => 10, 'title' => 'Leigh 1' ] );
 		$away_team = Team::from_object( (object) [ 'id' => 20, 'title' => 'Westcliff 1' ] );
 
-		$league                  = $this->createStub( League::class );
-		$league->scoring         = 'pairs';
-		$league->num_rubbers     = 1;
-		$league->num_sets        = 2;
-		$league->is_championship = false;
-		$league->title           = 'Mens Doubles Premier';
+		$league = $this->createStub( League::class );
+		League_Test_Factory::set_property( $league, 'scoring', 'pairs' );
+		League_Test_Factory::set_property( $league, 'num_rubbers', 1 );
+		League_Test_Factory::set_property( $league, 'num_sets', 2 );
+		League_Test_Factory::set_property( $league, 'is_championship', false );
+		League_Test_Factory::set_property( $league, 'title', 'Mens Doubles Premier' );
 
 		$event = new Event();
 		$event->set_name( 'Mens Doubles' );
@@ -703,12 +704,12 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		);
 		$fixture->set_start_time( '09:05' );
 
-		$league                  = $this->createStub( League::class );
-		$league->title           = 'Championship Singles';
-		$league->is_championship = true;
-		$league->scoring         = '3_sets';
-		$league->num_sets        = 3;
-		$league->num_rubbers     = 1;
+		$league = $this->createStub( League::class );
+		League_Test_Factory::set_property( $league, 'title', 'Championship Singles' );
+		League_Test_Factory::set_property( $league, 'is_championship', true );
+		League_Test_Factory::set_property( $league, 'scoring', '3_sets' );
+		League_Test_Factory::set_property( $league, 'num_sets', 3 );
+		League_Test_Factory::set_property( $league, 'num_rubbers', 1 );
 
 		$event = new Event();
 		$event->set_name( 'Mens Singles' );
@@ -771,9 +772,9 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$fixture->method( 'get_date' )->willReturn( '2026-10-18 19:30:00' );
 		$fixture->method( 'get_match_day' )->willReturn( 3 );
 
-		$league           = $this->createStub( League::class );
-		$league->title    = 'Premier League';
-		$league->num_sets = 3;
+		$league = $this->createStub( League::class );
+		League_Test_Factory::set_property( $league, 'title', 'Premier League' );
+		League_Test_Factory::set_property( $league, 'num_sets', 3 );
 
 		$event       = $this->createStub( Event::class );
 		$competition = $this->createStub( Competition::class );
@@ -818,9 +819,9 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$fixture->method( 'get_date' )->willReturn( null );
 		$fixture->method( 'get_match_day' )->willReturn( 1 );
 
-		$league           = $this->createStub( League::class );
-		$league->title    = 'Division 2';
-		$league->num_sets = 2;
+		$league = $this->createStub( League::class );
+		League_Test_Factory::set_property( $league, 'title', 'Division 2' );
+		League_Test_Factory::set_property( $league, 'num_sets', 2 );
 
 		$dto = new Fixture_Details_DTO(
 			fixture: $fixture,
@@ -852,10 +853,10 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$fixture->method( 'get_match_day' )->willReturn( 4 );
 		$fixture->method( 'get_rubbers' )->willReturn( [] );
 
-		$league              = $this->createStub( League::class );
-		$league->title       = 'Premier Rubbers';
-		$league->num_rubbers = 3;
-		$league->num_sets    = 3;
+		$league = $this->createStub( League::class );
+		League_Test_Factory::set_property( $league, 'title', 'Premier Rubbers' );
+		League_Test_Factory::set_property( $league, 'num_rubbers', 3 );
+		League_Test_Factory::set_property( $league, 'num_sets', 3 );
 
 		$dto = new Fixture_Details_DTO(
 			fixture: $fixture,
@@ -890,9 +891,9 @@ class Match_Detail_And_Tournament_Templates_Test extends TestCase {
 		$fixture->method( 'get_date' )->willReturn( '2026-10-18 00:00:00' );
 		$fixture->method( 'get_start_time' )->willReturn( null );
 
-		$league        = $this->createStub( League::class );
-		$league->id    = 1;
-		$league->title = 'Division 1';
+		$league = $this->createStub( League::class );
+		League_Test_Factory::set_property( $league, 'id', 1 );
+		League_Test_Factory::set_property( $league, 'title', 'Division 1' );
 		$league->method( 'get_name' )->willReturn( 'Division 1' );
 		$event = new Event();
 		$event->set_id( 2 );

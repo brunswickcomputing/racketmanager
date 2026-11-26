@@ -88,12 +88,12 @@ final class League_Standings_Admin_Controller_Test extends TestCase {
         if ( ! empty( $seasons ) ) {
             $league->set_season( '2026' );
         }
-        $league->num_teams       = 2;
-        $league->num_teams_total = 2;
+        $league->set_num_teams_count( 2 );
+        $league->set_num_teams_total( 2 );
 
         if ( $is_championship ) {
-            $league->mode            = 'championship';
-            $league->is_championship = true;
+            $league->set_mode( 'championship' );
+            $league->set_is_championship( true );
             $championship            = $this->createStub( Championship::class );
             $championship->method( 'get_finals' )->willReturn( array(
                 array(
@@ -104,7 +104,7 @@ final class League_Standings_Admin_Controller_Test extends TestCase {
                 ),
             ) );
             $championship->method( 'get_current_final_key' )->willReturn( 'semi' );
-            $league->championship = $championship;
+            $league->set_championship( $championship );
         }
 
         $GLOBALS['wp_stubs_leagues'][ $id ] = $league;

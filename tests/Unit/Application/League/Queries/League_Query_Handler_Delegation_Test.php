@@ -27,6 +27,7 @@ use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Team\Team;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use Racketmanager\Application\Competition\Ports\Competition_Service_Interface;
 use Racketmanager\Application\Competition\Ports\Event_Query_Service_Interface;
@@ -70,11 +71,11 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 			)
 		);
 
-		$league                 = $this->createStub( League::class );
-		$league->id             = 7;
-		$league->title          = 'Division 1';
-		$league->current_season = [ 'name' => '2026' ];
-		$league->event          = $event;
+		$league = new League();
+		$league->set_id( 7 );
+		$league->set_title( 'Division 1' );
+		$league->set_current_season( [ 'name' => '2026' ] );
+		$league->set_event( $event );
 
 		return $league;
 	}
@@ -719,7 +720,7 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 		$league_query->method( 'get_league_teams' )
 			->willReturnCallback(
                 static function ( League $l ) use ( $teams, $league_order ): array {
-                    $l->teams = $league_order;
+                    $l->set_teams( $league_order );
                     return $teams;
                 }
             );
@@ -811,8 +812,8 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 
 	public function test_matches_handler_delegates_to_league_query_service(): void {
 		$league       = $this->league();
-		$league->settings = [ 'match_display' => 'all' ];
-		$league->match_day = 4;
+		$league->set_settings( [ 'match_display' => 'all' ] );
+		$league->set_match_day( 4 );
 		$teams        = [ (object) [ 'id' => 101, 'title' => 'Westcliff 1' ] ];
 		$league_query = $this->createMock( League_Query_Service::class );
 		$league_query->expects( $this->once() )
@@ -993,11 +994,11 @@ class League_Query_Handler_Delegation_Test extends TestCase {
 					'key'         => 'final',
 					'name'        => 'Final',
 					'num_matches' => 1,
-					'round'       => 1,
+ 				'round'       => 1,
 				],
 			]
 		);
-		$league->championship = $championship;
+		$league->set_championship( $championship );
 
 		$league_query = $this->createMock( League_Query_Service::class );
 		$league_query->expects( $this->once() )

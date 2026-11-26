@@ -17,6 +17,7 @@ use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Admin_Delivery_Container;
 use Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 /**
@@ -96,7 +97,7 @@ final class Admin_League_Regression_Test extends TestCase {
 		$already_entity  = League_Team::from_object( (object) array( 'id' => 11, 'title' => 'Westcliff 1' ) );
 		$raw_row         = (object) array( 'id' => 22, 'table_id' => 22, 'title' => 'Leigh 2' );
 		$league          = $this->createStub( \Racketmanager\Domain\Competition\League::class );
-		$league->id      = 7;
+		League_Test_Factory::set_property( $league, 'id', 7 );
 
 		$league_team_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface::class );
 		$league_team_repository->expects( self::once() )->method( 'hydrate' )->with( $raw_row )->willReturn( $hydrated );
@@ -148,7 +149,7 @@ final class Admin_League_Regression_Test extends TestCase {
 		);
 		$league      = \Racketmanager\Domain\Competition\League::from_object( (object) array( 'id' => 42, 'title' => 'Division 1' ), $event );
 		$league->set_season( '2026' );
-		$league->num_teams = 2;
+		$league->set_num_teams_count( 2 );
 		$GLOBALS['wp_stubs_leagues'][42] = $league;
 
 		$westcliff = League_Team::from_object( $this->league_table_row( 11, 'Westcliff 1', 1 ) );
@@ -162,7 +163,7 @@ final class Admin_League_Regression_Test extends TestCase {
 		$league_query_service = $this->createMock( League_Query_Service::class );
         $league_query_service->method( 'get_league_teams' )->willReturnCallback(
 			static function ( object $l ) use ( $westcliff, $raw_leigh ): array {
-				$l->teams = array( $westcliff, $raw_leigh );
+				League_Test_Factory::set_property( $l, 'teams', array( $westcliff, $raw_leigh ) );
 				return $l->teams;
 			}
         );
@@ -212,7 +213,7 @@ final class Admin_League_Regression_Test extends TestCase {
 		);
 		$league      = \Racketmanager\Domain\Competition\League::from_object( (object) array( 'id' => 43, 'title' => 'Division 2' ), $event );
 		$league->set_season( '2026' );
-		$league->num_teams = 2;
+		$league->set_num_teams_count( 2 );
 		$GLOBALS['wp_stubs_leagues'][43] = $league;
 
 		$league_team_repository = $this->createMock( \Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface::class );

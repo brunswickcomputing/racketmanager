@@ -19,6 +19,7 @@ use Racketmanager\Domain\Competition\Competition_Factory;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Domain\DTO\Club\Club_Details_DTO;
 use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
 use Racketmanager\Domain\DTO\Competition\Competition_Hydration_DTO;
@@ -764,11 +765,11 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         );
         $championship->method( 'num_rounds' )->willReturn( 2 );
 
-        $primary_league               = $this->createStub( League::class );
-        $primary_league->id           = 10;
-        $primary_league->championship = $championship;
+        $primary_league = $this->createStub( League::class );
+        League_Test_Factory::set_property( $primary_league, 'id', 10 );
+        League_Test_Factory::set_property( $primary_league, 'championship', $championship );
 
-        $event                      = $this->create_test_event( 101, 'Cup Event', 10, $competition );
+        $event = $this->create_test_event( 101, 'Cup Event', 10, $competition );
         $event->set_is_championship( true );
         $event->set_primary_league_obj( $primary_league );
 
@@ -802,11 +803,11 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         );
         $championship->method( 'num_rounds' )->willReturn( 2 );
 
-        $primary_league               = $this->createStub( League::class );
-        $primary_league->id           = 10;
-        $primary_league->championship = $championship;
+        $primary_league = $this->createStub( League::class );
+        League_Test_Factory::set_property( $primary_league, 'id', 10 );
+        League_Test_Factory::set_property( $primary_league, 'championship', $championship );
 
-        $event                      = $this->create_test_event( 101, 'Cup Event', 10, $competition );
+        $event = $this->create_test_event( 101, 'Cup Event', 10, $competition );
         $event->set_is_championship( true );
         $event->set_primary_league_obj( $primary_league );
 

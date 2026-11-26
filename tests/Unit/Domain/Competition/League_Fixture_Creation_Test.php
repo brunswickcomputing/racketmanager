@@ -56,8 +56,8 @@ class League_Fixture_Creation_Test extends TestCase {
     }
 
     public function test_league_create_match_schedule_invokes_fixture_service(): void {
-        $league = (new \ReflectionClass( League::class ))->newInstanceWithoutConstructor();
-        $league->id = 50;
+        $league = new League();
+        $league->set_id( 50 );
         $schedule_service = new League_Schedule_Service( $this->fixture_service );
 
         $rounds = [
@@ -90,10 +90,10 @@ class League_Fixture_Creation_Test extends TestCase {
         $event->set_current_season( [ 'home_away' => 1 ] );
         $event->set_competition( $competition );
 
-        $league = (new \ReflectionClass( League::class ))->newInstanceWithoutConstructor();
-        $league->id = 50;
-        $league->is_championship = true;
-        $league->event = $event;
+        $league = new League();
+        $league->set_id( 50 );
+        $league->set_is_championship( true );
+        $league->set_event( $event );
 
         $fixture = Fixture_Factory::from_object( (object) [
             'id'        => 100,
@@ -120,10 +120,10 @@ class League_Fixture_Creation_Test extends TestCase {
         $event->set_current_season( [ 'home_away' => 1 ] );
         $event->set_competition( $competition );
 
-        $league = (new \ReflectionClass( League::class ))->newInstanceWithoutConstructor();
-        $league->id = 50;
-        $league->is_championship = true;
-        $league->event = $event;
+        $league = new League();
+        $league->set_id( 50 );
+        $league->set_is_championship( true );
+        $league->set_event( $event );
 
         $fixture = Fixture_Factory::from_object( (object) [
             'id'          => 100,

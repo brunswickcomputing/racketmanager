@@ -15,6 +15,7 @@ use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Admin\League_Team_Admin_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Team_Service;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 
 require_once __DIR__ . '/../../../wp-stubs.php';
 
@@ -34,14 +35,14 @@ final class League_Team_Admin_Service_Test extends TestCase {
     }
 
     private function league( string $type = 'M', bool $player_entry = false, bool $consolation = false ): League {
-        $league               = $this->createMock( League::class );
-        $league->type         = $type;
-        $championship         = $this->createMock( Championship::class );
+        $league = $this->createMock( League::class );
+        League_Test_Factory::set_property( $league, 'type', $type );
+        $championship = $this->createMock( Championship::class );
         $championship->method( 'is_consolation' )->willReturn( $consolation );
-        $league->championship = $championship;
+        League_Test_Factory::set_property( $league, 'championship', $championship );
         $event = new Event();
         $event->set_competition( (object) array( 'is_player_entry' => $player_entry ) );
-        $league->event        = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
         $league->method( 'get_id' )->willReturn( 7 );
         return $league;
     }

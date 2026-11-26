@@ -92,9 +92,9 @@ final class League_Schedule_Service_Test extends TestCase {
     }
 
     private function create_league( int $id, string $title ): League {
-        $league        = ( new ReflectionClass( League::class ) )->newInstanceWithoutConstructor();
-        $league->id    = $id;
-        $league->title = $title;
+        $league = new League();
+        $league->set_id( $id );
+        $league->set_title( $title );
         return $league;
     }
 

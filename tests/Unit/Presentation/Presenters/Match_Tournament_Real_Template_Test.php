@@ -37,6 +37,7 @@ use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Tests\Helpers\Player_Test_Factory;
 
 class Match_Tournament_Real_Template_Test extends TestCase {
@@ -61,7 +62,7 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         $details = null;
         if ( $fixture ) {
             $league = $this->createStub( League::class );
-            $league->title = 'First Division';
+            League_Test_Factory::set_property( $league, 'title', 'First Division' );
             $event = new Event();
             $event->set_name( 'Summer Event' );
             $competition = $this->createStub( Competition::class );
@@ -192,10 +193,10 @@ class Match_Tournament_Real_Template_Test extends TestCase {
     public function test_tournament_group_with_fixture_retains_child_template_context(): void {
         $fixture = Fixture_Test_Factory::create( final: 'final' );
         $league = $this->createStub( League::class );
-        $league->title = 'Open Singles';
+        League_Test_Factory::set_property( $league, 'title', 'Open Singles' );
         $event = new Event();
         $event->set_name( 'Summer Event' );
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
         $detail = new Fixture_Details_DTO( $fixture, $league, $event, $this->createStub( Competition::class ) );
 
         $html = $this->render_matches( [ '2026-10-12' ], [ '99:99' => [ $detail ] ] );
@@ -272,10 +273,10 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         );
 
         $league = $this->createStub( League::class );
-        $league->title = 'Men Singles';
+        League_Test_Factory::set_property( $league, 'title', 'Men Singles' );
         $event = new Event();
         $event->set_name( 'Singles Event' );
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
 
         $tournament = new Tournament();
         $tournament->set_id( 5 );
@@ -344,10 +345,10 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         );
 
         $league = $this->createStub( League::class );
-        $league->title = 'Men Singles';
+        League_Test_Factory::set_property( $league, 'title', 'Men Singles' );
         $event = new Event();
         $event->set_name( 'Singles Event' );
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
 
         $tournament = new Tournament();
         $tournament->set_id( 5 );
@@ -407,10 +408,10 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         );
 
         $league = $this->createStub( League::class );
-        $league->title = 'Open';
+        League_Test_Factory::set_property( $league, 'title', 'Open' );
         $event = new Event();
         $event->set_name( 'Event' );
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
 
         $detail_walkover = new Fixture_Details_DTO(
             fixture: $walkover_fixture,
@@ -482,10 +483,10 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         );
 
         $league = $this->createStub( League::class );
-        $league->title = 'Singles';
+        League_Test_Factory::set_property( $league, 'title', 'Singles' );
         $event = new Event();
         $event->set_name( 'Event' );
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
 
         $detail = new Fixture_Details_DTO(
             fixture: $fixture,
@@ -528,10 +529,10 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         $fixture = Fixture_Test_Factory::create( id: 506, home_team: '10', away_team: '20' );
 
         $league = $this->createStub( League::class );
-        $league->title = 'Open Division';
+        League_Test_Factory::set_property( $league, 'title', 'Open Division' );
         $event = new Event();
         $event->set_name( 'Event' );
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
 
         $tournament = new Tournament();
         $tournament->set_name( 'Spring Open' );
@@ -600,8 +601,8 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         );
 
         $league = $this->createStub( League::class );
-        $league->title = 'Men Singles';
-        $league->finals = [];
+        League_Test_Factory::set_property( $league, 'title', 'Men Singles' );
+        League_Test_Factory::set_property( $league, 'finals', [] );
         $event = new Event();
         $event->set_id( 12 );
         $event->set_name( 'Draw Event' );
@@ -673,7 +674,7 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         );
 
         $league = $this->createStub( League::class );
-        $league->title = 'Men Singles';
+        League_Test_Factory::set_property( $league, 'title', 'Men Singles' );
         $event = new Event();
         $event->set_name( 'Draw Event' );
 
@@ -738,7 +739,7 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         );
 
         $league = $this->createStub( League::class );
-        $league->title = 'Men Singles';
+        League_Test_Factory::set_property( $league, 'title', 'Men Singles' );
         $event = new Event();
         $event->set_name( 'Draw Event' );
 
@@ -800,10 +801,10 @@ class Match_Tournament_Real_Template_Test extends TestCase {
         );
 
         $league = $this->createStub( League::class );
-        $league->title = 'Men Doubles';
+        League_Test_Factory::set_property( $league, 'title', 'Men Doubles' );
         $event = new Event();
         $event->set_name( 'Championships' );
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
 
         $detail = new Fixture_Details_DTO(
             fixture: $fixture,

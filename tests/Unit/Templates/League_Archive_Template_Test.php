@@ -85,21 +85,21 @@ class League_Archive_Template_Test extends TestCase {
      * Light League double: real setters, no persistence constructor.
      */
     private function create_league( Event $event, array $props ): League {
-        return new class( $event, $props ) extends League {
-            public function __construct( Event $event, array $props ) {
-                $this->id             = $props['id'] ?? 100;
-                $this->title          = $props['title'] ?? 'Division 1';
-                $this->event_id       = $props['event_id'] ?? $event->id;
-                $this->season         = $props['season'] ?? '2026';
-                $this->current_season = $props['current_season'] ?? [
-                    'name'           => '2026',
-                    'home_away'      => 'true',
-                    'num_match_days' => 14,
-                    'match_dates'    => [],
-                ];
-                $this->event          = $event;
-            }
-        };
+        $league = new League();
+        $league->set_id( $props['id'] ?? 100 );
+        $league->set_name( $props['title'] ?? 'Division 1' );
+        $league->set_event_id( $props['event_id'] ?? $event->id );
+        $league->set_season_name( $props['season'] ?? '2026' );
+        $current_season = $props['current_season'] ?? [
+            'name'           => '2026',
+            'home_away'      => 'true',
+            'num_match_days' => 14,
+            'match_dates'    => [],
+        ];
+        $league->set_current_season( $current_season );
+        $league->set_event( $event );
+
+        return $league;
     }
 
     private function create_event( Competition $competition, array $props = [] ): Event {

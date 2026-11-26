@@ -17,6 +17,7 @@ use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO as Domain_Fixture_Detai
 use Racketmanager\Domain\DTO\Rest\Rest_Match_Response;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Presentation\View_Models\Order_Of_Play_Match_View_Model;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use stdClass;
 
 final class League_Name_Standardization_Test extends TestCase {
@@ -24,13 +25,13 @@ final class League_Name_Standardization_Test extends TestCase {
 	public function test_league_title_and_name_bidirectional_property_hook(): void {
 		$league = new League();
 
-		$league->name = 'Premier Division';
+		$league->set_name( 'Premier Division' );
 		$this->assertSame( 'Premier Division', $league->name );
 		$this->assertSame( 'Premier Division', $league->title );
 		$this->assertSame( 'Premier Division', $league->get_name() );
 		$this->assertSame( 'Premier Division', $league->get_title() );
 
-		$league->title = 'Championship Division';
+		$league->set_title( 'Championship Division' );
 		$this->assertSame( 'Championship Division', $league->name );
 		$this->assertSame( 'Championship Division', $league->title );
 		$this->assertSame( 'Championship Division', $league->get_name() );
@@ -164,7 +165,7 @@ final class League_Name_Standardization_Test extends TestCase {
 	public function test_domain_fixture_details_dto_hook(): void {
 		$fixture     = $this->createStub( Fixture::class );
 		$league      = new League();
-		$league->name = 'Division 3';
+		$league->set_name( 'Division 3' );
 		$event       = $this->createStub( Event::class );
 		$competition = $this->createStub( Competition::class );
 
@@ -182,7 +183,7 @@ final class League_Name_Standardization_Test extends TestCase {
 		$this->assertSame( '', $dto->league_title );
 
 		$league       = new League();
-		$league->name = 'Veterans Division';
+		$league->set_name( 'Veterans Division' );
 		$dto->league  = $league;
 
 		$this->assertSame( 'Veterans Division', $dto->league_name );
@@ -192,11 +193,11 @@ final class League_Name_Standardization_Test extends TestCase {
 	public function test_final_property_hooks_work_on_phpunit_stubs(): void {
 		$stub = $this->createStub( League::class );
 
-		$stub->title = 'Stub League';
+		League_Test_Factory::set_property( $stub, 'title', 'Stub League' );
 		$this->assertSame( 'Stub League', $stub->title );
 		$this->assertSame( 'Stub League', $stub->name );
 
-		$stub->name = 'Stub League Renamed';
+		League_Test_Factory::set_property( $stub, 'name', 'Stub League Renamed' );
 		$this->assertSame( 'Stub League Renamed', $stub->title );
 		$this->assertSame( 'Stub League Renamed', $stub->name );
 	}
@@ -292,11 +293,11 @@ final class League_Name_Standardization_Test extends TestCase {
 		$this->assertSame( '', $league->get_title() );
 
 		// Setting empty string
-		$league->name = '';
+		$league->set_name( '' );
 		$this->assertSame( '', $league->name );
 		$this->assertSame( '', $league->title );
 
-		$league->title = '';
+		$league->set_title( '' );
 		$this->assertSame( '', $league->name );
 		$this->assertSame( '', $league->title );
 

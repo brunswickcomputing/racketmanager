@@ -47,31 +47,27 @@ class League_Archive_Presenter_Test extends TestCase {
             }
         };
 
-        $league = new class( $event ) extends League {
-            public function __construct( Event $event ) {
-                $this->id             = 100;
-                $this->title          = 'Division 1';
-                $this->current_season = [
-                    'name'           => '2026',
-                    'home_away'      => 'true',
-                    'num_match_days' => 14,
-                    'match_dates'    => [],
-                ];
-                $this->event          = $event;
-            }
-        };
+        $league = new League();
+        $league->set_id( 100 );
+        $league->set_title( 'Division 1' );
+        $league->set_current_season(
+            [
+                'name'           => '2026',
+                'home_away'      => 'true',
+                'num_match_days' => 14,
+                'match_dates'    => [],
+            ]
+        );
+        $league->set_event( $event );
 
         $seasons = [
             [ 'name' => '2025' ],
             [ 'name' => '2026' ],
         ];
 
-        $league2 = new class extends League {
-            public function __construct() {
-                $this->id    = 101;
-                $this->title = 'Division 2';
-            }
-        };
+        $league2 = new League();
+        $league2->set_id( 101 );
+        $league2->set_title( 'Division 2' );
 
         $leagues = [ $league, $league2 ];
 
@@ -150,14 +146,11 @@ class League_Archive_Presenter_Test extends TestCase {
             }
         };
 
-        $league = new class( $event ) extends League {
-            public function __construct( Event $event ) {
-                $this->id             = 105;
-                $this->title          = 'Box 1';
-                $this->current_season = [ 'name' => 'Round 1' ];
-                $this->event          = $event;
-            }
-        };
+        $league = new League();
+        $league->set_id( 105 );
+        $league->set_title( 'Box 1' );
+        $league->set_current_season( [ 'name' => 'Round 1' ] );
+        $league->set_event( $event );
 
         $vm = $presenter->present_archive(
             league: $league,
@@ -197,15 +190,12 @@ class League_Archive_Presenter_Test extends TestCase {
             }
         };
 
-        $league = new class( $event ) extends League {
-            public function __construct( Event $event ) {
-                $this->id             = 110;
-                $this->title          = 'Finals League';
-                $this->season         = '2026';
-                $this->current_season = [ 'name' => '2026' ];
-                $this->event          = $event;
-            }
-        };
+        $league = new League();
+        $league->set_id( 110 );
+        $league->set_title( 'Finals League' );
+        $league->set_season_name( '2026' );
+        $league->set_current_season( [ 'name' => '2026' ] );
+        $league->set_event( $event );
 
         $vm = $presenter->present_archive(
             league: $league,
@@ -255,19 +245,18 @@ class League_Archive_Presenter_Test extends TestCase {
             }
         };
 
-        $league = new class( $event ) extends League {
-            public function __construct( Event $event ) {
-                $this->id             = 120;
-                $this->title          = 'Division 3';
-                $this->current_season = [
-                    'name'           => '2026',
-                    'home_away'      => 'true',
-                    'num_match_days' => 10,
-                    'match_dates'    => [],
-                ];
-                $this->event          = $event;
-            }
-        };
+        $league = new League();
+        $league->set_id( 120 );
+        $league->set_title( 'Division 3' );
+        $league->set_current_season(
+            [
+                'name'           => '2026',
+                'home_away'      => 'true',
+                'num_match_days' => 10,
+                'match_dates'    => [],
+            ]
+        );
+        $league->set_event( $event );
 
         $vm = $presenter->present_archive(
             league: $league,
@@ -293,13 +282,10 @@ class League_Archive_Presenter_Test extends TestCase {
             }
         };
 
-        $league = new class( $event ) extends League {
-            public function __construct( Event $event ) {
-                $this->id        = 10;
-                $this->title     = 'Division 1';
-                $this->event     = $event;
-            }
-        };
+        $league = new League();
+        $league->set_id( 10 );
+        $league->set_title( 'Division 1' );
+        $league->set_event( $event );
 
         $vm = $presenter->present_archive(
             league: $league,

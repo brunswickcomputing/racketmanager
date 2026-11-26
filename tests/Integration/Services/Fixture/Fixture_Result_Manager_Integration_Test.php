@@ -36,6 +36,7 @@ use Racketmanager\Domain\Competition\Stage;
 use Racketmanager\Domain\Scoring\Scoring_Context;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use Racketmanager\Tests\Helpers\Result_Test_Factory;
 use stdClass;
@@ -195,11 +196,11 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         int $num_rubbers = 1
     ): League {
         $league = $this->createMock( League::class );
-        $league->id = $id;
-        $league->is_championship = $is_championship;
-        $league->num_sets = $num_sets;
-        $league->num_sets_to_win = $num_sets_to_win;
-        $league->num_rubbers = $num_rubbers;
+        League_Test_Factory::set_property( $league, 'id', $id );
+        League_Test_Factory::set_property( $league, 'is_championship', $is_championship );
+        League_Test_Factory::set_property( $league, 'num_sets', $num_sets );
+        League_Test_Factory::set_property( $league, 'num_sets_to_win', $num_sets_to_win );
+        League_Test_Factory::set_property( $league, 'num_rubbers', $num_rubbers );
         $league->method( 'get_id' )->willReturn( $id );
         $league->method( 'get_name' )->willReturn( $name );
         $league->method( 'get_event_id' )->willReturn( 10 );
@@ -213,7 +214,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $event->method( 'get_season_by_name' )->willReturn( [] );
         $event->method( 'get_type' )->willReturn( $comp_type );
         $event->set_competition( (object) [ 'type' => $comp_type ] );
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
 
         return $league;
     }

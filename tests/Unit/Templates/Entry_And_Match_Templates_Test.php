@@ -554,10 +554,10 @@ class Entry_And_Match_Templates_Test extends TestCase {
 
         $league = new class extends League {
             public function __construct() {
-                $this->id             = 10;
-                $this->title          = 'Premier Division';
-                $this->current_season = [ 'name' => '2026' ];
-                $this->event          = new class extends Event {
+                $this->set_id( 10 );
+                $this->set_name( 'Premier Division' );
+                $this->set_current_season( [ 'name' => '2026' ] );
+                $event = new class extends Event {
                     public function __construct() {
                         $this->set_id( 20 );
                         $this->set_name( 'Men Premier' );
@@ -569,6 +569,7 @@ class Entry_And_Match_Templates_Test extends TestCase {
                         $this->set_competition( $comp );
                     }
                 };
+                $this->set_event( $event );
             }
             public function set_template( string $type, string $template ): void {}
             public function set_group( string $group = '', bool $force_overwrite = false ): void {}

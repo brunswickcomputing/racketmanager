@@ -10,6 +10,7 @@ use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Services\View\Php_View_Renderer;
@@ -41,8 +42,8 @@ final class Modal_And_Invoice_Email_Render_Test extends TestCase {
         $fixture->method( 'get_home_team' )->willReturn( 'Leigh LTC' );
         $fixture->method( 'get_away_team' )->willReturn( 'Westcliff LTC' );
 
-        $league              = $this->createStub( League::class );
-        $league->num_rubbers = 0;
+        $league = $this->createStub( League::class );
+        League_Test_Factory::set_property( $league, 'num_rubbers', 0 );
 
         $competition = Competition_Test_Factory::create();
         $competition->set_is_team_entry( true );

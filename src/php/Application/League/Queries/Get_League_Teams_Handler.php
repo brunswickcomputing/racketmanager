@@ -103,7 +103,7 @@ readonly class Get_League_Teams_Handler {
 
         $raw_matches = $this->get_raw_matches( $league, $team->id );
         $this->populate_team_players( $league, $team );
-        $league->team = $team;
+        $league->set_team( $team );
 
         return new League_Teams_Result(
             league: $league,

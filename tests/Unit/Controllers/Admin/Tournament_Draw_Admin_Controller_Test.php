@@ -15,6 +15,7 @@ use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Response_DTO;
 use Racketmanager\Domain\Tournament\Championship;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Domain\DTO\Admin\Tournament\Tournament_Draw_Data_DTO;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
@@ -103,9 +104,10 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
 
     private function create_mock_league( int $id = 10, int $event_id = 100 ): League {
         $league            = $this->createMock( League::class );
-        $league->id        = $id;
-        $league->event     = $this->createMock( Event::class );
-        $league->event->set_id( $event_id );
+        $event             = $this->createMock( Event::class );
+        $event->set_id( $event_id );
+        League_Test_Factory::set_property( $league, 'id', $id );
+        League_Test_Factory::set_property( $league, 'event', $event );
 
         return $league;
     }
@@ -318,7 +320,7 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
             final_teams_by_round: array(),
             current_final: 'final1'
         );
-        $league->championship = $championship;
+        League_Test_Factory::set_property( $league, 'championship', $championship );
 
         $tournament_service = $this->createMock( Tournament_Service::class );
         $tournament_service->method( 'get_tournament' )->willReturn( $tournament );

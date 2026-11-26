@@ -19,6 +19,7 @@ use Racketmanager\Services\Competition\Competition_Season_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 require_once __DIR__ . '/../../../../wp-stubs.php';
@@ -64,8 +65,8 @@ final class Event_Action_Dispatcher_Test extends TestCase {
     }
 
     private function make_league( int $id = 7 ): \Racketmanager\Domain\Competition\League {
-        $league     = $this->createStub( \Racketmanager\Domain\Competition\League::class );
-        $league->id = $id;
+        $league = $this->createStub( \Racketmanager\Domain\Competition\League::class );
+        League_Test_Factory::set_property( $league, 'id', $id );
         return $league;
     }
 
@@ -698,8 +699,8 @@ final class Event_Action_Dispatcher_Test extends TestCase {
             ->with( 1 )
             ->willReturn( $competition );
 
-        $failed_league     = $this->createStub( \Racketmanager\Domain\Competition\League::class );
-        $failed_league->id = null;
+        $failed_league = $this->createStub( \Racketmanager\Domain\Competition\League::class );
+        League_Test_Factory::set_property( $failed_league, 'id', null );
         $league_service    = $this->createMock( League_Service::class );
         $league_service->expects( self::once() )
             ->method( 'add_league_to_event' )
@@ -748,8 +749,8 @@ final class Event_Action_Dispatcher_Test extends TestCase {
             ->with( 1 )
             ->willReturn( $competition );
 
-        $failed_plate     = $this->createStub( \Racketmanager\Domain\Competition\League::class );
-        $failed_plate->id = null;
+        $failed_plate = $this->createStub( \Racketmanager\Domain\Competition\League::class );
+        League_Test_Factory::set_property( $failed_plate, 'id', null );
         $league_service   = $this->createMock( League_Service::class );
         $league_service->expects( self::exactly( 2 ) )
             ->method( 'add_league_to_event' )

@@ -65,13 +65,13 @@ class League_Query_Service implements League_Query_Service_Interface {
      * Optional repositories may be provided directly, deferred through a closure, or
      * left null when the related operation is not needed.
      *
-     * @param League_Repository_Interface $league_repository League repository used for primary league access.
-     * @param Fixture_Repository_Interface|Closure|null $fixture_repository Optional fixture repository or lazy resolver.
-     * @param Rubber_Repository_Interface|Closure|null $rubber_repository Optional rubber repository or lazy resolver.
-     * @param Team_Repository_Interface|Closure|null $team_repository Optional team repository or lazy resolver.
+     * @param League_Repository_Interface                   $league_repository League repository used for primary league access.
+     * @param Fixture_Repository_Interface|Closure|null     $fixture_repository Optional fixture repository or lazy resolver.
+     * @param Rubber_Repository_Interface|Closure|null      $rubber_repository Optional rubber repository or lazy resolver.
+     * @param Team_Repository_Interface|Closure|null        $team_repository Optional team repository or lazy resolver.
      * @param League_Team_Repository_Interface|Closure|null $league_team_repository Optional league-team repository or lazy resolver.
-     * @param Club_Repository_Interface|Closure|null $club_repository Optional club repository or lazy resolver.
-     * @param Player_Repository_Interface|Closure|null $player_repository Optional player repository or lazy resolver.
+     * @param Club_Repository_Interface|Closure|null        $club_repository Optional club repository or lazy resolver.
+     * @param Player_Repository_Interface|Closure|null      $player_repository Optional player repository or lazy resolver.
      *
      * @return void
      */
@@ -284,10 +284,10 @@ class League_Query_Service implements League_Query_Service_Interface {
                     $teams[ $i ]             = $team;
                 }
 
-                $league->teams      = $teams;
-                $league->team_index = $team_index;
+                $league->set_teams( $teams );
+                $league->set_team_index( $team_index );
 
-                $league->num_teams = $league->num_teams_total;
+                $league->set_num_teams( $league->num_teams_total );
 
                 $get_details = $query_args['get_details'] ?? ( $team_query_args['get_details'] ?? false );
                 if ( $get_details ) {
@@ -341,8 +341,8 @@ class League_Query_Service implements League_Query_Service_Interface {
      * formats points, expands player rosters for player-based teams, and marks
      * withdrawn teams.
      *
-     * @param object $league League instance or compatible object used to retrieve team details.
-     * @param int $team_id Team identifier, or -1 to return the bye team details.
+     * @param object      $league League instance or compatible object used to retrieve team details.
+     * @param int         $team_id Team identifier, or -1 to return the bye team details.
      * @param string|null $season Optional season name. Defaults to the league current season when omitted.
      *
      * @return object|false Team details object when found, or false when no matching team details exist.
@@ -488,17 +488,18 @@ class League_Query_Service implements League_Query_Service_Interface {
             $league_players[] = $player;
         }
         if ( $group ) {
-            $league->players = array();
+            $grouped_players = array();
             foreach ( $league_players as $player ) {
                 $key = strtoupper( substr( $player->get_fullname(), 0, 1 ) );
-                if ( false === array_key_exists( $key, $league->players ) ) {
-                    $league->players[ $key ] = array();
+                if ( false === array_key_exists( $key, $grouped_players ) ) {
+                    $grouped_players[ $key ] = array();
                 }
                 // now just add the row data.
-                $league->players[ $key ][] = $player;
+                $grouped_players[ $key ][] = $player;
             }
+            $league->set_players( $grouped_players );
         } else {
-            $league->players = $league_players;
+            $league->set_players( $league_players );
         }
 
         return $league->players;
@@ -561,7 +562,7 @@ class League_Query_Service implements League_Query_Service_Interface {
         $state          = new League_View_State( num_teams_per_page: $this->get_per_page( $league, 'teams' ) );
 
         if ( true === $total ) {
-            $league->num_teams_total = (int) $this->league_repository->query_league_teams(
+            $num_teams_total = (int) $this->league_repository->query_league_teams(
                 (int) $league->id,
                 array(
                     'count'            => true,
@@ -571,11 +572,12 @@ class League_Query_Service implements League_Query_Service_Interface {
                 ),
                 true
             );
+            $league->set_num_teams_total( $num_teams_total );
 
             return $state->with_teams_pagination( $league->num_teams_total, $requested_page );
         }
 
-        $league->num_teams = $league->num_teams_total;
+        $league->set_num_teams( $league->num_teams_total );
 
         return $state->with_teams_pagination(
             $league->num_teams,
@@ -604,12 +606,12 @@ class League_Query_Service implements League_Query_Service_Interface {
         $state       = new League_View_State( num_matches_per_page: $this->get_per_page( $league, 'matches' ) );
 
         if ( $total ) {
-            $league->num_matches_total = $num_matches;
+            $league->set_num_matches_total( $num_matches );
 
             return $state->with_matches_pagination( $num_matches, $requested_page );
         }
 
-        $league->num_matches = $num_matches;
+        $league->set_num_matches( $num_matches );
 
         return $state->with_matches_pagination(
             $num_matches,
@@ -704,10 +706,10 @@ class League_Query_Service implements League_Query_Service_Interface {
         $league->set_season( $season, $force_overwrite );
         $this->set_num_teams( $league, true );
         if ( 'championship' === ( $league->mode ?? '' ) ) {
-            $settings_data        = isset( $league->settings ) ? (array) $league->settings : array();
-            $settings             = Championship_Settings::from_array( $settings_data );
-            $factory              = new Championship_Factory( $this->league_repository, $this );
-            $league->championship = $factory->create( $league, $settings, $final );
+            $settings_data = isset( $league->settings ) ? (array) $league->settings : array();
+            $settings      = Championship_Settings::from_array( $settings_data );
+            $factory       = new Championship_Factory( $this->league_repository, $this );
+            $league->set_championship( $factory->create( $league, $settings, $final ) );
         }
     }
 
@@ -828,7 +830,6 @@ class League_Query_Service implements League_Query_Service_Interface {
     public function add_team( object $league, int|string $team_id, string $season, ?string $rank = null, ?string $status = null, int|string $profile = 1 ): bool|int {
         if ( ! is_numeric( $team_id ) ) {
             $team_repo   = $this->get_team_repository();
-            $resolved_id = 0;
             $resolved_id = $team_repo->find_id_by_title( (string) $team_id );
             if ( $resolved_id <= 0 ) {
                 return false;
@@ -983,9 +984,7 @@ class League_Query_Service implements League_Query_Service_Interface {
                     foreach ( $matches as $i => $match ) {
                         $match = $fixture_repository->find_by_id( (int) $match->id );
                         $class = ( 'alternate' === $class ) ? '' : 'alternate';
-                        if ( $match ) {
-                            $match->set_class( $class );
-                        }
+                        $match?->set_class( $class );
                         if ( $player && $match ) {
                             $rubber_repository = $this->optional_rubber_repository();
                             if ( $rubber_repository ) {
@@ -1016,9 +1015,9 @@ class League_Query_Service implements League_Query_Service_Interface {
             }
 
             if ( true !== $count ) {
-                $league->matches = is_array( $matches ) ? $matches : array( $matches );
+                $league->set_matches( is_array( $matches ) ? $matches : array( $matches ) );
             } else {
-                $league->num_matches = (int) $matches;
+                $league->set_num_matches( (int) $matches );
             }
 
             $success = true;

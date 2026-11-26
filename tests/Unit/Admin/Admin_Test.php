@@ -20,6 +20,7 @@ use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Player_Service;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use ReflectionClass;
 use WP_Error;
@@ -181,7 +182,7 @@ final class Admin_Test extends TestCase {
 
     public function test_add_meta_box_with_saved_post_and_linked_fixture_renders_league_and_dropdowns(): void {
         $league = $this->createStub( League::class );
-        $league->id = 10;
+        League_Test_Factory::set_property( $league, 'id', 10 );
         $league->method( 'get_season' )->willReturn( '2026' );
 
         $league_repo = $this->createMock( League_Repository_Interface::class );
@@ -320,7 +321,7 @@ final class Admin_Test extends TestCase {
 
     public function test_add_meta_box_selects_matching_league_in_dropdown_and_leaves_others_unselected(): void {
         $league = $this->createStub( League::class );
-        $league->id = 10;
+        League_Test_Factory::set_property( $league, 'id', 10 );
         $league->method( 'get_season' )->willReturn( '2026' );
 
         $league_repo = $this->createMock( League_Repository_Interface::class );

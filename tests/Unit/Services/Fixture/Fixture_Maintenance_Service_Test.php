@@ -24,6 +24,7 @@ use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response;
 use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 
 #[AllowMockObjectsWithoutExpectations]
 class Fixture_Maintenance_Service_Test extends TestCase {
@@ -96,7 +97,7 @@ class Fixture_Maintenance_Service_Test extends TestCase {
         $event = new Event();
         $comp = (object) [ 'type' => 'league' ];
         $event->set_competition( $comp );
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
 
         $this->league_repository->method( 'find_by_id' )->willReturn( $league );
         $this->settings_service->method( 'get_option' )->willReturn( 'admin@test.com' );
@@ -119,7 +120,7 @@ class Fixture_Maintenance_Service_Test extends TestCase {
         $event = new Event();
         $comp = (object) [ 'type' => 'league' ];
         $event->set_competition( $comp );
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
 
         $this->league_repository->method( 'find_by_id' )->willReturn( $league );
         $this->settings_service->method( 'get_option' )->willReturn( 'admin@test.com' );
@@ -144,7 +145,7 @@ class Fixture_Maintenance_Service_Test extends TestCase {
         $event = new Event();
         $comp = (object) [ 'type' => 'league' ];
         $event->set_competition( $comp );
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
 
         $this->league_repository->method( 'find_by_id' )->willReturn( $league );
         $this->settings_service->method( 'get_option' )->willReturn( 'admin@test.com' );
@@ -171,7 +172,7 @@ class Fixture_Maintenance_Service_Test extends TestCase {
             'rules' => [ 'resultTimeout' => 24 ],
         ];
         $event->set_competition( $comp );
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
 
         $this->league_repository->method( 'find_by_id' )->willReturn( $league );
         $this->settings_service->method( 'get_option' )->willReturn( 24 );

@@ -95,11 +95,10 @@ final class Tournament_Service_Draw_View_Model_Test extends TestCase {
                 array( 'key' => 'final', 'name' => 'Championship Final' ),
             )
         );
-        $league_entity               = League_Test_Factory::from_object( (object) array( 'id' => 55, 'title' => 'Draw', 'event_id' => 12 ) );
-        $league_entity->id           = 55;
-        $league_entity->season       = '2026';
-        $league_entity->finals       = array();
-        $league_entity->championship = $championship;
+        $league_entity = League_Test_Factory::from_object( (object) array( 'id' => 55, 'title' => 'Draw', 'event_id' => 12 ) );
+        $league_entity->set_season_name( '2026' );
+        $league_entity->set_finals_list( array() );
+        $league_entity->set_championship( $championship );
         $league_repository->expects( $this->once() )
             ->method( 'find_by_id' )
             ->with( 55 )
@@ -110,8 +109,8 @@ final class Tournament_Service_Draw_View_Model_Test extends TestCase {
             type: Competition_Type::TOURNAMENT,
         );
 
-        $fixture_league     = $this->createStub( League::class );
-        $fixture_league->id = 55;
+        $fixture_league = $this->createStub( League::class );
+        League_Test_Factory::set_property( $fixture_league, 'id', 55 );
 
         $raw_fixture = new Fixture();
         $raw_fixture->set_id( 101 );

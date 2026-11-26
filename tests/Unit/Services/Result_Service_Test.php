@@ -20,6 +20,7 @@ use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Result_Service;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use stdClass;
 
 require_once __DIR__ . '/../../wp-stubs.php';
@@ -239,7 +240,7 @@ class Result_Service_Test extends TestCase {
         $event->set_competition( $competition );
 
         $league = $this->createMock( League::class );
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
 
         $this->league_repository->expects( $this->atLeastOnce() )
             ->method( 'find_by_id' )
@@ -268,9 +269,9 @@ class Result_Service_Test extends TestCase {
         $event->set_competition( $competition );
 
         $league = $this->createMock( League::class );
-        $league->id = 456;
-        $league->title = 'Division 1';
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'id', 456 );
+        League_Test_Factory::set_property( $league, 'title', 'Division 1' );
+        League_Test_Factory::set_property( $league, 'event', $event );
 
         $home_team = $this->createMock( Team::class );
         $home_team->method( 'get_id' )->willReturn( 10 );

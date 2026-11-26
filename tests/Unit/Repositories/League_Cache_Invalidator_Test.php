@@ -130,8 +130,8 @@ class League_Cache_Invalidator_Test extends TestCase {
 	 */
 	public function test_capture_snapshot_from_cached_league_uses_canonical_name(): void {
 		$league       = new League();
-		$league->id   = 22;
-		$league->name = 'Championship Name';
+		$league->set_id( 22 );
+		$league->set_name( 'Championship Name' );
 		wp_cache_set( 22, $league, 'leagues' );
 
 		$invalidator = new League_Cache_Invalidator( $this->wpdb, 'wp_racketmanager_leagues' );

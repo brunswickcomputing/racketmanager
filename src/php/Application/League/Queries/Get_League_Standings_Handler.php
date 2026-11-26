@@ -44,7 +44,9 @@ class Get_League_Standings_Handler {
 
         $teams       = $this->league_query_service->get_league_teams( $league, $team_args );
         $teams_array = is_array( $teams ) ? $teams : [];
-        $league->teams = $teams_array;
+        if ( $league instanceof League ) {
+            $league->set_teams( $teams_array );
+        }
 
         $view_state = new League_View_State(
             tab: 'standings',

@@ -136,7 +136,7 @@ class Fixture_Repository_Slug_Criteria_Test extends TestCase {
 				'is_championship' => false,
 			)
 		);
-		$league->current_season = array( 'name' => '2026' );
+		$league->set_current_season( array( 'name' => '2026' ) );
 
 		$this->league_repository->expects( $this->once() )
 			->method( 'find_by_name' )
@@ -196,7 +196,7 @@ class Fixture_Repository_Slug_Criteria_Test extends TestCase {
 				'is_championship' => false,
 			)
 		);
-		$league->current_season = array( 'name' => '2026' );
+		$league->set_current_season( array( 'name' => '2026' ) );
 
 		$this->league_repository->expects( $this->once() )
 			->method( 'find_by_name' )
@@ -270,7 +270,7 @@ class Fixture_Repository_Slug_Criteria_Test extends TestCase {
 				'is_championship' => false,
 			)
 		);
-		$league->current_season = array( 'name' => '2026' );
+		$league->set_current_season( array( 'name' => '2026' ) );
 
 		$this->league_repository->expects( $this->once() )
 			->method( 'find_by_name' )
@@ -315,7 +315,7 @@ class Fixture_Repository_Slug_Criteria_Test extends TestCase {
 				'is_championship' => false,
 			)
 		);
-		$league->current_season = array( 'name' => '2026' );
+		$league->set_current_season( array( 'name' => '2026' ) );
 
 		$this->league_repository->expects( $this->once() )
 			->method( 'find_by_name' )

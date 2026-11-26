@@ -79,15 +79,17 @@ readonly class Get_League_Players_Handler {
 
             $player->set_matches( $this->player_query_service->get_matches( $player, $league, $season_name, 'league' ) );
             $player->set_stats( $this->player_stats_service->get_stats( $player ) );
-            $league->player = $player;
+            $league->set_player( $player );
         } else {
-            $league->players = $this->player_stats_service->populate_players_stats(
-                $this->league_query()->get_players( $league ),
-                $league,
-                $season_name,
-                'league'
+            $league->set_players(
+                $this->player_stats_service->populate_players_stats(
+                    $this->league_query()->get_players( $league ),
+                    $league,
+                    $season_name,
+                    'league'
+                )
             );
-            foreach ( $league->players as $p ) {
+            foreach ( $league->get_players() as $p ) {
                 $team = $this->league_repository->get_player_team(
                     $league->get_id(),
                     [

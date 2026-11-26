@@ -28,6 +28,7 @@ use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Standings\Standings_Service;
 use Racketmanager\Services\Team_Service;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 use WP_Error;
@@ -255,7 +256,7 @@ final class Import_Action_Dispatcher_Test extends TestCase {
 
     public function test_import_table_updates_league_team_records(): void {
         $mock_league = $this->createMock( League::class );
-        $mock_league->id = 10;
+        League_Test_Factory::set_property( $mock_league, 'id', 10 );
         $this->standings_service->expects( self::once() )
             ->method( 'set_teams_rank' )
             ->with( $mock_league, '2026' );

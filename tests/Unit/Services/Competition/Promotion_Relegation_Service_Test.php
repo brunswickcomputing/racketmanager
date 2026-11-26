@@ -19,10 +19,10 @@ use Racketmanager\Services\Competition\Promotion_Relegation_Service;
 final class Promotion_Relegation_Service_Test extends TestCase {
 
 	private function league( int $id, int $num_teams_total = 8 ): League {
-		$league                   = $this->createStub( League::class );
-		$league->id               = $id;
-		$league->num_teams_total  = $num_teams_total;
-		$league->current_season   = array( 'name' => '2026' );
+		$league = new League();
+		$league->set_id( $id );
+		$league->set_num_teams_total( $num_teams_total );
+		$league->set_current_season( array( 'name' => '2026' ) );
 		return $league;
 	}
 

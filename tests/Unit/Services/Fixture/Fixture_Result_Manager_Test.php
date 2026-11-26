@@ -103,7 +103,7 @@ class Fixture_Result_Manager_Test extends TestCase {
         $league->method( 'get_id' )->willReturn( 1 );
         $league->method( 'get_name' )->willReturn( 'Test League' );
         $league->method( 'get_event_id' )->willReturn( 10 );
-        $league->is_championship = false;
+        League_Test_Factory::set_property( $league, 'is_championship', false );
 
         $this->league_repository->expects( $this->once() )->method( 'find_by_id' )->with( 1 )->willReturn( $league );
 
@@ -129,7 +129,7 @@ class Fixture_Result_Manager_Test extends TestCase {
         $league->method( 'get_id' )->willReturn( 1 );
         $league->method( 'get_name' )->willReturn( 'Test Championship' );
         $league->method( 'get_event_id' )->willReturn( 10 );
-        $league->is_championship = true;
+        League_Test_Factory::set_property( $league, 'is_championship', true );
 
         $this->league_repository->expects( $this->once() )->method( 'find_by_id' )->with( 1 )->willReturn( $league );
 

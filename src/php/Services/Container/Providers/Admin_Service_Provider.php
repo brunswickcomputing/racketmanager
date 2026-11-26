@@ -426,11 +426,7 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
         $container->set(
             'league_match_action_dispatcher',
             fn( Simple_Container $c ) => new League_Match_Action_Dispatcher(
-                $c->get( 'fixture_repository' ),
-                $c->get( 'fixture_maintenance_service' ),
-                $c->get( 'action_guard' ),
-                $c->get( 'fixture_result_manager' ),
-                $c->get( 'fixture_service' ),
+                action_guard: $c->get( 'action_guard' ),
                 commands: $c->get( 'league_match_handler' ),
                 league_repository: $c->get( 'league_repository' )
             )

@@ -46,6 +46,7 @@ use Racketmanager\Presentation\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Event_Query_Service;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
@@ -626,15 +627,16 @@ final class Public_Links_Modernization_Test extends TestCase {
             ]
         );
 
-        $league = new class extends League {
-            public function __construct() {}
-        };
-        $league->id             = 50;
-        $league->title          = 'Division 1';
-        $league->sport          = 'tennis';
-        $league->event          = $event;
-        $league->current_season = [ 'name' => '2026' ];
-        $league->players        = [ $player1, $player2 ];
+        $league = League_Test_Factory::create(
+            id: 50,
+            title: 'Division 1',
+            event: $event,
+            overrides: [
+                'sport'          => 'tennis',
+                'current_season' => [ 'name' => '2026' ],
+                'players'        => [ $player1, $player2 ],
+            ]
+        );
 
         $player_presenter = new Player_Presenter();
         $player_links     = $player_presenter->present_league_player_links( $league, $league->players );
@@ -681,15 +683,16 @@ final class Public_Links_Modernization_Test extends TestCase {
             ]
         );
 
-        $league = new class extends League {
-            public function __construct() {}
-        };
-        $league->id             = 50;
-        $league->title          = 'Division 1';
-        $league->sport          = 'tennis';
-        $league->event          = $event;
-        $league->current_season = [ 'name' => '2026' ];
-        $league->player         = $player;
+        $league = League_Test_Factory::create(
+            id: 50,
+            title: 'Division 1',
+            event: $event,
+            overrides: [
+                'sport'          => 'tennis',
+                'current_season' => [ 'name' => '2026' ],
+                'player'         => $player,
+            ]
+        );
 
         $player_presenter = new Player_Presenter();
         $player_vm        = $player_presenter->present_player( $player );
@@ -822,21 +825,16 @@ final class Public_Links_Modernization_Test extends TestCase {
             ]
         );
 
-        $league = new class extends League {
-            public function __construct() {}
-            public function get_id(): int {
-                return 50;
-            }
-            public function set_season( false|string $season = false, bool $force_overwrite = false, ?\Racketmanager\Repositories\Interfaces\League_Repository_Interface $league_repository = null, ?string $final = null ): void {
-                $this->current_season = [ 'name' => $season ?: '2026' ];
-            }
-        };
-        $league->id             = 50;
-        $league->title          = 'Division 1';
-        $league->sport          = 'tennis';
-        $league->event          = $event;
-        $league->current_season = [ 'name' => '2026' ];
-        $league->players        = [ $player1, $player2 ];
+        $league = League_Test_Factory::create(
+            id: 50,
+            title: 'Division 1',
+            event: $event,
+            overrides: [
+                'sport'          => 'tennis',
+                'current_season' => [ 'name' => '2026' ],
+                'players'        => [ $player1, $player2 ],
+            ]
+        );
 
         $league_service = $this->createStub( League_Service::class );
         $league_service->method( 'get_league' )->willReturn( $league );
@@ -899,15 +897,16 @@ final class Public_Links_Modernization_Test extends TestCase {
             ]
         );
 
-        $league = new class extends League {
-            public function __construct() {}
-        };
-        $league->id             = 50;
-        $league->title          = 'Division 1';
-        $league->sport          = 'tennis';
-        $league->event          = $event;
-        $league->current_season = [ 'name' => '2026' ];
-        $league->player         = $player;
+        $league = League_Test_Factory::create(
+            id: 50,
+            title: 'Division 1',
+            event: $event,
+            overrides: [
+                'sport'          => 'tennis',
+                'current_season' => [ 'name' => '2026' ],
+                'player'         => $player,
+            ]
+        );
 
         $league_service = $this->createStub( League_Service::class );
         $league_service->method( 'get_league' )->willReturn( $league );

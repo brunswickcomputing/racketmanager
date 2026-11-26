@@ -71,8 +71,8 @@ final class Admin_League_Delivery_Test extends TestCase {
             'seasons' => array( '2026' => array( 'name' => '2026' ) ),
         ), $competition );
         $league = \Racketmanager\Domain\Competition\League::from_object( (object) array( 'id' => 42, 'title' => 'Finals' ), $event );
-        $league->mode = 'championship';
-        $league->num_teams_total = 8;
+        $league->set_mode( 'championship' );
+        $league->set_num_teams_total( 8 );
         $league->set_season( '2026' );
         $GLOBALS['wp_stubs_leagues'][42] = $league;
         $repository = $this->createMock( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class );
@@ -190,14 +190,14 @@ final class Admin_League_Delivery_Test extends TestCase {
         $prop->setAccessible( true );
         $prop->setValue( $champ_obj, 16 );
 
-        $league_champ                  = League_Test_Factory::from_object( (object) array( 'id' => 101, 'title' => 'Division Cup' ) );
-        $league_champ->is_championship = true;
-        $league_champ->num_teams_total = 8;
-        $league_champ->championship    = $champ_obj;
+        $league_champ = League_Test_Factory::from_object( (object) array( 'id' => 101, 'title' => 'Division Cup' ) );
+        $league_champ->set_is_championship( true );
+        $league_champ->set_num_teams_total( 8 );
+        $league_champ->set_championship( $champ_obj );
 
-        $league_std                  = League_Test_Factory::from_object( (object) array( 'id' => 102, 'title' => 'Division 1' ) );
-        $league_std->is_championship = false;
-        $league_std->num_teams_total = 6;
+        $league_std = League_Test_Factory::from_object( (object) array( 'id' => 102, 'title' => 'Division 1' ) );
+        $league_std->set_is_championship( false );
+        $league_std->set_num_teams_total( 6 );
 
         $league_repository = $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class );
         $league_repository->method( 'query_matches' )->willReturn( 30 );
@@ -261,9 +261,9 @@ final class Admin_League_Delivery_Test extends TestCase {
             )
         );
 
-        $league1                  = $this->createStub( \Racketmanager\Domain\Competition\League::class );
-        $league1->id              = 101;
-        $league1->title           = 'Division 1';
+        $league1 = $this->createStub( \Racketmanager\Domain\Competition\League::class );
+        League_Test_Factory::set_property( $league1, 'id', 101 );
+        League_Test_Factory::set_property( $league1, 'title', 'Division 1' );
 
         $team1                   = (object) array(
             'table_id'         => 1,

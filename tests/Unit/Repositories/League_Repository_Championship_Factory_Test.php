@@ -12,6 +12,7 @@ use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Services\Championship_Factory;
 use Racketmanager\Services\Competition\League_Query_Service;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use Racketmanager\Tests\Helpers\Recording_Wpdb;
 
@@ -59,8 +60,8 @@ final class League_Repository_Championship_Factory_Test extends TestCase {
 			),
 		);
 		$primary               = $this->createStub( League::class );
-		$primary->id           = 1;
-		$primary->championship = ( new Championship_Factory() )->create( $source, new Championship_Settings() );
+		League_Test_Factory::set_property( $primary, 'id', 1 );
+		League_Test_Factory::set_property( $primary, 'championship', ( new Championship_Factory() )->create( $source, new Championship_Settings() ) );
 		wp_cache_set( 1, $primary, 'leagues' );
 		return $primary;
 	}

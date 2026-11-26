@@ -13,6 +13,7 @@ use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Handler;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Reset_Response;
 use Racketmanager\Domain\DTO\Fixture\Team_Result_Response;
@@ -131,10 +132,10 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
             'matchId'             => 123,
         ];
 
-        $fixture             = $this->createStub( Fixture::class );
+        $fixture = $this->createStub( Fixture::class );
         $fixture->method( 'get_date' )->willReturn( '2026-10-18 19:30:00' );
-        $league              = $this->createStub( League::class );
-        $league->num_rubbers = 0;
+        $league  = $this->createStub( League::class );
+        League_Test_Factory::set_property( $league, 'num_rubbers', 0 );
 
         $dto = new Fixture_Details_DTO( $fixture, $league, $this->createStub( Event::class ), $this->createStub( Competition::class ) );
 
@@ -167,8 +168,8 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $fixture->method( 'get_date' )->willReturn( '2026-10-18 19:30:00' );
         $fixture->expects( $this->once() )->method( 'get_rubbers' )->willReturn( [ 'rubber1' ] );
 
-        $league              = $this->createStub( League::class );
-        $league->num_rubbers = 3;
+        $league = $this->createStub( League::class );
+        League_Test_Factory::set_property( $league, 'num_rubbers', 3 );
 
         $dto = new Fixture_Details_DTO( $fixture, $league, $this->createStub( Event::class ), $this->createStub( Competition::class ) );
 
@@ -318,9 +319,9 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $fixture_repo->expects( $this->once() )->method( 'find_by_id' )->with( 123 )->willReturn( $fixture );
         $this->container->set( 'fixture_repository', $fixture_repo );
 
-        $league              = $this->createStub( League::class );
-        $league->num_rubbers = 3;
-        $league_repo         = $this->createMock( League_Repository_Interface::class );
+        $league      = $this->createStub( League::class );
+        League_Test_Factory::set_property( $league, 'num_rubbers', 3 );
+        $league_repo = $this->createMock( League_Repository_Interface::class );
         $league_repo->expects( $this->once() )->method( 'find_by_id' )->with( 456 )->willReturn( $league );
         $this->container->set( 'league_repository', $league_repo );
 
@@ -352,9 +353,9 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $fixture_repo->expects( $this->once() )->method( 'find_by_id' )->with( 123 )->willReturn( $fixture );
         $this->container->set( 'fixture_repository', $fixture_repo );
 
-        $league              = $this->createStub( League::class );
-        $league->num_rubbers = 3;
-        $league_repo         = $this->createMock( League_Repository_Interface::class );
+        $league      = $this->createStub( League::class );
+        League_Test_Factory::set_property( $league, 'num_rubbers', 3 );
+        $league_repo = $this->createMock( League_Repository_Interface::class );
         $league_repo->expects( $this->once() )->method( 'find_by_id' )->with( 456 )->willReturn( $league );
         $this->container->set( 'league_repository', $league_repo );
 

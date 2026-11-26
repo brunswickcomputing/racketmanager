@@ -12,7 +12,6 @@ use stdClass;
 use function __;
 use function array_reverse;
 use function ceil;
-use function count;
 use function is_array;
 use function is_iterable;
 use function is_object;
@@ -20,16 +19,38 @@ use function max;
 use function method_exists;
 
 /**
- * Query handler for [championship] shortcode.
+ * Handles league championship requests by loading the target league, applying the required season, and assembling finals data.
+ *
+ * Coordinates league retrieval, season resolution, championship round discovery, fixture lookup, and rubber loading for championship matches. Returns a structured championship result, including league configuration and template information, or an error result when the requested league cannot be resolved.
  */
-class Get_League_Championship_Handler {
+readonly class Get_League_Championship_Handler {
+    /**
+     * Initialises the service with league, fixture, rubber, and league query dependencies.
+     *
+     * @param League_Service_Interface       $league_service League service dependency.
+     * @param Fixture_Repository_Interface   $fixture_repository Fixture repository dependency.
+     * @param Rubber_Repository_Interface    $rubber_repository Rubber repository dependency.
+     * @param League_Query_Service_Interface $league_query_service League query service dependency.
+     *
+     * @return void
+     */
     public function __construct(
-        private readonly League_Service_Interface $league_service,
-        private readonly Fixture_Repository_Interface $fixture_repository,
-        private readonly Rubber_Repository_Interface $rubber_repository,
-        private readonly League_Query_Service_Interface $league_query_service
+        private League_Service_Interface $league_service,
+        private Fixture_Repository_Interface $fixture_repository,
+        private Rubber_Repository_Interface $rubber_repository,
+        private League_Query_Service_Interface $league_query_service
     ) {}
 
+    /**
+     * Handles a league championship query and returns the resolved championship data.
+     *
+     * Retrieves the requested league, applies the requested or current season, loads championship finals,
+     * attaches fixture and rubber data where available, and returns an error result when the league cannot be found.
+     *
+     * @param Get_League_Championship_Query $query Query containing the league identifier, optional season, and template.
+     *
+     * @return League_Championship_Result Championship result containing league, finals, match configuration, and template data, or an error result if the league is not found.
+     */
     public function handle( Get_League_Championship_Query $query ): League_Championship_Result {
         $league = null;
         if ( ! empty( $query->league_id ) ) {
@@ -41,7 +62,7 @@ class Get_League_Championship_Handler {
 
         $this->league_query_service->set_season( $league, $query->season ?? $league->get_season() );
         $season = $league->get_season();
-        $league->season = $season;
+        $league->set_season( $season );
 
         $finals = [];
         if ( isset( $league->championship ) && is_object( $league->championship ) && method_exists( $league->championship, 'get_finals' ) ) {
@@ -57,10 +78,13 @@ class Get_League_Championship_Handler {
                     $num_matches       = max( 1, $data->num_matches );
                     $data->rowspan     = ( $num_first_round / 2 >= 4 ) ? (int) ceil( 4 / $num_matches ) : (int) ceil( ( $num_first_round / 2 ) / $num_matches );
 
-                    $matches_raw = $this->league_query_service->get_matches( $league, [
-                        'final'   => $final['key'] ?? '',
-                        'orderby' => [ 'id' => 'ASC' ],
-                    ] );
+                    $matches_raw = $this->league_query_service->get_matches(
+                        $league,
+                        [
+                            'final'   => $final['key'] ?? '',
+                            'orderby' => [ 'id' => 'ASC' ],
+                        ]
+                    );
 
                     $matches = [];
                     $i       = 1;
@@ -81,7 +105,7 @@ class Get_League_Championship_Handler {
                         }
                     }
 
-                    if ( count( $matches ) > 0 ) {
+                    if ( ! empty( $matches ) ) {
                         $data->matches = $matches;
                         $finals[ $f ]  = $data;
                     }

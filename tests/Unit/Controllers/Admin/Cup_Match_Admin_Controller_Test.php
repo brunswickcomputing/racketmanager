@@ -86,8 +86,8 @@ final class Cup_Match_Admin_Controller_Test extends TestCase {
         $champ_ref = new \ReflectionClass( Championship::class );
         $champ_obj = $champ_ref->newInstanceWithoutConstructor();
 
-        $league->is_championship = true;
-        $league->championship    = $champ_obj;
+        $league->set_is_championship( true );
+        $league->set_championship( $champ_obj );
 
         $match = new Fixture();
         $match->set_id( 50 );

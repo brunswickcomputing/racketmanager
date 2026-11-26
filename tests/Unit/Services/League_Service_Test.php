@@ -138,8 +138,8 @@ class League_Service_Test extends TestCase {
             ->willReturn( [ (object) ['id' => 101] ] );
 
         $league = League_Test_Factory::from_object( (object) [ 'title' => 'Division 1' ] );
-        $league->id = $league_id;
-        $league->seasons = [ '2024' => [ 'name' => '2024' ] ];
+        $league->set_id( $league_id );
+        $league->set_seasons( [ '2024' => [ 'name' => '2024' ] ] );
         $this->league_repository->method( 'find_by_id' )->willReturn( $league );
 
         $this->expectException( Team_Has_Matches_Exception::class );
@@ -198,8 +198,8 @@ class League_Service_Test extends TestCase {
             ]);
 
         $league = League_Test_Factory::from_object( (object) [ 'title' => 'Division 1' ] );
-        $league->id = $league_id;
-        $league->seasons = [ (string) $season => [ 'name' => (string) $season ] ];
+        $league->set_id( $league_id );
+        $league->set_seasons( [ (string) $season => [ 'name' => (string) $season ] ] );
         $this->league_repository->method('find_by_id')->willReturn($league);
 
         // First team has matches
@@ -299,7 +299,7 @@ class League_Service_Test extends TestCase {
         );
 
         $league = $this->createMock( League::class );
-        $league->id = 15;
+        League_Test_Factory::set_property( $league, 'id', 15 );
         $league->method( 'get_id' )->willReturn( 15 );
 
         $this->league_repository->expects( self::once() )
@@ -571,8 +571,8 @@ class League_Service_Test extends TestCase {
         );
 
         $league = $this->createMock( League::class );
-        $league->id              = 5;
-        $league->is_championship = false;
+        League_Test_Factory::set_property( $league, 'id', 5 );
+        League_Test_Factory::set_property( $league, 'is_championship', false );
         $league->method( 'get_id' )->willReturn( 5 );
 
         $this->league_repository->expects( self::atLeastOnce() )
@@ -642,8 +642,8 @@ class League_Service_Test extends TestCase {
         );
 
         $league = $this->createMock( League::class );
-        $league->id              = 8;
-        $league->is_championship = true;
+        League_Test_Factory::set_property( $league, 'id', 8 );
+        League_Test_Factory::set_property( $league, 'is_championship', true );
         $league->method( 'get_id' )->willReturn( 8 );
 
         $this->league_repository->expects( self::atLeastOnce() )
@@ -716,8 +716,8 @@ class League_Service_Test extends TestCase {
         );
 
         $league = $this->createMock( League::class );
-        $league->id              = 8;
-        $league->is_championship = false;
+        League_Test_Factory::set_property( $league, 'id', 8 );
+        League_Test_Factory::set_property( $league, 'is_championship', false );
         $league->method( 'get_id' )->willReturn( 8 );
 
         $this->league_repository->expects( self::atLeastOnce() )
@@ -774,8 +774,8 @@ class League_Service_Test extends TestCase {
         );
 
         $league = $this->createMock( League::class );
-        $league->id              = 8;
-        $league->is_championship = false;
+        League_Test_Factory::set_property( $league, 'id', 8 );
+        League_Test_Factory::set_property( $league, 'is_championship', false );
         $league->method( 'get_id' )->willReturn( 8 );
 
         $this->league_repository->expects( self::atLeastOnce() )
@@ -807,8 +807,8 @@ class League_Service_Test extends TestCase {
         );
 
         $league = $this->createMock( League::class );
-        $league->id              = 8;
-        $league->is_championship = false;
+        League_Test_Factory::set_property( $league, 'id', 8 );
+        League_Test_Factory::set_property( $league, 'is_championship', false );
         $league->method( 'get_id' )->willReturn( 8 );
 
         $this->league_repository->expects( self::atLeastOnce() )

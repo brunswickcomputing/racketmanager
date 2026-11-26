@@ -132,8 +132,8 @@ final class Championship_Admin_Controller_Test extends TestCase {
 		$championship = $this->createStub( Championship::class );
 		$championship->method( 'num_rounds' )->willReturn( 1 );
 
-		$league               = ( new \ReflectionClass( League::class ) )->newInstanceWithoutConstructor();
-		$league->championship = $championship;
+		$league = ( new \ReflectionClass( League::class ) )->newInstanceWithoutConstructor();
+		$league->set_championship( $championship );
 
 		$this->guard->expects( self::once() )
 			->method( 'assert_allowed' )
@@ -168,8 +168,8 @@ final class Championship_Admin_Controller_Test extends TestCase {
 			$this->guard
 		);
 
-		$league               = ( new \ReflectionClass( League::class ) )->newInstanceWithoutConstructor();
-		$league->championship = $this->createStub( Championship::class );
+		$league = ( new \ReflectionClass( League::class ) )->newInstanceWithoutConstructor();
+		$league->set_championship( $this->createStub( Championship::class ) );
 
 		$this->guard->expects( self::once() )
 			->method( 'assert_allowed' )

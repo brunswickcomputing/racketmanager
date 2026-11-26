@@ -47,15 +47,15 @@ class Standings_Rubbers_Test extends TestCase {
         );
 
         $league = League_Test_Factory::from_object( (object) [ 'title' => 'Division 1' ] );
-        $league->id = 12;
-        $league->seasons = [ '2026' => [ 'name' => '2026' ] ];
-        $league->current_season = [ 'name' => '2026' ];
+        $league->set_id( 12 );
+        $league->set_seasons( [ '2026' => [ 'name' => '2026' ] ] );
+        $league->set_current_season( [ 'name' => '2026' ] );
         $league->set_match_query_arg( 'season', '2026' );
-        $league->point_rule = 'three';
-        $league->standings = [];
-        $league->num_rubbers = 1;
-        $league->num_sets = 2;
-        $league->scoring = '';
+        $league->set_point_rule( 'three' );
+        $league->set_standings( [] );
+        $league->set_num_rubbers( 1 );
+        $league->set_num_sets( 2 );
+        $league->set_scoring( '' );
         $league_repository = $this->createStub( League_Repository_Interface::class );
         $league_repository->method( 'query_matches' )->willReturn( [ (object) [ 'id' => 70 ] ] );
         $fixture_repository = $this->createStub( Fixture_Repository_Interface::class );

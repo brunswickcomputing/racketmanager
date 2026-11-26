@@ -220,7 +220,7 @@ class Ajax_Adapter_Test extends TestCase {
         $adapter = $this->create_frontend_adapter( $event_repository );
 
         $league = League_Test_Factory::from_object( (object) [ 'id' => 50, 'title' => 'Division 1', 'event_id' => 30 ] );
-        $league->event = null;
+        League_Test_Factory::set_property( $league, 'event', null );
         $this->assertNull( $league->event );
         $GLOBALS['wp_stubs_leagues'][50] = $league;
 
@@ -265,7 +265,7 @@ class Ajax_Adapter_Test extends TestCase {
         $event->method( 'get_seasons' )->willReturn( [ '2026' => [ 'name' => '2026' ] ] );
 
         $league = League_Test_Factory::from_object( (object) [ 'id' => 50, 'title' => 'Division 1' ] );
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
         $GLOBALS['wp_stubs_leagues'][50] = $league;
 
         $passed_args = null;

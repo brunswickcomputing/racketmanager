@@ -25,6 +25,7 @@ use Racketmanager\Domain\Player\Player;
 use Racketmanager\Domain\Player\Player_Factory;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use stdClass;
 
 class Results_Checker_Presenter_Test extends TestCase {
@@ -92,9 +93,13 @@ class Results_Checker_Presenter_Test extends TestCase {
         $player = Player_Factory::from_object( $player_obj );
 
         $league = $this->createStub(\Racketmanager\Domain\Competition\League::class);
-        $league->title = 'League A';
-        $league->is_championship = false;
-        $league->event = $this->createStub(\Racketmanager\Domain\Competition\Event::class);
+        League_Test_Factory::set_property( $league, 'title', 'League A' );
+        League_Test_Factory::set_property( $league, 'is_championship', false );
+        League_Test_Factory::set_property(
+            $league,
+            'event',
+            $this->createStub( \Racketmanager\Domain\Competition\Event::class )
+        );
 
         $this->fixture_repository->method( 'find_by_id' )->willReturn( $match );
         $this->team_repository->method( 'find_by_id' )->willReturn( $team );
@@ -149,9 +154,9 @@ class Results_Checker_Presenter_Test extends TestCase {
         $event->method('get_competition_id')->willReturn(1); // competition->id
         
         $league = $this->createStub(\Racketmanager\Domain\Competition\League::class);
-        $league->title = 'League A';
-        $league->event = $event;
-        $league->is_championship = false;
+        League_Test_Factory::set_property( $league, 'title', 'League A' );
+        League_Test_Factory::set_property( $league, 'event', $event );
+        League_Test_Factory::set_property( $league, 'is_championship', false );
 
         $home_team = $this->createStub(Team::class);
         $home_team->method('get_name')->willReturn('Home Team');
@@ -196,8 +201,8 @@ class Results_Checker_Presenter_Test extends TestCase {
         $event->set_is_box( true );
 
         $league = $this->createStub(\Racketmanager\Domain\Competition\League::class);
-        $league->title = 'Box League';
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'title', 'Box League' );
+        League_Test_Factory::set_property( $league, 'event', $event );
 
         $this->league_repository->method('find_by_id')->willReturn($league);
         

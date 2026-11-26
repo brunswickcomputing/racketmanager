@@ -51,12 +51,12 @@ final class Knockout_Progression_Service_Test extends TestCase {
 		$event = ( new \ReflectionClass( Event::class ) )->newInstanceWithoutConstructor();
 		$event->set_seasons( array( '2026' => array( 'name' => '2026' ) ) );
 
-		$league = ( new \ReflectionClass( League::class ) )->newInstanceWithoutConstructor();
-		$league->id = 99;
-		$league->season = '2026';
-		$league->current_season = array( 'name' => '2026', 'home_away' => false );
-		$league->championship = $championship;
-		$league->event = $event;
+		$league = new League();
+		$league->set_id( 99 );
+		$league->set_season_name( '2026' );
+		$league->set_current_season( array( 'name' => '2026', 'home_away' => false ) );
+		$league->set_championship( $championship );
+		$league->set_event( $event );
 
 		$league_repo->expects( $this->once() )
 			->method( 'find_by_id' )
@@ -125,20 +125,20 @@ final class Knockout_Progression_Service_Test extends TestCase {
 			->with( 88, $this->callback( static fn( array $args ): bool => true === $args['consolation'] ) )
 			->willReturn( [ (object) [ 'id' => 999 ] ] );
 
-		$main_league = ( new \ReflectionClass( League::class ) )->newInstanceWithoutConstructor();
-		$main_league->id = 77;
-		$main_league->event_id = 88;
-		$main_league->season = '2026';
-		$main_league->current_season = array( 'name' => '2026', 'home_away' => false );
-		$main_league->championship = $championship;
-		$main_league->event = $event;
+		$main_league = new League();
+		$main_league->set_id( 77 );
+		$main_league->set_event_id( 88 );
+		$main_league->set_season_name( '2026' );
+		$main_league->set_current_season( array( 'name' => '2026', 'home_away' => false ) );
+		$main_league->set_championship( $championship );
+		$main_league->set_event( $event );
 
-		$consolation_league = ( new \ReflectionClass( League::class ) )->newInstanceWithoutConstructor();
-		$consolation_league->id = 999;
-		$consolation_league->season = '2026';
-		$consolation_league->current_season = array( 'name' => '2026', 'home_away' => false );
-		$consolation_league->event = $event;
-		$consolation_league->championship = clone $championship;
+		$consolation_league = new League();
+		$consolation_league->set_id( 999 );
+		$consolation_league->set_season_name( '2026' );
+		$consolation_league->set_current_season( array( 'name' => '2026', 'home_away' => false ) );
+		$consolation_league->set_event( $event );
+		$consolation_league->set_championship( clone $championship );
 		$prop_consolation->setValue( $consolation_league->championship, true );
 
 		// Source league lookup in handle_consolation, plus one load/filter per

@@ -513,8 +513,8 @@ final class Admin_Cup_Delivery_Test extends TestCase {
             $competition
         );
         $league = League::from_object( (object) array( 'id' => $id, 'title' => $title ), $event );
-        $league->mode            = 'championship';
-        $league->num_teams_total = 8;
+        $league->set_mode( 'championship' );
+        $league->set_num_teams_total( 8 );
         $league->set_season( '2024' );
         return $league;
     }
@@ -680,14 +680,14 @@ final class Admin_Cup_Delivery_Test extends TestCase {
         $prop->setAccessible( true );
         $prop->setValue( $champ_obj, 8 );
 
-        $champ_league                  = League_Test_Factory::from_object( (object) array( 'id' => 12, 'title' => 'Men Championship Draw' ) );
-        $champ_league->num_teams_total = 16;
-        $champ_league->is_championship = true;
-        $champ_league->championship    = $champ_obj;
+        $champ_league = League_Test_Factory::from_object( (object) array( 'id' => 12, 'title' => 'Men Championship Draw' ) );
+        $champ_league->set_num_teams_total( 16 );
+        $champ_league->set_is_championship( true );
+        $champ_league->set_championship( $champ_obj );
 
-        $non_champ_league                  = League_Test_Factory::from_object( (object) array( 'id' => 13, 'title' => 'Ladies Plate Draw' ) );
-        $non_champ_league->num_teams_total = 10;
-        $non_champ_league->is_championship = false;
+        $non_champ_league = League_Test_Factory::from_object( (object) array( 'id' => 13, 'title' => 'Ladies Plate Draw' ) );
+        $non_champ_league->set_num_teams_total( 10 );
+        $non_champ_league->set_is_championship( false );
 
         $league_repository = $this->createStub( League_Repository_Interface::class );
         $league_repository->method( 'query_matches' )->willReturn( 14 );
@@ -774,7 +774,7 @@ final class Admin_Cup_Delivery_Test extends TestCase {
             final_teams_by_round: array( 'final' => array() ),
             current_final: 'final'
         );
-        $league->championship = $champ;
+        $league->set_championship( $champ );
 
         $league_repository = $this->createStub( League_Repository_Interface::class );
         $league_repository->method( 'find_by_id' )->willReturn( $league );

@@ -78,8 +78,8 @@ final class Cup_Overview_Admin_Controller_Test extends TestCase {
         $prop->setValue( $champ_obj, 8 );
 
         $league                  = League_Test_Factory::from_object( (object) array( 'id' => 10, 'title' => 'Men Draw' ) );
-        $league->is_championship = true;
-        $league->championship    = $champ_obj;
+        $league->set_is_championship( true );
+        $league->set_championship( $champ_obj );
         $event                   = Event::from_object( (object) array( 'id' => 20, 'name' => 'Men Singles', 'type' => 'singles' ), $competition );
 
         $event_query_service = $this->createMock( Event_Query_Service::class );

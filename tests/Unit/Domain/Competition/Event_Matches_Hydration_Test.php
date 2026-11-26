@@ -29,6 +29,7 @@ use Racketmanager\Services\Fixture\Fixture_Relation_Loader;
 use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use stdClass;
@@ -220,8 +221,8 @@ class Event_Matches_Hydration_Test extends TestCase {
 		$league_repo = $this->createMock( League_Repository_Interface::class );
 
 		$league_mock        = $this->createMock( League::class );
-		$league_mock->id    = 77;
-		$league_mock->title = 'Division 1';
+		League_Test_Factory::set_property( $league_mock, 'id', 77 );
+		League_Test_Factory::set_property( $league_mock, 'title', 'Division 1' );
 
 		$league_repo->expects( $this->once() )
 			->method( 'find_by_id' )
@@ -370,11 +371,11 @@ class Event_Matches_Hydration_Test extends TestCase {
 			)
 		);
 		$league                   = $this->createMock( League::class );
-		$league->num_sets_to_win   = 2;
-		$league->scoring           = 'TB';
-		$league->is_championship   = true;
-		$league->num_rubbers       = 5;
-		$league->num_sets          = 3;
+		League_Test_Factory::set_property( $league, 'num_sets_to_win', 2 );
+		League_Test_Factory::set_property( $league, 'scoring', 'TB' );
+		League_Test_Factory::set_property( $league, 'is_championship', true );
+		League_Test_Factory::set_property( $league, 'num_rubbers', 5 );
+		League_Test_Factory::set_property( $league, 'num_sets', 3 );
 		$league->expects( $this->once() )->method( 'get_point_rule' )->willReturn( array() );
 		$fixture->set_league( $league );
 
@@ -412,8 +413,8 @@ class Event_Matches_Hydration_Test extends TestCase {
 
 	public function test_player_query_service_calculates_statistics_with_real_rubbers(): void {
 		$league_mock        = $this->createMock( League::class );
-		$league_mock->id    = 88;
-		$league_mock->title = 'Division 2';
+		League_Test_Factory::set_property( $league_mock, 'id', 88 );
+		League_Test_Factory::set_property( $league_mock, 'title', 'Division 2' );
 
 		$rubber_raw                = new stdClass();
 		$rubber_raw->id            = 1;
@@ -519,8 +520,8 @@ class Event_Matches_Hydration_Test extends TestCase {
 	private function get_event_matches_for_template( Fixture $fixture ): array {
 		$league_repository = $this->createMock( League_Repository_Interface::class );
 		$league            = $this->createMock( League::class );
-		$league->id        = 77;
-		$league->title     = 'Division 1';
+		League_Test_Factory::set_property( $league, 'id', 77 );
+		League_Test_Factory::set_property( $league, 'title', 'Division 1' );
 		$league_repository->expects( $this->once() )->method( 'find_by_id' )->with( 77 )->willReturn( $league );
 
 		$home_team = $this->createMock( Team::class );

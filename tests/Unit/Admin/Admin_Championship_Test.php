@@ -190,8 +190,8 @@ final class Admin_Championship_Test extends TestCase {
 		$championship = $this->createStub( Championship::class );
 		$championship->method( 'num_rounds' )->willReturn( 1 );
 
-		$league               = ( new \ReflectionClass( League::class ) )->newInstanceWithoutConstructor();
-		$league->championship = $championship;
+		$league = ( new \ReflectionClass( League::class ) )->newInstanceWithoutConstructor();
+		$league->set_championship( $championship );
 
 		$admin = $container->get( Admin_Championship::class );
 		$tab   = $admin->handle_championship_admin_page( $league );

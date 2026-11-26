@@ -21,6 +21,7 @@ use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use stdClass;
 
 class Email_Shortcode_Presenter_Test extends TestCase {
@@ -105,13 +106,13 @@ class Email_Shortcode_Presenter_Test extends TestCase {
         $fixture->method( 'get_match_day' )->willReturn( $fixture_data['match_day'] ?? 1 );
 
         $league = $this->createStub( League::class );
-        $league->id             = $league_id;
-        $league->title          = $fixture_data['league_title'] ?? 'Division 1';
-        $league->name           = $fixture_data['league_title'] ?? 'Division 1';
-        $league->type           = $fixture_data['league_type'] ?? 'MS';
-        $league->mode           = $fixture_data['league_type'] ?? 'MS';
-        $league->event_id       = $event_id;
-        $league->current_season = [ 'name' => $fixture_data['season'] ?? '2026' ];
+        League_Test_Factory::set_property( $league, 'id', $league_id );
+        League_Test_Factory::set_property( $league, 'title', $fixture_data['league_title'] ?? 'Division 1' );
+        League_Test_Factory::set_property( $league, 'name', $fixture_data['league_title'] ?? 'Division 1' );
+        League_Test_Factory::set_property( $league, 'type', $fixture_data['league_type'] ?? 'MS' );
+        League_Test_Factory::set_property( $league, 'mode', $fixture_data['league_type'] ?? 'MS' );
+        League_Test_Factory::set_property( $league, 'event_id', $event_id );
+        League_Test_Factory::set_property( $league, 'current_season', [ 'name' => $fixture_data['season'] ?? '2026' ] );
         $league->method( 'get_id' )->willReturn( $league_id );
         $league->method( 'get_name' )->willReturn( $fixture_data['league_title'] ?? 'Division 1' );
         $league->method( 'get_event_id' )->willReturn( $event_id );
@@ -136,7 +137,7 @@ class Email_Shortcode_Presenter_Test extends TestCase {
         }
 
         $event->set_competition( $competition );
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
 
         $this->test_leagues[ $league_id ]     = $league;
         $this->test_events[ $event_id ]       = $event;

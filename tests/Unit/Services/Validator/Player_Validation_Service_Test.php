@@ -14,6 +14,7 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
@@ -249,7 +250,7 @@ class Player_Validation_Service_Test extends TestCase {
         $competition = Competition_Test_Factory::create( id: 1, type: Competition_Type::LEAGUE, seasons: [ '2026' => [] ] );
         $competition->set_rules( [ 'wtn_check' => true ] );
         $event->set_competition( $competition );
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
         $league->method( 'get_id' )->willReturn( 456 );
 
         $player1 = $this->getMockBuilder( Club_Player_DTO::class )
@@ -315,7 +316,7 @@ class Player_Validation_Service_Test extends TestCase {
         $competition = Competition_Test_Factory::create( id: 1, type: Competition_Type::LEAGUE, seasons: [ '2026' => [] ] );
         $competition->set_rules( [ 'ageLimitCheck' => true ] );
         $event->set_competition( $competition );
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
         $event->set_age_limit( '45' ); // Over 45s
         $event->set_age_offset( '0' );
         $options = [ 'checks' => [ 'ageLimitCheck' => true ] ];
@@ -356,7 +357,7 @@ class Player_Validation_Service_Test extends TestCase {
         $event = new Event();
         $competition = $this->createMock( Competition::class );
         $event->set_competition( $competition );
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
 
         $player = (object)[
             'id' => 5,
@@ -395,7 +396,7 @@ class Player_Validation_Service_Test extends TestCase {
         $competition = Competition_Test_Factory::create( id: 1, type: Competition_Type::LEAGUE );
         $competition->set_rules( [ 'resultTimeout' => true ] );
         $event->set_competition( $competition );
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
 
         $options = [
             'league' => [ 'resultTimeout' => 24 ] // 24 hours timeout

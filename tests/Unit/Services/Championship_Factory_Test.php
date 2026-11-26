@@ -12,6 +12,7 @@ use Racketmanager\Domain\Tournament\Championship_Settings;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Championship_Factory;
 use Racketmanager\Services\Competition\League_Query_Service;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 
 require_once dirname( __DIR__, 2 ) . '/wp-stubs.php';
 
@@ -68,9 +69,9 @@ final class Championship_Factory_Test extends TestCase {
 	 * Build a primary league that already carries a 16-team championship (4 rounds, first round 'last-16').
 	 */
 	private function make_primary_league_with_championship(): object {
-		$source                = $this->make_league( 1, 16, array( 'name' => '2026', 'num_match_days' => 4 ), true );
-		$primary               = $this->createMock( League::class );
-		$primary->championship = $this->factory()->create( $source, $this->settings() );
+		$source  = $this->make_league( 1, 16, array( 'name' => '2026', 'num_match_days' => 4 ), true );
+		$primary = $this->createMock( League::class );
+		League_Test_Factory::set_property( $primary, 'championship', $this->factory()->create( $source, $this->settings() ) );
 		return $primary;
 	}
 

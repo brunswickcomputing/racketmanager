@@ -12,6 +12,7 @@ use Racketmanager\Domain\Competition\Competition_Settings;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Domain\Competition\Season_Collection;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
@@ -174,8 +175,8 @@ final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
             ->willReturn( 42 );
 
         // League service should only be called once to create primary league (no Plate)
-        $league_obj     = $this->createMock( League::class );
-        $league_obj->id = 789;
+        $league_obj = $this->createMock( League::class );
+        League_Test_Factory::set_property( $league_obj, 'id', 789 );
         $this->league_service->expects( $this->once() )
             ->method( 'add_league_to_event' )
             ->with( 42, 'Men\'s Singles' )
@@ -248,7 +249,7 @@ final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
             );
 
         $league_obj     = $this->createMock( League::class );
-        $league_obj->id = 789;
+        League_Test_Factory::set_property( $league_obj, 'id', 789 );
         $this->league_service->method( 'add_league_to_event' )->willReturn( $league_obj );
 
         $result = $this->controller->handle();
@@ -292,10 +293,10 @@ final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
             ->willReturn( 42 );
 
         // League service should be called twice: main league + Plate league
-        $league_obj     = $this->createMock( League::class );
-        $league_obj->id = 789;
-        $plate_obj      = $this->createMock( League::class );
-        $plate_obj->id  = 790;
+        $league_obj = $this->createMock( League::class );
+        League_Test_Factory::set_property( $league_obj, 'id', 789 );
+        $plate_obj = $this->createMock( League::class );
+        League_Test_Factory::set_property( $plate_obj, 'id', 790 );
         $this->league_service->expects( $this->exactly( 2 ) )
             ->method( 'add_league_to_event' )
             ->willReturnMap(
@@ -742,8 +743,8 @@ final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
                 [ 'name' => '2026', 'home_away' => 0, 'num_match_days' => 1, 'match_dates' => [] ]
             );
 
-        $league     = $this->createMock( League::class );
-        $league->id = 789;
+        $league = $this->createMock( League::class );
+        League_Test_Factory::set_property( $league, 'id', 789 );
         $this->league_service->expects( $this->once() )
             ->method( 'add_league_to_event' )
             ->with( 42, 'Men\'s Singles' )

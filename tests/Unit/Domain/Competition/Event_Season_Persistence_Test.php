@@ -9,6 +9,7 @@ use Racketmanager\Application\Admin\Commands\League_Setup_Handler;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
@@ -732,10 +733,10 @@ final class Event_Season_Persistence_Test extends TestCase {
 		);
 
 		$league_mock                    = $this->createStub( League::class );
-		$league_mock->id                = 18;
-		$league_mock->event_id          = 35;
-		$league_mock->num_rubbers       = 2;
-		$league_mock->championship      = $championship;
+		League_Test_Factory::set_property( $league_mock, 'id', 18 );
+		League_Test_Factory::set_property( $league_mock, 'event_id', 35 );
+		League_Test_Factory::set_property( $league_mock, 'num_rubbers', 2 );
+		League_Test_Factory::set_property( $league_mock, 'championship', $championship );
 		$league_query_service = $this->createMock( League_Query_Service::class );
 		$league_query_service->expects( $this->once() )->method( 'set_rounds' )->with( $league_mock, self::isString(), self::isArray() );
 
@@ -819,10 +820,10 @@ final class Event_Season_Persistence_Test extends TestCase {
 		);
 
 		$league_mock               = $this->createStub( League::class );
-		$league_mock->id           = 19;
-		$league_mock->event_id     = 36;
-		$league_mock->num_rubbers  = 2;
-		$league_mock->championship = $championship;
+		League_Test_Factory::set_property( $league_mock, 'id', 19 );
+		League_Test_Factory::set_property( $league_mock, 'event_id', 36 );
+		League_Test_Factory::set_property( $league_mock, 'num_rubbers', 2 );
+		League_Test_Factory::set_property( $league_mock, 'championship', $championship );
 		$league_query_service = $this->createMock( League_Query_Service::class );
 		$league_query_service->expects( $this->once() )->method( 'set_rounds' )->with( $league_mock, self::isString(), self::isArray() );
 
@@ -979,12 +980,12 @@ final class Event_Season_Persistence_Test extends TestCase {
 			'final'
 		);
 
-		$league               = $this->createStub( League::class );
-		$league->id           = 25;
-		$league->event_id     = 60;
-		$league->event        = $event;
-		$league->num_rubbers  = 2;
-		$league->championship = $championship;
+		$league = $this->createStub( League::class );
+		League_Test_Factory::set_property( $league, 'id', 25 );
+		League_Test_Factory::set_property( $league, 'event_id', 60 );
+		League_Test_Factory::set_property( $league, 'event', $event );
+		League_Test_Factory::set_property( $league, 'num_rubbers', 2 );
+		League_Test_Factory::set_property( $league, 'championship', $championship );
 
         $league_service = $this->createMock( League_Service::class );
         $league_service->expects( $this->once() )

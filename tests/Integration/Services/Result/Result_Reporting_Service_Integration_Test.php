@@ -23,6 +23,7 @@ use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Result\Result_Reporting_Service;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
@@ -65,13 +66,14 @@ class Result_Reporting_Service_Integration_Test extends TestCase {
 			->getMock();
 		$league->method( 'get_id' )->willReturn( 101 );
 		$league->method( 'get_event_id' )->willReturn( 201 );
-		$league->title = 'Int League';
-		$league->num_teams_total = 10;
-		$league->num_rubbers = 0;
-		$league->championship = $this->getMockBuilder( Championship::class )
+		League_Test_Factory::set_property( $league, 'title', 'Int League' );
+		League_Test_Factory::set_property( $league, 'num_teams_total', 10 );
+		League_Test_Factory::set_property( $league, 'num_rubbers', 0 );
+		$championship = $this->getMockBuilder( Championship::class )
 			->disableOriginalConstructor()
 			->getMock();
-		$league->championship->method( 'num_teams_first_round' )->willReturn( 10 );
+		$championship->method( 'num_teams_first_round' )->willReturn( 10 );
+		League_Test_Factory::set_property( $league, 'championship', $championship );
 
 		$event = $this->getMockBuilder( Event::class )
 			->disableOriginalConstructor()

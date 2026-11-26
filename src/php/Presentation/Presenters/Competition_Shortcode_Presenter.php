@@ -6,6 +6,7 @@ namespace Racketmanager\Presentation\Presenters;
 use BackedEnum;
 use DateTimeInterface;
 use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Value_Objects\Date_Range;
 use Racketmanager\Application\Ports\Option_Gateway_Interface;
 use Racketmanager\Exceptions\Template_Not_Found_Exception;
@@ -1623,14 +1624,19 @@ readonly class Competition_Shortcode_Presenter {
     private function present_event_league_draw( object|array $league, object $presented_event ): object {
         $league_obj = is_object( $league ) ? clone $league : (object) $league;
         if ( ! empty( $league_obj->finals ) && is_array( $league_obj->finals ) ) {
-            $competition        = ( $league_obj->event->competition ?? null ) ?? ( $presented_event->competition ?? null );
-            $league_obj->finals = Draw_Presenter::present_finals(
+            $competition      = ( $league_obj->event->competition ?? null ) ?? ( $presented_event->competition ?? null );
+            $presented_finals = Draw_Presenter::present_finals(
                 $league_obj->finals,
                 null,
                 $league_obj,
                 $competition,
                 $presented_event
             );
+            if ( $league_obj instanceof League ) {
+                $league_obj->set_finals_list( $presented_finals );
+            } else {
+                $league_obj->finals = $presented_finals;
+            }
         }
 
         return $league_obj;

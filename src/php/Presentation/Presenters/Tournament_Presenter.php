@@ -6,12 +6,12 @@ namespace Racketmanager\Presentation\Presenters;
 use BackedEnum;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\Enums\Match_Outcome;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Scoring\Set_Score;
 use Racketmanager\Domain\Shared\Seo_Slug;
-use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Domain\Value_Objects\Date_Range;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
@@ -1276,13 +1276,18 @@ readonly class Tournament_Presenter {
             foreach ( $presented_draw->leagues as $l_idx => $league ) {
                 $league_obj = is_object( $league ) ? clone $league : (object) $league;
                 if ( ! empty( $league_obj->finals ) && is_array( $league_obj->finals ) ) {
-                    $league_obj->finals = Draw_Presenter::present_finals(
+                    $presented_finals = Draw_Presenter::present_finals(
                         $league_obj->finals,
                         $tournament,
                         $league_obj,
                         $league_obj->event->competition ?? ( $presented_draw->competition ?? null ),
                         $presented_draw
                     );
+                    if ( $league_obj instanceof League ) {
+                        $league_obj->set_finals_list( $presented_finals );
+                    } else {
+                        $league_obj->finals = $presented_finals;
+                    }
                 }
                 $presented_leagues[ $l_idx ] = $league_obj;
             }

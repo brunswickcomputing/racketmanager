@@ -18,6 +18,7 @@ use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response;
 use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 #[AllowMockObjectsWithoutExpectations]
@@ -86,7 +87,7 @@ class Fixture_Maintenance_Service_Integration_Test extends TestCase {
         $league = $this->createMock(League::class);
         $event = new Event();
         $event->set_competition( (object) array( 'type' => 'league' ) );
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
 
         $this->league_repository->expects($this->once())->method('find_by_id')->with(1)->willReturn($league);
         $this->settings_service->method('get_option')->willReturn('admin@test.com');
@@ -110,7 +111,7 @@ class Fixture_Maintenance_Service_Integration_Test extends TestCase {
         $league = $this->createMock(League::class);
         $event = new Event();
         $event->set_competition( (object) array( 'type' => 'league' ) );
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
 
         $this->league_repository->expects($this->once())->method('find_by_id')->with(1)->willReturn($league);
         $this->settings_service->method('get_option')->willReturn('admin@test.com');

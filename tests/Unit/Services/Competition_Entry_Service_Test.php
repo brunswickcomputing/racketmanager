@@ -108,8 +108,8 @@ class Competition_Entry_Service_Test extends TestCase {
                 if ( ! $id ) {
                     return null;
                 }
-                $league     = new League();
-                $league->id = (int) $id;
+                $league = new League();
+                $league->set_id( (int) $id );
                 return $league;
             }
         );

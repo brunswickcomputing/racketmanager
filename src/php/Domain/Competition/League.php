@@ -26,23 +26,23 @@ class League {
      *
      * @var ?int
      */
-    public ?int $id = null;
+    public private(set) ?int $id = null;
 
     /**
      * League name
      *
      * @var string
      */
-    public string $name = '';
+    public private(set) string $name = '';
 
     /**
      * League title (legacy alias mirroring $name)
      *
      * @var string
      */
-    public string $title {
-        final get => $this->name;
-        final set {
+    public private(set) string $title {
+    final get => $this->name;
+    final set {
             $this->name = $value;
         }
     }
@@ -52,139 +52,135 @@ class League {
      *
      * @var array|string
      */
-    public string|array $seasons = array();
+    public private(set) string|array $seasons = array();
     /**
      * Sequence
      *
      * @var string|null
      */
-    public ?string $sequence = null {
-        get {
-            return $this->sequence;
-        }
-    }
+    public private(set) ?string $sequence = null;
     /**
      * Number of seasons
      *
      * @var int
      */
-    public int $num_seasons = 0;
+    public private(set) int $num_seasons = 0;
 
     /**
      * Sport type
      *
      * @var string
      */
-    public string $sport = 'default';
+    public private(set) string $sport = 'default';
 
     /**
      * Point rule
      *
      * @var string
      */
-    public string $point_rule = 'three';
+    public private(set) string $point_rule = 'three';
 
     /**
      * Primary points format
      *
      * @var string
      */
-    public string $point_format = '%d-%d';
+    public private(set) string $point_format = '%d-%d';
 
     /**
      * Secondary points format
      *
      * @var string
      */
-    public string $point_2_format = '%d-%d';
+    public private(set) string $point_2_format = '%d-%d';
 
     /**
      * League mode
      *
      * @var string
      */
-    public string $mode = 'default';
+    public private(set) string $mode = 'default';
 
     /**
      * Standings table layout settings
      *
      * @var array
      */
-    public array $standings;
+    public private(set) array $standings = array();
 
     /**
      * Team groups
      *
      * @var string
      */
-    public string $groups;
+    public private(set) string $groups = '';
 
     /**
      * Number of teams to advance
      *
      * @var int|null
      */
-    public ?int $num_advance = null;
+    public private(set) ?int $num_advance = null;
 
     /**
      * Teams
      *
      * @var array
      */
-    public array $teams = array();
+    public private(set) array $teams = array();
     /**
      * Number of teams
      *
      * @var int
      */
-    public int $num_teams = 0;
+    public private(set) int $num_teams = 0;
     /**
      * Total number of teams
      *
      * @var int
      */
-    public int $num_teams_total = 0;
+    public private(set) int $num_teams_total = 0;
     /**
      * Matches
      *
      * @var array
      */
-    public array $matches = array();
+    public private(set) array $matches = array();
 
     /**
      * Total number of matches
      *
      * @var int
      */
-    public int $num_matches_total = 0;
+    public private(set) int $num_matches_total = 0;
 
     /**
      * Number of matches
      *
      * @var int
      */
-    public int $num_matches = 0;
+    public private(set) int $num_matches = 0;
 
     /**
      * Current season
      *
      * @var array
      */
-    public array $current_season = array();
+    public private(set) array $current_season = array();
 
     /**
      * Number of match days
      *
      * @var int
      */
-    public int $num_match_days = 0;
+    public private(set) int $num_match_days = 0;
 
     /**
      * Current match day
      *
      * @var int
      */
-    public int $match_day = 0;
+    public private(set) int $match_day = 0;
 
     /**
      * Query arguments
@@ -330,62 +326,62 @@ class League {
      *
      * @var array|string
      */
-    public string|array $settings = array();
+    public private(set) string|array $settings = array();
     /**
      * Team offsets indexed by ID
      *
      * @var array
      */
-    public array $team_index = array();
+    public private(set) array $team_index = array();
 
     /**
      * Championship flag
      *
      * @var boolean
      */
-    public bool $is_championship = false;
+    public private(set) bool $is_championship = false;
 
     /**
      * Championship object
      *
      * @var Championship|null
      */
-    public ?Championship $championship = null;
+    public private(set) ?Championship $championship = null;
 
     /**
      * Event id
      *
      * @var int
      */
-    public int $event_id = 0;
+    public private(set) int $event_id = 0;
 
     /**
      * Number of sets
      *
      * @var int
      */
-    public int $num_sets = 0;
+    public private(set) int $num_sets = 0;
 
     /**
      * Number of rubbers
      *
      * @var int|null
      */
-    public ?int $num_rubbers = null;
+    public private(set) ?int $num_rubbers = null;
 
     /**
      * Number of sets required to win a match
      *
      * @var int
      */
-    public int $num_sets_to_win = 1;
+    public private(set) int $num_sets_to_win = 1;
 
     /**
      * Competition type
      *
      * @var string
      */
-    public string $competition_type = '';
+    public private(set) string $competition_type = '';
 
     /**
      * Get the competition type.
@@ -401,64 +397,64 @@ class League {
      *
      * @var string
      */
-    public string $type = '';
+    public private(set) string $type = '';
 
     /**
      * Event
      *
      * @var Event|null
      */
-    public ?Event $event = null;
+    public private(set) ?Event $event = null;
 
     /**
      * Scoring
      *
      * @var string|null
      */
-    public ?string $scoring = '';
+    public private(set) ?string $scoring = '';
 
     /**
      * Is final flag
      *
      * @var boolean
      */
-    public bool $is_final = false;
+    public private(set) bool $is_final = false;
     /**
      * Entry type
      *
      * @var string
      */
-    public string $entry_type;
+    public private(set) string $entry_type = '';
     /**
      * Season
      *
      * @var string
      */
-    public string $season;
+    public private(set) string $season = '';
     /**
      * Players
      *
      * @var array
      */
-    public array $players;
+    public private(set) array $players = array();
     /**
      * Team
      *
-     * @var object
+     * @var object|null
      */
-    public object $team;
+    public private(set) ?object $team = null;
     /**
      * Player
      *
-     * @var object
+     * @var object|null
      */
-    public object $player;
+    public private(set) ?object $player = null;
     /**
      * Finals
      *
-     * @var array
+     * @var array|null
      */
-    public array $finals;
+    public private(set) ?array $finals = null;
 
 
     /**
@@ -519,26 +515,26 @@ class League {
         $this->num_seasons = count( $event_seasons );
         // set season to latest.
         $this->set_season();
-        $this->groups          = trim( $this->groups ?? '' );
-        $this->mode            = $this->event && isset( $this->event->competition->settings['mode'] ) ? $this->event->competition->settings['mode'] : ( $this->mode ?? 'default' );
-        $this->num_sets        = $this->event->num_sets ?? 3;
-        $this->num_sets_to_win = (int) floor( $this->num_sets / 2 ) + 1;
-        $this->num_rubbers     = $this->event->num_rubbers ?? 0;
-        $this->type            = $this->event->type ?? '';
-        $comp_type             = $this->event && isset( $this->event->competition->type ) ? $this->event->competition->type : '';
+        $this->groups           = trim( $this->groups ?? '' );
+        $this->mode             = $this->event && isset( $this->event->competition->settings['mode'] ) ? $this->event->competition->settings['mode'] : ( $this->mode ?? 'default' );
+        $this->num_sets         = $this->event->num_sets ?? 3;
+        $this->num_sets_to_win  = (int) floor( $this->num_sets / 2 ) + 1;
+        $this->num_rubbers      = $this->event->num_rubbers ?? 0;
+        $this->type             = $this->event->type ?? '';
+        $comp_type              = $this->event && isset( $this->event->competition->type ) ? $this->event->competition->type : '';
         $this->competition_type = $comp_type instanceof BackedEnum ? $comp_type->value : (string) $comp_type;
-        $this->point_rule      = $this->event && isset( $this->event->competition->settings['point_rule'] ) ? $this->event->competition->settings['point_rule'] : 'three';
-        $this->sport           = $this->event && isset( $this->event->competition->settings['sport'] ) ? $this->event->competition->settings['sport'] : 'tennis';
-        $this->scoring         = $this->event->scoring ?? null;
+        $this->point_rule       = $this->event && isset( $this->event->competition->settings['point_rule'] ) ? $this->event->competition->settings['point_rule'] : 'three';
+        $this->sport            = $this->event && isset( $this->event->competition->settings['sport'] ) ? $this->event->competition->settings['sport'] : 'tennis';
+        $this->scoring          = $this->event->scoring ?? null;
         $this->set_match_query_args();
         $this->num_matches_total = 0;
         $this->num_teams_total   = 0;
         $this->num_teams         = 0;
-        $this->standings      = $this->event->standings ?? [];
-        $this->point_format   = $this->event && isset( $this->event->competition->settings['point_format'] ) ? $this->event->competition->settings['point_format'] : '%d-%d';
-        $this->point_2_format = $this->event && isset( $this->event->competition->settings['point_2_format'] ) ? $this->event->competition->settings['point_2_format'] : '%d-%d';
+        $this->standings         = $this->event->standings ?? [];
+        $this->point_format      = $this->event && isset( $this->event->competition->settings['point_format'] ) ? $this->event->competition->settings['point_format'] : '%d-%d';
+        $this->point_2_format    = $this->event && isset( $this->event->competition->settings['point_2_format'] ) ? $this->event->competition->settings['point_2_format'] : '%d-%d';
         // Championship.
-        if ( 'championship' === ($this->mode ?? '') ) {
+        if ( 'championship' === ( $this->mode ?? '' ) ) {
             $this->is_championship = true;
         }
     }
@@ -572,10 +568,22 @@ class League {
         return League_Factory::from_array( $data, $event );
     }
 
+    /**
+     * Serialize the object properties for storage or transport.
+     *
+     * @return array Serialized object properties.
+     */
     public function __serialize(): array {
         return get_object_vars( $this );
     }
 
+    /**
+     * Restore the object state from serialized data.
+     *
+     * @param array $data Serialized data keyed by property name.
+     *
+     * @return void
+     */
     public function __unserialize( array $data ): void {
         foreach ( $data as $key => $value ) {
             if ( property_exists( $this, $key ) ) {
@@ -639,13 +647,13 @@ class League {
     }
 
     /**
-     * Set the id
+     * Set identifier.
      *
-     * @param int $id
+     * @param int|null $id Identifier value.
      *
      * @return void
      */
-    public function set_id( int $id ): void {
+    public function set_id( ?int $id ): void {
         $this->id = $id;
     }
 
@@ -676,7 +684,7 @@ class League {
     /**
      * Set match query argument
      *
-     * @param string $key key.
+     * @param string  $key key.
      * @param mixed   $value value.
      * @param boolean $replace - used for arrays to add arguments or replace with values.
      */
@@ -684,7 +692,7 @@ class League {
         if ( 'limit' === $key && ( true === $value || 'true' === $value ) ) {
             $value = 30;
         }
-        // sanitize query arg types.
+        // sanitise query arg types.
         $v = $value;
         if ( isset( $this->match_query_args_types[ $key ] ) ) {
             if ( 'numeric' === $this->match_query_args_types[ $key ] ) {
@@ -751,7 +759,7 @@ class League {
     /**
      * Set team query argument
      *
-     * @param string $key key.
+     * @param string  $key key.
      * @param mixed   $value value.
      * @param boolean $replace - used for arrays to add arguments or replace with values.
      */
@@ -759,7 +767,7 @@ class League {
         if ( 'limit' === $key && ( true === $value || 'true' === $value ) ) {
             $value = 10;
         }
-        // sanitize query arg types.
+        // sanitise query arg types.
         if ( isset( $this->team_query_args_types[ $key ] ) ) {
             if ( 'numeric' === $this->team_query_args_types[ $key ] ) {
                 $value = intval( $value );
@@ -783,14 +791,14 @@ class League {
      * Set current season (in-memory state update)
      *
      * @param false|string $season season.
-     * @param boolean $force_overwrite force overwrite.
+     * @param boolean      $force_overwrite force overwrite.
      */
     public function set_season( false|string $season = false, bool $force_overwrite = false ): void {
-        // Build a safe seasons array from Event (JSON-backed) and an index by name
+        // Build a safe seasons array from Event (JSON-backed) and an index by name.
         $seasons_list = ( isset( $this->event ) && is_object( $this->event ) && method_exists( $this->event, 'get_seasons' ) )
             ? $this->event->get_seasons()
             : ( is_array( $this->seasons ) ? $this->seasons : array() );
-        $by_name = array();
+        $by_name      = array();
         if ( is_array( $seasons_list ) ) {
             foreach ( $seasons_list as $s ) {
                 if ( is_array( $s ) && isset( $s['name'] ) ) {
@@ -804,9 +812,9 @@ class League {
         if ( ! empty( $season ) && ( true === $force_overwrite || isset( $by_name[ $season ] ) ) ) {
             $data = $by_name[ $season ] ?? null;
         } else {
-            $tmp  = $seasons_list;
+            $tmp = $seasons_list;
             if ( is_array( $tmp ) ) {
-                ksort( $tmp ); // Sort by year key (e.g. "2024", "2025", "2026")
+                ksort( $tmp ); // Sort by year key (e.g. "2024", "2025", "2026").
                 $data = end( $tmp );
             } else {
                 $data = null;
@@ -814,7 +822,7 @@ class League {
         }
 
         if ( empty( $data ) ) {
-            $tmp  = $seasons_list;
+            $tmp = $seasons_list;
             if ( is_array( $tmp ) ) {
                 ksort( $tmp );
                 $data = end( $tmp );
@@ -823,7 +831,7 @@ class League {
             }
         }
 
-        // Fix for inconsistent season data where 'season' is used instead of 'name'
+        // Fix for inconsistent season data where 'season' is used instead of 'name'.
         if ( $data && ! isset( $data['name'] ) && isset( $data['season'] ) ) {
             $data['name'] = (string) $data['season'];
         }
@@ -851,20 +859,6 @@ class League {
     }
 
     /**
-     * Get groups
-     *
-     * @return array|false
-     */
-    public function get_groups(): false|array {
-        $this->groups = trim( $this->groups );
-        $groups       = explode( ';', $this->groups );
-        if ( ! is_array( $groups ) ) {
-            return false;
-        }
-        return $groups;
-    }
-
-    /**
      * Retrieve match day
      *
      * @param int $match_day match day.
@@ -872,15 +866,6 @@ class League {
     public function set_match_day( int $match_day = 1 ): void {
         $this->match_day                     = $match_day;
         $this->match_query_args['match_day'] = $match_day;
-    }
-
-    /**
-     * Set finals flag for championship mode
-     *
-     * @param boolean $is_final final indicator.
-     */
-    public function set_finals( bool $is_final = true ): void {
-        $this->is_final = $is_final;
     }
 
     /**
@@ -914,7 +899,7 @@ class League {
                 'forloss' => 0,
             );
             // Three-point rule.
-            $point_rules['three'] = array(
+            $point_rules['three']                 = array(
                 'forwin'  => 3,
                 'fordraw' => 1,
                 'forloss' => 0,
@@ -1008,14 +993,32 @@ class League {
     }
 
     /**
-     * Set number of teams for specific league
+     * Set number of teams for specific league.
      *
-     * @param boolean $total total teams or teams per page.
+     * When an integer is passed, sets the team count directly.
+     * When a boolean is passed, syncs from num_teams_total if false.
+     *
+     * @param int|bool $arg Team count or total teams flag.
+     * @return void
      */
-    public function set_num_teams( bool $total = false ): void {
-        if ( ! $total ) {
+    public function set_num_teams( int|bool $arg = false ): void {
+        if ( is_int( $arg ) ) {
+            $this->num_teams = $arg;
+            return;
+        }
+        if ( ! $arg ) {
             $this->num_teams = $this->num_teams_total;
         }
+    }
+
+    /**
+     * Set number of teams count directly.
+     *
+     * @param int $num_teams Number of teams.
+     * @return void
+     */
+    public function set_num_teams_count( int $num_teams ): void {
+        $this->num_teams = $num_teams;
     }
 
     /**
@@ -1037,27 +1040,10 @@ class League {
     }
 
     /**
-     * Check if group exists
-     *
-     * @param string $group group.
-     *
-     * @return boolean
-     */
-    private function group_exists( string $group ): bool {
-        if ( isset( $this->groups ) ) {
-            $groups = explode( ';', $this->groups );
-            if ( in_array( $group, $groups, true ) ) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Set rounds function
      *
      * @param string|int $season season name.
-     * @param array $rounds round details.
+     * @param array      $rounds round details.
      * @return void
      */
     public function set_rounds( string|int $season, array $rounds ): void {
@@ -1069,10 +1055,11 @@ class League {
     }
 
     /**
-     * Decode only legacy PHP-serialized arrays; leave JSON and non-array values unchanged.
+     * Decode a serialized array string when the provided value matches serialized array format.
      *
-     * Delegates to Serialized_Column; a malformed serialized array yields `false` (as `unserialize()` did)
-     * so callers casting with `(array)` and `is_array()` checks keep their historical behaviour.
+     * @param mixed $value Value to decode.
+     *
+     * @return mixed Decoded array value, false when decoding returns a string, or the original value when not applicable.
      */
     private static function decode_serialized_array( mixed $value ): mixed {
         if ( ! is_string( $value ) ) {
@@ -1086,4 +1073,430 @@ class League {
         return is_string( $decoded ) ? false : $decoded;
     }
 
+    /**
+     * Set championship flag.
+     *
+     * @param bool $is_championship Whether this league is a championship.
+     * @return void
+     */
+    public function set_is_championship( bool $is_championship ): void {
+        $this->is_championship = $is_championship;
+    }
+
+    /**
+     * Set league name.
+     *
+     * @param string $name League name.
+     * @return void
+     */
+    public function set_name( string $name ): void {
+        $this->name = $name;
+    }
+
+    /**
+     * Set league title.
+     *
+     * @param string $title League title.
+     * @return void
+     */
+    public function set_title( string $title ): void {
+        $this->title = $title;
+    }
+
+    /**
+     * Set sequence.
+     *
+     * @param string|null $sequence Sequence string.
+     * @return void
+     */
+    public function set_sequence( ?string $sequence ): void {
+        $this->sequence = $sequence;
+    }
+
+    /**
+     * Set seasons data.
+     *
+     * @param array|string $seasons Seasons data.
+     * @return void
+     */
+    public function set_seasons( array|string $seasons ): void {
+        $this->seasons = $seasons;
+    }
+
+    /**
+     * Set number of seasons.
+     *
+     * @param int $num_seasons Number of seasons.
+     * @return void
+     */
+    public function set_num_seasons( int $num_seasons ): void {
+        $this->num_seasons = $num_seasons;
+    }
+
+    /**
+     * Set sport.
+     *
+     * @param string $sport Sport type.
+     * @return void
+     */
+    public function set_sport( string $sport ): void {
+        $this->sport = $sport;
+    }
+
+    /**
+     * Set point rule.
+     *
+     * @param string $point_rule Point rule name.
+     * @return void
+     */
+    public function set_point_rule( string $point_rule ): void {
+        $this->point_rule = $point_rule;
+    }
+
+    /**
+     * Set primary point format.
+     *
+     * @param string $point_format Point format string.
+     * @return void
+     */
+    public function set_point_format( string $point_format ): void {
+        $this->point_format = $point_format;
+    }
+
+    /**
+     * Set secondary point format.
+     *
+     * @param string $point_2_format Secondary point format string.
+     * @return void
+     */
+    public function set_point_2_format( string $point_2_format ): void {
+        $this->point_2_format = $point_2_format;
+    }
+
+    /**
+     * Set league mode.
+     *
+     * @param string $mode League mode.
+     * @return void
+     */
+    public function set_mode( string $mode ): void {
+        $this->mode = $mode;
+    }
+
+    /**
+     * Set standings table layout settings.
+     *
+     * @param array $standings Standings settings.
+     * @return void
+     */
+    public function set_standings( array $standings ): void {
+        $this->standings = $standings;
+    }
+
+    /**
+     * Set team groups.
+     *
+     * @param string $groups Team groups.
+     * @return void
+     */
+    public function set_groups( string $groups ): void {
+        $this->groups = $groups;
+    }
+
+    /**
+     * Set number of teams to advance.
+     *
+     * @param int|null $num_advance Number of teams to advance.
+     * @return void
+     */
+    public function set_num_advance( ?int $num_advance ): void {
+        $this->num_advance = $num_advance;
+    }
+
+    /**
+     * Set teams.
+     *
+     * @param array $teams Array of teams.
+     * @return void
+     */
+    public function set_teams( array $teams ): void {
+        $this->teams = $teams;
+    }
+
+    /**
+     * Set total number of teams.
+     *
+     * @param int $num_teams_total Total number of teams.
+     * @return void
+     */
+    public function set_num_teams_total( int $num_teams_total ): void {
+        $this->num_teams_total = $num_teams_total;
+    }
+
+    /**
+     * Set matches.
+     *
+     * @param array $matches Matches array.
+     * @return void
+     */
+    public function set_matches( array $matches ): void {
+        $this->matches = $matches;
+    }
+
+    /**
+     * Set total number of matches.
+     *
+     * @param int $num_matches_total Total number of matches.
+     * @return void
+     */
+    public function set_num_matches_total( int $num_matches_total ): void {
+        $this->num_matches_total = $num_matches_total;
+    }
+
+    /**
+     * Set number of matches.
+     *
+     * @param int $num_matches Number of matches.
+     * @return void
+     */
+    public function set_num_matches( int $num_matches ): void {
+        $this->num_matches = $num_matches;
+    }
+
+    /**
+     * Set current season array and update derived query arguments and match days.
+     *
+     * Side effects:
+     * - Updates $num_match_days if 'num_match_days' is provided in $current_season.
+     * - Synchronises 'season' in $team_query_args and $match_query_args if 'name' is provided in $current_season.
+     *
+     * @param array $current_season Current season details.
+     * @return void
+     */
+    public function set_current_season( array $current_season ): void {
+        $this->current_season = $current_season;
+        if ( isset( $current_season['num_match_days'] ) ) {
+            $this->num_match_days = (int) $current_season['num_match_days'];
+        }
+        if ( isset( $current_season['name'] ) ) {
+            $this->set_team_query_arg( 'season', (string) $current_season['name'] );
+            $this->set_match_query_arg( 'season', (string) $current_season['name'] );
+        }
+    }
+
+    /**
+     * Set number of match days.
+     *
+     * @param int $num_match_days Number of match days.
+     * @return void
+     */
+    public function set_num_match_days( int $num_match_days ): void {
+        $this->num_match_days = $num_match_days;
+    }
+
+    /**
+     * Set settings.
+     *
+     * @param array|string $settings Settings array or string.
+     * @return void
+     */
+    public function set_settings( array|string $settings ): void {
+        $this->settings = $settings;
+    }
+
+    /**
+     * Set team index.
+     *
+     * @param array $team_index Team offsets indexed by ID.
+     * @return void
+     */
+    public function set_team_index( array $team_index ): void {
+        $this->team_index = $team_index;
+    }
+
+    /**
+     * Set championship object.
+     *
+     * @param Championship|null $championship Championship instance.
+     * @return void
+     */
+    public function set_championship( ?Championship $championship ): void {
+        $this->championship = $championship;
+    }
+
+    /**
+     * Set event ID.
+     *
+     * @param int $event_id Event ID.
+     * @return void
+     */
+    public function set_event_id( int $event_id ): void {
+        $this->event_id = $event_id;
+    }
+
+    /**
+     * Set event object.
+     *
+     * @param Event|null $event Event instance.
+     * @return void
+     */
+    public function set_event( ?Event $event ): void {
+        $this->event = $event;
+    }
+
+    /**
+     * Set number of sets.
+     *
+     * @param int $num_sets Number of sets.
+     * @return void
+     */
+    public function set_num_sets( int $num_sets ): void {
+        $this->num_sets = $num_sets;
+    }
+
+    /**
+     * Set number of rubbers.
+     *
+     * @param int|null $num_rubbers Number of rubbers.
+     * @return void
+     */
+    public function set_num_rubbers( ?int $num_rubbers ): void {
+        $this->num_rubbers = $num_rubbers;
+    }
+
+    /**
+     * Set number of sets required to win a match.
+     *
+     * @param int $num_sets_to_win Number of sets to win.
+     * @return void
+     */
+    public function set_num_sets_to_win( int $num_sets_to_win ): void {
+        $this->num_sets_to_win = $num_sets_to_win;
+    }
+
+    /**
+     * Set competition type.
+     *
+     * @param string $competition_type Competition type string.
+     * @return void
+     */
+    public function set_competition_type( string $competition_type ): void {
+        $this->competition_type = $competition_type;
+    }
+
+    /**
+     * Set type.
+     *
+     * @param string $type Type string.
+     * @return void
+     */
+    public function set_type( string $type ): void {
+        $this->type = $type;
+    }
+
+    /**
+     * Set scoring format.
+     *
+     * @param string|null $scoring Scoring format string.
+     * @return void
+     */
+    public function set_scoring( ?string $scoring ): void {
+        $this->scoring = $scoring;
+    }
+
+    /**
+     * Set finals list.
+     *
+     * @param array|null $finals Finals list.
+     * @return void
+     */
+    public function set_finals_list( ?array $finals ): void {
+        $this->finals = $finals;
+    }
+
+    /**
+     * Set finals flag or finals list.
+     *
+     * When a boolean is passed, updates the is_final flag.
+     * When an array or null is passed, updates the finals list.
+     *
+     * @param bool|array|null $is_final Final flag indicator or finals array.
+     * @return void
+     */
+    public function set_finals( bool|array|null $is_final = true ): void {
+        if ( is_array( $is_final ) || null === $is_final ) {
+            $this->finals = $is_final;
+        } else {
+            $this->is_final = $is_final;
+        }
+    }
+
+    /**
+     * Set is_final flag.
+     *
+     * @param bool $is_final Final flag indicator.
+     * @return void
+     */
+    public function set_is_final( bool $is_final ): void {
+        $this->is_final = $is_final;
+    }
+
+    /**
+     * Set entry type.
+     *
+     * @param string $entry_type Entry type string.
+     * @return void
+     */
+    public function set_entry_type( string $entry_type ): void {
+        $this->entry_type = $entry_type;
+    }
+
+    /**
+     * Set season name directly.
+     *
+     * @param string $season Season name.
+     * @return void
+     */
+    public function set_season_name( string $season ): void {
+        $this->season = $season;
+    }
+
+    /**
+     * Set players.
+     *
+     * @param array $players Players array.
+     * @return void
+     */
+    public function set_players( array $players ): void {
+        $this->players = $players;
+    }
+
+    /**
+     * Get players.
+     *
+     * @return array
+     */
+    public function get_players(): array {
+        return $this->players;
+    }
+
+    /**
+     * Set player.
+     *
+     * @param object|null $player Player object.
+     * @return void
+     */
+    public function set_player( ?object $player ): void {
+        $this->player = $player;
+    }
+
+    /**
+     * Set team.
+     *
+     * @param object|null $team Team object.
+     * @return void
+     */
+    public function set_team( ?object $team ): void {
+        $this->team = $team;
+    }
 }

@@ -478,7 +478,12 @@ class Player_Query_Service implements Player_Query_Service_Interface {
             $player_matches[ $key ]           = array();
             $player_matches[ $key ]['league'] = $match_league;
             if ( is_object( $player_matches[ $key ]['league'] ) ) {
-                $player_matches[ $key ]['league']->season = $match->season ?? ( method_exists( $match, 'get_season' ) ? $match->get_season() : null );
+                $season = $match->season ?? ( method_exists( $match, 'get_season' ) ? $match->get_season() : null );
+                if ( method_exists( $player_matches[ $key ]['league'], 'set_season_name' ) ) {
+                    $player_matches[ $key ]['league']->set_season_name( (string) $season );
+                } else {
+                    $player_matches[ $key ]['league']->season = $season;
+                }
             }
         }
 

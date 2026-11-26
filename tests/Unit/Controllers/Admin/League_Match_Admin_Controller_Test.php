@@ -62,10 +62,10 @@ final class League_Match_Admin_Controller_Test extends TestCase {
             $event
         );
         $league->set_season( '2026' );
-        $league->num_teams_total = 8;
+        $league->set_num_teams_total( 8 );
         if ( $is_cup ) {
-            $league->mode            = 'championship';
-            $league->is_championship = true;
+            $league->set_mode( 'championship' );
+            $league->set_is_championship( true );
             $championship            = $this->createStub( Championship::class );
             $championship->method( 'get_finals' )->willReturn( array(
                 'key'         => 'semi',
@@ -77,7 +77,7 @@ final class League_Match_Admin_Controller_Test extends TestCase {
             $championship->method( 'get_final_teams' )->willReturn( array() );
             $championship->method( 'get_final_keys' )->willReturn( 'semi' );
             $championship->method( '__get' )->willReturnCallback( static fn( string $name ): ?int => 'num_teams_first_round' === $name ? 8 : null );
-            $league->championship                = $championship;
+            $league->set_championship( $championship );
         }
 
         return $league;
@@ -212,7 +212,7 @@ final class League_Match_Admin_Controller_Test extends TestCase {
         $league_query_service = $this->createStub( League_Query_Service::class );
         $league_query_service->method( 'set_season' )->willReturnCallback(
             static function( League $league ): void {
-                $league->num_teams_total = 8;
+                $league->set_num_teams_total( 8 );
             }
         );
 

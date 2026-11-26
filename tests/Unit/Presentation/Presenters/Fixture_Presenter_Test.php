@@ -21,6 +21,7 @@ use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\Application\Ports\View_Renderer_Interface;
 use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use ReflectionClass;
 
 class Fixture_Presenter_Test extends TestCase {
@@ -248,7 +249,7 @@ class Fixture_Presenter_Test extends TestCase {
         $fixture->method( 'get_away_points' )->willReturn( '2' );
 
         $league = $this->createStub( \Racketmanager\Domain\Competition\League::class );
-        $league->title = 'Division 1';
+        League_Test_Factory::set_property( $league, 'title', 'Division 1' );
         $event  = $this->createStub( \Racketmanager\Domain\Competition\Event::class );
         $event->set_name( 'Men Singles' );
         $comp   = $this->createStub( \Racketmanager\Domain\Competition\Competition::class );

@@ -12,6 +12,7 @@ use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use ReflectionMethod;
 use stdClass;
@@ -62,9 +63,9 @@ final class Admin_Match_Report_Test extends TestCase {
     }
 
     public function test_admin_forwards_add_meta_box_to_match_report(): void {
-        $league       = $this->createStub( League::class );
-        $league->id   = 10;
-        $league->name = 'Test League';
+        $league = $this->createStub( League::class );
+        League_Test_Factory::set_property( $league, 'id', 10 );
+        League_Test_Factory::set_property( $league, 'name', 'Test League' );
 
         $league_repo = $this->createMock( League_Repository_Interface::class );
         $league_repo->expects( self::once() )
@@ -198,7 +199,7 @@ final class Admin_Match_Report_Test extends TestCase {
 
     public function test_add_meta_box_renders_season_and_match_dropdowns_when_fixture_linked(): void {
         $league = $this->createStub( League::class );
-        $league->id = 10;
+        League_Test_Factory::set_property( $league, 'id', 10 );
         $league->method( 'get_season' )->willReturn( '2026' );
 
         $league_summary       = new stdClass();

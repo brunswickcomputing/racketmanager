@@ -177,15 +177,12 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'League not found', $vm_error->error_message );
 
         // Success path
-        $league_obj = new class extends League {
-            public function __construct() {
-                $this->id    = 1;
-                $this->title = 'Test Championship League';
-                $this->sport = 'tennis';
-            }
-            public function get_season(): string { return '2026'; }
-            public function set_template( string $type, string $template ): void {}
-        };
+        $league_obj = new League();
+        $league_obj->set_id( 1 );
+        $league_obj->set_name( 'Test Championship League' );
+        $league_obj->set_sport( 'tennis' );
+        $league_obj->set_seasons( array( '2026' => array( 'name' => '2026' ) ) );
+        $league_obj->set_current_season( array( 'name' => '2026' ) );
         $league_service->method( 'get_league' )->willReturn( $league_obj );
 
         $query = new Get_League_Championship_Query( league_id: 1, template: 'custom' );
@@ -200,24 +197,20 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $rubber = \Racketmanager\Domain\Fixture\Rubber_Factory::from_object( (object) [ 'id' => 91 ] );
 
         $championship = $this->createStub( \Racketmanager\Domain\Tournament\Championship::class );
-        $championship->method( '__get' )->willReturnMap( [
-            [ 'num_teams_first_round', 2 ]
-        ] );
+        $championship->method( '__get' )->willReturnMap(
+            [
+                [ 'num_teams_first_round', 2 ],
+            ]
+        );
         $championship->method( 'get_finals' )->willReturn( [ [ 'key' => 'final', 'name' => 'Final', 'num_matches' => 1 ] ] );
-        $league = new class extends League {
-            public function __construct() {
-                $this->id = 4;
-                $this->seasons = array( '2026' => array( 'name' => '2026' ) );
-                $this->current_season = array( 'name' => '2026' );
-                $this->set_match_query_arg( 'season', '2026' );
-                $this->event_id = 0;
-                $this->num_rubbers = 1;
-                $this->num_sets = 3;
-            }
-            public function get_season(): string { return '2026'; }
-            public function set_template( string $type, string $template ): void {}
-        };
-        $league->championship = $championship;
+        $league = new League();
+        $league->set_id( 4 );
+        $league->set_seasons( array( '2026' => array( 'name' => '2026' ) ) );
+        $league->set_current_season( array( 'name' => '2026' ) );
+        $league->set_event_id( 0 );
+        $league->set_num_rubbers( 1 );
+        $league->set_num_sets( 3 );
+        $league->set_championship( $championship );
 
         $leagues = $this->createStub( League_Service::class );
         $leagues->method( 'get_league' )->willReturn( $league );
@@ -234,9 +227,11 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $league_repository->method( 'find_by_id' )->willReturn( $league );
         $competition->method( 'get_league_repository' )->willReturn( $league_repository );
         $teams = $this->createStub( Team_Service::class );
-        $teams->method( 'get_team_details' )->willReturnCallback( static function ( int $id ) {
-            return new \Racketmanager\Domain\DTO\Team\Team_Details_DTO( Team::from_object( (object) [ 'id' => $id, 'title' => 'Team ' . $id ] ) );
-        } );
+        $teams->method( 'get_team_details' )->willReturnCallback(
+            static function ( int $id ) {
+                return new \Racketmanager\Domain\DTO\Team\Team_Details_DTO( Team::from_object( (object) [ 'id' => $id, 'title' => 'Team ' . $id ] ) );
+            }
+        );
 
         $handler = new Get_League_Championship_Handler(
             $leagues,
@@ -285,21 +280,19 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'League not found', $vm_error->error_message );
 
         // Success path: league by name
-        $league_obj = new class extends League {
-            public function __construct() {
-                $this->id       = 10;
-                $this->title    = 'Premier Division';
-                $this->sport    = 'tennis';
-                $this->event_id = 5;
-            }
-        };
-        $event_obj = new class extends Event {
+        $league_obj = new League();
+        $league_obj->set_id( 10 );
+        $league_obj->set_name( 'Premier Division' );
+        $league_obj->set_sport( 'tennis' );
+        $league_obj->set_event_id( 5 );
+        $event_obj = new class() extends Event {
             public string $title = 'Main Event';
             public function __construct() {
                 $this->set_id( 5 );
                 $this->set_name( 'Main Event' );
             }
-            public function get_seasons(): array { return [ '2025', '2026' ]; }
+            public function get_seasons(): array {
+                return [ '2025', '2026' ]; }
         };
 
         $league_service->method( 'get_league' )->willReturn( $league_obj );
@@ -366,14 +359,16 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $query_league_repository = $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class );
         $query_league_repository->method( 'query_matches' )->willReturnCallback( static fn(): array => array_map( static fn( $fixture ) => (object) [ 'id' => $fixture->id ], $stub_fixtures->getArrayCopy() ) );
         $query_fixtures = $this->createStub( Fixture_Repository_Interface::class );
-        $query_fixtures->method( 'find_by_id' )->willReturnCallback( static function ( int $id ) use ( $stub_fixtures ) {
-            foreach ( $stub_fixtures as $fixture ) {
-                if ( $fixture->id === $id ) {
-                    return $fixture;
+        $query_fixtures->method( 'find_by_id' )->willReturnCallback(
+            static function ( int $id ) use ( $stub_fixtures ) {
+                foreach ( $stub_fixtures as $fixture ) {
+                    if ( $fixture->id === $id ) {
+                        return $fixture;
+                    }
                 }
+                return null;
             }
-            return null;
-        } );
+        );
         $handler = new Get_League_Teams_Handler(
             $league_service,
             $team_service,
@@ -392,17 +387,11 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $this->assertTrue( $vm_error->is_error() );
         $this->assertSame( 'League not found', $vm_error->error_message );
 
-        $league_obj = new class extends League {
-            public function __construct() {
-                $this->id    = 1;
-                $this->title = 'Test League';
-                $this->seasons        = array( '2026' => array( 'name' => '2026' ) );
-                $this->current_season = array( 'name' => '2026' );
-                $this->set_match_query_arg( 'season', '2026' );
-            }
-            public function set_template( string $type, string $template ): void {}
-            public function set_group( string $group = '', bool $force_overwrite = false ): void {}
-        };
+        $league_obj = new League();
+        $league_obj->set_id( 1 );
+        $league_obj->set_name( 'Test League' );
+        $league_obj->set_seasons( array( '2026' => array( 'name' => '2026' ) ) );
+        $league_obj->set_current_season( array( 'name' => '2026' ) );
         $fixture = Fixture_Test_Factory::create( id: 901, league_id: 1, home_team: 7, away_team: 8 );
         $fixture->set_teams(
             [
@@ -420,14 +409,14 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $this->assertFalse( $vm_list->is_error() );
         $this->assertSame( 'teams-list', $vm_list->template );
         $this->assertFalse( $vm_list->template_type );
-        $league_obj->teams      = [ (object) [ 'rank' => 1 ], (object) [ 'rank' => '' ] ];
-        $league_obj->team_index = [ 7 => 0, 8 => 1 ];
+        $league_obj->set_teams( [ (object) [ 'rank' => 1 ], (object) [ 'rank' => '' ] ] );
+        $league_obj->set_team_index( [ 7 => 0, 8 => 1 ] );
 
         // Team details success
         $team_obj        = Team_Factory::from_array( [ 'id' => 7, 'title' => 'Westcliff 1' ] );
         $team_details    = new Team_Details_DTO( team: $team_obj );
         $team_service->method( 'get_team_details' )->willReturnCallback(
-            function( int|string|null $team_id ) use ( $team_details ) {
+            function ( int|string|null $team_id ) use ( $team_details ) {
                 if ( 8 === (int) $team_id ) {
                     $unranked_team = Team_Factory::from_array( [ 'id' => 8, 'title' => 'Unranked Team' ] );
                     return new Team_Details_DTO( team: $unranked_team );
@@ -463,16 +452,10 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $league_service = $this->createStub( League_Service::class );
         $team_service   = $this->createStub( Team_Service::class );
 
-        $league_obj = new class extends League {
-            public function __construct() {
-                $this->id             = 1;
-                $this->title          = 'Test League';
-                $this->current_season = [ 'name' => '2025' ];
-            }
-            public function set_template( string $type, string $template ): void {}
-            public function set_group( string $group = '', bool $force_overwrite = false ): void {}
-            public function get_matches( array $query_args = [], ?\Racketmanager\Repositories\Interfaces\League_Repository_Interface $league_repository = null, ?\Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface $fixture_repository = null, ?\Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface $rubber_repository = null ): array|int|object { return []; }
-        };
+        $league_obj = new League();
+        $league_obj->set_id( 1 );
+        $league_obj->set_name( 'Test League' );
+        $league_obj->set_current_season( [ 'name' => '2025' ] );
         $league_service->method( 'get_league' )->willReturn( $league_obj );
 
         $team_obj = Team_Factory::from_array( [ 'id' => 7, 'title' => 'Westcliff 1' ] );
@@ -501,18 +484,15 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $player_service = $this->createStub( Player_Service::class );
         $renderer       = $this->create_renderer();
 
-        $league_obj = new class extends League {
-            public function __construct() {
-                $this->id             = 1;
-                $this->title          = 'Test League';
-                $this->sport          = 'tennis';
-                $this->current_season = [ 'name' => '2025' ];
-            }
-            public function set_season( false|string $season = false, bool $force_overwrite = false, ?\Racketmanager\Repositories\Interfaces\League_Repository_Interface $league_repository = null, ?string $final = null ): void {}
-        };
-        $league_service->method( 'get_league' )->willReturn( $league_obj );
+        $league = new League();
+        $league->set_id( 1 );
+        $league->set_name( 'Test League' );
+        $league->set_seasons( array( '2025' => array( 'name' => '2025' ) ) );
+        $league->set_current_season( array( 'name' => '2025' ) );
+        $league->set_sport( 'tennis' );
+        $league_service->method( 'get_league' )->willReturn( $league );
 
-        [ $low, $high, $stats ] = $this->build_stat_players( $league_obj, '2025', 'league' );
+        [ $low, $high, $stats ] = $this->build_stat_players( $league, '2025', 'league' );
 
         $found_team = (object) [ 'id' => 55, 'title' => 'Found Team' ];
         $repo       = $this->createMock( League_Repository_Interface::class );
@@ -527,7 +507,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
             );
 
         $league_query = $this->createMock( League_Query_Service::class );
-        $league_query->expects( $this->once() )->method( 'get_players' )->with( $league_obj )->willReturn( [ $low, $high ] );
+        $league_query->expects( $this->once() )->method( 'get_players' )->with( $league )->willReturn( [ $low, $high ] );
         $handler = new Get_League_Players_Handler( $league_service, $repo, $player_service, $this->createStub( Player_Query_Service::class ), $stats, $league_query );
         $adapter = $this->create_league_adapter(
             player_presenter: new Player_Presenter(),
@@ -536,10 +516,10 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $vm      = $adapter->present_players( $handler->handle( new Get_League_Players_Query( league_id: 1 ) ) );
 
         $this->assertFalse( $vm->is_error() );
-        $this->assert_decorated_and_sorted( $low, $high, $league_obj->players );
+        $this->assert_decorated_and_sorted( $low, $high, $league->players );
         $this->assertSame( $found_team, $high->team );
-        $this->assertInstanceOf( \stdClass::class, $low->team );
-        $this->assertEquals( new \stdClass(), $low->team );
+        $this->assertInstanceOf( stdClass::class, $low->team );
+        $this->assertEquals( new stdClass(), $low->team );
     }
 
 
@@ -593,14 +573,10 @@ class League_Shortcode_Handlers_Test extends TestCase {
             template_renderer: $renderer
         );
 
-        $league_obj = new class extends League {
-            public function __construct() {
-                $this->id    = 1;
-                $this->title = 'Test League';
-                $this->sport = 'tennis';
-            }
-            public function set_season( false|string $season = false, bool $force_overwrite = false, ?\Racketmanager\Repositories\Interfaces\League_Repository_Interface $league_repository = null, ?string $final = null ): void {}
-        };
+        $league_obj = new League();
+        $league_obj->set_id( 1 );
+        $league_obj->set_name( 'Test League' );
+        $league_obj->set_sport( 'tennis' );
         $league_service->method( 'get_league' )->willReturn( $league_obj );
 
         $player_obj = Player_Test_Factory::create(
@@ -609,7 +585,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
         );
 
         $player_service->method( 'get_player' )->willReturnCallback(
-            function( int $id ) use ( $player_obj ) {
+            function ( int $id ) use ( $player_obj ) {
                 if ( 999 === $id ) {
                     throw new \Exception( 'Player not found' );
                 }
@@ -662,23 +638,21 @@ class League_Shortcode_Handlers_Test extends TestCase {
             template_renderer: $renderer
         );
 
-        $league_obj = new class extends League {
+        $league_obj = new class() extends League {
             public int $set_match_day_calls = 0;
             public mixed $last_match_day    = null;
             public function __construct() {
-                $this->id        = 1;
-                $this->title     = 'Test League';
-                $this->sport     = 'tennis';
-                $this->match_day = -1;
+                $this->set_id( 1 );
+                $this->set_name( 'Test League' );
+                $this->set_sport( 'tennis' );
+                $this->set_match_day( -1 );
             }
-            public function set_template( string $type, string $template ): void {}
-            public function set_season( false|string $season = false, bool $force_overwrite = false, ?\Racketmanager\Repositories\Interfaces\League_Repository_Interface $league_repository = null, ?string $final = null ): void {}
+            public function set_season( false|string $season = false, bool $force_overwrite = false ): void {}
             public function set_match_day( int $match_day = 1 ): void {
-                $this->set_match_day_calls++;
+                parent::set_match_day( $match_day );
+                ++$this->set_match_day_calls;
                 $this->last_match_day = $match_day;
             }
-            public function set_num_matches( bool $total = false, ?\Racketmanager\Repositories\Interfaces\League_Repository_Interface $league_repository = null ): void {}
-            public function get_matches( array $query_args = [], ?\Racketmanager\Repositories\Interfaces\League_Repository_Interface $league_repository = null, ?\Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface $fixture_repository = null, ?\Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface $rubber_repository = null ): array|int|object { return []; }
         };
         $league_service->method( 'get_league' )->willReturn( $league_obj );
 
@@ -713,17 +687,10 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $league_service = $this->createStub( League_Service::class );
         $renderer       = $this->create_renderer();
 
-        $league_obj = new class extends League {
-            public function __construct() {
-                $this->id    = 1;
-                $this->title = 'Test League';
-                $this->sport = 'tennis';
-            }
-            public function set_template( string $type, string $template ): void {}
-            public function set_season( false|string $season = false, bool $force_overwrite = false, ?\Racketmanager\Repositories\Interfaces\League_Repository_Interface $league_repository = null, ?string $final = null ): void {}
-            public function set_group( string $group = '', bool $force_overwrite = false ): void {}
-            public function get_matches( array $query_args = [], ?\Racketmanager\Repositories\Interfaces\League_Repository_Interface $league_repository = null, ?\Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface $fixture_repository = null, ?\Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface $rubber_repository = null ): array|int|object { return []; }
-        };
+        $league_obj = new League();
+        $league_obj->set_id( 1 );
+        $league_obj->set_name( 'Test League' );
+        $league_obj->set_sport( 'tennis' );
         $league_service->method( 'get_league' )->willReturn( $league_obj );
         $adapter = $this->create_league_adapter(
             fixture_presenter: $this->createStub( Fixture_Presenter::class ),
@@ -789,22 +756,23 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $pending->set_date( '2026-10-20' );
 
         $league = new class( [ $completed, $titled, $pending ] ) extends League {
-            public function fixtures(): array { return $this->fixtures; }
+            public function fixtures(): array {
+                return $this->fixtures; }
             public function __construct( private array $fixtures ) {
-                $this->id = 1;
-                $this->seasons        = array( '2026' => array( 'name' => '2026' ) );
-                $this->current_season = array( 'name' => '2026' );
-                $this->set_match_query_arg( 'season', '2026' );
+                $this->set_id( 1 );
+                $this->set_seasons( array( '2026' => array( 'name' => '2026' ) ) );
+                $this->set_current_season( array( 'name' => '2026' ) );
             }
-            public function set_season( false|string $season = false, bool $force_overwrite = false, ?\Racketmanager\Repositories\Interfaces\League_Repository_Interface $league_repository = null, ?string $final = null ): void {}
         };
         $league_service = $this->createStub( League_Service::class );
         $league_service->method( 'get_league' )->willReturn( $league );
         $league_repo = $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class );
-        $league_repo->method( 'query_league_teams' )->willReturnCallback( static fn( int $league_id, array $args, bool $count = false ): array|int => $count ? 2 : [
-            (object) [ 'table_id' => 10, 'id' => 10, 'title' => 'Red Team' ],
-            (object) [ 'table_id' => 20, 'id' => 20, 'title' => 'Blue Team' ],
-        ] );
+        $league_repo->method( 'query_league_teams' )->willReturnCallback(
+            static fn( int $league_id, array $args, bool $count = false ): array|int => $count ? 2 : [
+                (object) [ 'table_id' => 10, 'id' => 10, 'title' => 'Red Team' ],
+                (object) [ 'table_id' => 20, 'id' => 20, 'title' => 'Blue Team' ],
+            ]
+        );
         $red_team = \Racketmanager\Domain\Competition\League_Team::from_object( (object) [ 'table_id' => 10, 'id' => 10, 'title' => 'Red Team' ] );
         $blue_team = \Racketmanager\Domain\Competition\League_Team::from_object( (object) [ 'table_id' => 20, 'id' => 20, 'title' => 'Blue Team' ] );
         $league_team_repo = $this->createStub( \Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface::class );
@@ -813,14 +781,16 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $options->method( 'get_option' )->willReturn( 'd/m/Y' );
         $fixture_presenter = new Fixture_Presenter( $this->createStub( Fixture_Link_Service::class ), $options, $this->createStub( View_Renderer_Interface::class ) );
                 $query_fixtures = $this->createStub( Fixture_Repository_Interface::class );
-        $query_fixtures->method( 'find_by_id' )->willReturnCallback( static function ( int $id ) use ( $league ) {
-            foreach ( $league->fixtures() as $fixture ) {
-                if ( $fixture->id === $id ) {
-                    return $fixture;
+        $query_fixtures->method( 'find_by_id' )->willReturnCallback(
+            static function ( int $id ) use ( $league ) {
+                foreach ( $league->fixtures() as $fixture ) {
+                    if ( $fixture->id === $id ) {
+                        return $fixture;
+                    }
                 }
+                return null;
             }
-            return null;
-        } );
+        );
         $league_repo->method( 'query_matches' )->willReturnCallback( static fn(): array => array_map( static fn( $fixture ) => (object) [ 'id' => $fixture->id ], $league->fixtures() ) );
         $handler = new Get_League_Last_5_Handler( $league_service, $this->league_query_service( $league_repo, $league_team_repo, $query_fixtures ) );
         $adapter = $this->create_league_adapter(
@@ -829,10 +799,12 @@ class League_Shortcode_Handlers_Test extends TestCase {
         );
 
         $warnings = [];
-        set_error_handler( static function ( int $code, string $message ) use ( &$warnings ): bool {
-            $warnings[] = $message;
-            return true;
-        } );
+        set_error_handler(
+            static function ( int $code, string $message ) use ( &$warnings ): bool {
+                $warnings[] = $message;
+                return true;
+            }
+        );
         try {
             $vm = $adapter->present_last_5( $handler->handle( new Get_League_Last_5_Query( league_id: 1, team_id: 10 ) ) );
             $html = ( new Shortcode_View_Presenter( $this->create_renderer() ) )->render( $vm );
@@ -880,33 +852,34 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $f_unknown->set_date( '2026-10-20' );
 
         $league = new class( [ $f_normal, $f_bye, $f_unknown ] ) extends League {
-            public function fixtures(): array { return $this->fixtures; }
+            public function fixtures(): array {
+                return $this->fixtures; }
             public function __construct( private array $fixtures ) {
-                $this->id     = 1;
-                $this->season = '2026';
-                $this->seasons        = array( '2026' => array( 'name' => '2026' ) );
-                $this->current_season = array( 'name' => '2026' );
-                $this->set_match_query_arg( 'season', '2026' );
+                $this->set_id( 1 );
+                $this->set_season_name( '2026' );
+                $this->set_seasons( array( '2026' => array( 'name' => '2026' ) ) );
+                $this->set_current_season( array( 'name' => '2026' ) );
             }
-            public function set_season( false|string $season = false, bool $force_overwrite = false, ?\Racketmanager\Repositories\Interfaces\League_Repository_Interface $league_repository = null, ?string $final = null ): void {}
         };
 
         $league_service = $this->createStub( League_Service::class );
         $league_service->method( 'get_league' )->willReturn( $league );
         $teams_call_count = 0;
         $league_repo      = $this->createStub( \Racketmanager\Repositories\Interfaces\League_Repository_Interface::class );
-        $league_repo->method( 'query_league_teams' )->willReturnCallback( function( int $league_id, array $args, bool $count = false ) use ( &$teams_call_count ): array|int {
-            if ( ! $count ) {
-                $teams_call_count++;
+        $league_repo->method( 'query_league_teams' )->willReturnCallback(
+            function ( int $league_id, array $args, bool $count = false ) use ( &$teams_call_count ): array|int {
+                if ( ! $count ) {
+                      $teams_call_count++;
+                }
+                if ( $count ) {
+                    return 2;
+                }
+                return [
+                    (object) [ 'table_id' => 10, 'id' => 10, 'title' => 'Alpha Team' ],
+                    (object) [ 'table_id' => 20, 'id' => 20, 'title' => 'Beta Team' ],
+                ];
             }
-            if ( $count ) {
-                return 2;
-            }
-            return [
-                (object) [ 'table_id' => 10, 'id' => 10, 'title' => 'Alpha Team' ],
-                (object) [ 'table_id' => 20, 'id' => 20, 'title' => 'Beta Team' ],
-            ];
-        } );
+        );
         $alpha_team = \Racketmanager\Domain\Competition\League_Team::from_object( (object) [ 'table_id' => 10, 'id' => 10, 'title' => 'Alpha Team' ] );
         $beta_team  = \Racketmanager\Domain\Competition\League_Team::from_object( (object) [ 'table_id' => 20, 'id' => 20, 'title' => 'Beta Team' ] );
         $league_team_repo = $this->createStub( \Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface::class );
@@ -915,14 +888,16 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $options->method( 'get_option' )->willReturn( 'd/m/Y' );
         $fixture_presenter = new Fixture_Presenter( $this->createStub( Fixture_Link_Service::class ), $options, $this->createStub( View_Renderer_Interface::class ) );
                 $query_fixtures = $this->createStub( Fixture_Repository_Interface::class );
-        $query_fixtures->method( 'find_by_id' )->willReturnCallback( static function ( int $id ) use ( $league ) {
-            foreach ( $league->fixtures() as $fixture ) {
-                if ( $fixture->id === $id ) {
-                    return $fixture;
+        $query_fixtures->method( 'find_by_id' )->willReturnCallback(
+            static function ( int $id ) use ( $league ) {
+                foreach ( $league->fixtures() as $fixture ) {
+                    if ( $fixture->id === $id ) {
+                        return $fixture;
+                    }
                 }
+                return null;
             }
-            return null;
-        } );
+        );
         $league_repo->method( 'query_matches' )->willReturnCallback( static fn(): array => array_map( static fn( $fixture ) => (object) [ 'id' => $fixture->id ], $league->fixtures() ) );
         $handler = new Get_League_Last_5_Handler( $league_service, $this->league_query_service( $league_repo, $league_team_repo, $query_fixtures ) );
         $adapter = $this->create_league_adapter(
@@ -931,10 +906,12 @@ class League_Shortcode_Handlers_Test extends TestCase {
         );
 
         $warnings = [];
-        set_error_handler( static function ( int $code, string $message ) use ( &$warnings ): bool {
-            $warnings[] = $message;
-            return true;
-        } );
+        set_error_handler(
+            static function ( int $code, string $message ) use ( &$warnings ): bool {
+                $warnings[] = $message;
+                return true;
+            }
+        );
 
         try {
             // First call for Team 10 in 2026 season -> 1 call from the handler's team lookup
@@ -946,7 +923,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
             $this->assertSame( 1, $teams_call_count );
 
             // Change season on league to 2027 -> +1 call: a handler lookup, since the cache is refreshed for the new season
-            $league->season = '2027';
+            $league->set_season_name( '2027' );
             $vm3 = $adapter->present_last_5( $handler->handle( new Get_League_Last_5_Query( league_id: 1, team_id: 10 ) ) );
             $this->assertSame( 2, $teams_call_count );
         } finally {
@@ -963,7 +940,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_renderer_sets_and_restores_global_league(): void {
-        $inner_renderer = new class implements View_Renderer_Interface {
+        $inner_renderer = new class() implements View_Renderer_Interface {
             public ?int $observed_league_id = null;
             public function render( string $template_path, object|array $view_model, array $additional_vars = [] ): void {}
             public function render_to_string( string $template_path, object|array $view_model, array $additional_vars = [] ): string {

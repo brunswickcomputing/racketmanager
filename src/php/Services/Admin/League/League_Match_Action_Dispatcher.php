@@ -10,6 +10,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Admin\League;
 
+use InvalidArgumentException;
+use Racketmanager\Domain\Competition\League;
 use Racketmanager\Services\Admin\Admin_Command_Input as Input;
 use Racketmanager\Application\Admin\Commands\League_Match_Handler;
 use Racketmanager\Application\Admin\Commands\Delete_League_Matches_Command;
@@ -20,65 +22,82 @@ use Racketmanager\Application\Admin\Commands\Update_League_Results_Command;
 use LogicException;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
-use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
-use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Application\Admin\Ports\Action_Guard_Interface;
-use Racketmanager\Services\Competition\League_Query_Service;
-use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
-use Racketmanager\Services\Fixture\Fixture_Result_Manager;
-use Racketmanager\Services\Fixture_Service;
 
 /**
  * Handles match/fixture mutations for the league admin screen (delete matches, manage matches, update results).
  */
-readonly final class League_Match_Action_Dispatcher {
+final readonly class League_Match_Action_Dispatcher {
 
+    /**
+     * Initialises the service with action guard, and command dependencies.
+     *
+     * @param Action_Guard_Interface           $action_guard Action guard dependency.
+     * @param League_Match_Handler             $commands League match command handler dependency.
+     * @param League_Repository_Interface|null $league_repository Optional league repository dependency.
+     *
+     * @return void
+     */
     public function __construct(
-        Fixture_Repository_Interface $fixture_repository,
-        Fixture_Maintenance_Service $fixture_maintenance_service,
         private Action_Guard_Interface $action_guard,
-        Fixture_Result_Manager $fixture_result_manager,
-        Fixture_Service $fixture_service,
         private League_Match_Handler $commands,
-        ?League_Query_Service $league_query_service = null,
         private ?League_Repository_Interface $league_repository = null,
     ) {
     }
 
     /**
-     * @param array<string, mixed> $query Typically $_GET
-     * @param array<string, mixed> $post  Typically $_POST
-     * @param object|null          $league League domain entity/model
+     * Handles league match administration actions for the current request.
+     *
+     * Resolves the league context, routes submitted form data to the appropriate
+     * action handler for deleting matches, managing matches, or updating results,
+     * and returns an empty result when no supported action is requested or no
+     * league can be resolved.
+     *
+     * @param array       $query Request query parameters used to resolve the league context.
+     * @param array       $post Submitted form data indicating the requested league match action.
+     * @param League|null $league Optional league context to use instead of resolving one from the request.
+     *
+     * @return Action_Result_DTO Result of the routed action, or an empty result when no action is performed.
      */
-    public function handle( array $query, array $post, ?object $league = null ): Action_Result_DTO {
+    public function handle( array $query, array $post, ?League $league = null ): Action_Result_DTO {
         $league = $this->resolve_league( $query, $post, $league );
         if ( null === $league ) {
-            return new Action_Result_DTO();
+            $dto = new Action_Result_DTO();
+        } elseif ( isset( $post['delMatches'] ) ) {
+            $dto = $this->handle_delete_matches( $post );
+        } elseif ( isset( $post['updateLeague'] ) && 'match' === $post['updateLeague'] ) {
+            $dto = $this->handle_manage_matches( $post, $league );
+        } elseif ( isset( $post['updateLeague'] ) && 'results' === $post['updateLeague'] ) {
+            $dto = $this->handle_update_results( $post, $league );
         }
 
-        if ( isset( $post['delMatches'] ) ) {
-            return $this->handle_delete_matches( $post );
-        }
-
-        if ( isset( $post['updateLeague'] ) && 'match' === $post['updateLeague'] ) {
-            return $this->handle_manage_matches( $query, $post, $league );
-        }
-
-        if ( isset( $post['updateLeague'] ) && 'results' === $post['updateLeague'] ) {
-            return $this->handle_update_results( $post, $league );
-        }
-
-        return new Action_Result_DTO();
+        return $dto ?? new Action_Result_DTO();
     }
 
-    private function resolve_league( array $query, array $post, ?object $league ): ?object {
+    /**
+     * Resolves the league context for the current request.
+     *
+     * Returns the provided league when available, otherwise attempts to read a league
+     * identifier from the query parameters or submitted form data and load the league
+     * from the repository. Returns null when no league can be identified.
+     *
+     * @param array       $query Request query parameters that may contain a league identifier.
+     * @param array       $post Submitted form data that may contain a league identifier.
+     * @param League|null $league Existing league context, when already available.
+     *
+     * @return League|null Resolved league object, or null when no league identifier is provided.
+     *
+     * @throws LogicException When a league identifier is present but no league repository is available.
+     */
+    private function resolve_league( array $query, array $post, ?League $league ): ?League {
         if ( null !== $league ) {
             return $league;
         }
 
-        $league_id = isset( $query['league_id'] ) ? intval( $query['league_id'] ) : ( isset( $post['league_id'] ) ? intval( $post['league_id'] ) : null );
+        $post_league_id = isset( $post['league_id'] ) ? intval( $post['league_id'] ) : null;
+        $league_id      = isset( $query['league_id'] ) ? intval( $query['league_id'] ) : $post_league_id;
         if ( ! $league_id ) {
             return null;
         }
@@ -91,7 +110,15 @@ readonly final class League_Match_Action_Dispatcher {
     }
 
     /**
-     * @param array<string, mixed> $post
+     * Handles the bulk delete matches action.
+     *
+     * Validates the current request permissions, builds a delete league matches command
+     * from submitted form data, and delegates deletion to the command handler.
+     * Returns an error result when authorisation fails or submitted input is invalid.
+     *
+     * @param array $post Submitted form data containing the selected match identifiers.
+     *
+     * @return Action_Result_DTO Result of the delete matches action, including any status message and tab override.
      */
     private function handle_delete_matches( array $post ): Action_Result_DTO {
         try {
@@ -108,7 +135,7 @@ readonly final class League_Match_Action_Dispatcher {
             $command = new Delete_League_Matches_Command(
                 match: Input::column( $post, 'match' ),
             );
-        } catch ( \InvalidArgumentException $e ) {
+        } catch ( InvalidArgumentException $e ) {
             return new Action_Result_DTO( message: $e->getMessage(), message_type: Admin_Message_Type::ERROR, tab_override: 'matches' );
         }
 
@@ -116,10 +143,18 @@ readonly final class League_Match_Action_Dispatcher {
     }
 
     /**
-     * @param array<string, mixed> $query
-     * @param array<string, mixed> $post
+     * Handles the manage matches action for a league.
+     *
+     * Validates the current request permissions, builds a manage league matches command
+     * from submitted form data, and delegates processing to the command handler.
+     * Returns an error result when authorisation fails or submitted input is invalid.
+     *
+     * @param array  $post Submitted form data used to create or update match details.
+     * @param League $league League context for the matches being managed.
+     *
+     * @return Action_Result_DTO Result of the manage matches action, including any status message and tab override.
      */
-    private function handle_manage_matches( array $query, array $post, object $league ): Action_Result_DTO {
+    private function handle_manage_matches( array $post, League $league ): Action_Result_DTO {
         try {
             $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_manage-matches', 'edit_matches' );
         } catch ( Invalid_Status_Exception $e ) {
@@ -131,7 +166,7 @@ readonly final class League_Match_Action_Dispatcher {
         }
 
         try {
-            $mode = Input::text( $post, 'mode' ) ?? '';
+            $mode    = Input::text( $post, 'mode' ) ?? '';
             $command = new Manage_League_Matches_Command(
                 mode: $mode,
                 match: Input::column( $post, 'match' ),
@@ -151,7 +186,7 @@ readonly final class League_Match_Action_Dispatcher {
                 month: 'add' === $mode ? [] : Input::column( $post, 'month' ),
                 day: 'add' === $mode ? [] : Input::column( $post, 'day' ),
             );
-        } catch ( \InvalidArgumentException $e ) {
+        } catch ( InvalidArgumentException $e ) {
             return new Action_Result_DTO( message: $e->getMessage(), message_type: Admin_Message_Type::ERROR, tab_override: 'matches' );
         }
 
@@ -159,9 +194,14 @@ readonly final class League_Match_Action_Dispatcher {
     }
 
     /**
-     * @param array<string, mixed> $post
+     * Handles a bulk league results update request after validating permissions and input data.
+     *
+     * @param array<string, mixed> $post Submitted form data containing season, match IDs, points, and custom result data.
+     * @param League               $league League context used when applying the result updates.
+     *
+     * @return Action_Result_DTO Result of the update operation, including any admin message or tab override.
      */
-    private function handle_update_results( array $post, object $league ): Action_Result_DTO {
+    private function handle_update_results( array $post, League $league ): Action_Result_DTO {
         try {
             $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_matches-bulk', 'update_results' );
         } catch ( Invalid_Status_Exception $e ) {
@@ -180,7 +220,7 @@ readonly final class League_Match_Action_Dispatcher {
                 away_points: Input::column( $post, 'away_points' ),
                 custom: Input::tree( $post, 'custom' ),
             );
-        } catch ( \InvalidArgumentException $e ) {
+        } catch ( InvalidArgumentException $e ) {
             return new Action_Result_DTO( message: $e->getMessage(), message_type: Admin_Message_Type::ERROR, tab_override: 'matches' );
         }
 

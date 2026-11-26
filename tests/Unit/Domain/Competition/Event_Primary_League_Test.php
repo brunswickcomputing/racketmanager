@@ -10,6 +10,7 @@ use Racketmanager\Domain\Competition\Competition_Settings;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
@@ -75,7 +76,7 @@ class Event_Primary_League_Test extends TestCase {
         $this->event->set_primary_league( 0 );
 
         $league = $this->createMock( League::class );
-        $league->id = 55;
+        League_Test_Factory::set_property( $league, 'id', 55 );
         $this->event->set_leagues( [ $league ] );
 
         $this->assertSame( 55, $this->event_query_service->get_primary_league_id( $this->event ) );
@@ -92,7 +93,7 @@ class Event_Primary_League_Test extends TestCase {
             ->willReturn( [ $league_db_record ] );
 
         $hydrated_league = $this->createMock( League::class );
-        $hydrated_league->id = 77;
+        League_Test_Factory::set_property( $hydrated_league, 'id', 77 );
         $this->league_repository->expects( $this->once() )
             ->method( 'find_by_id' )
             ->with( 77 )
@@ -117,7 +118,7 @@ class Event_Primary_League_Test extends TestCase {
         $this->event->set_primary_league( 88 );
 
         $league = $this->createMock( League::class );
-        $league->id = 88;
+        League_Test_Factory::set_property( $league, 'id', 88 );
         $this->event->set_leagues( [ $league ] );
         $this->event->set_league_index( [ 88 => 0 ] );
 
@@ -128,7 +129,7 @@ class Event_Primary_League_Test extends TestCase {
     public function test_get_primary_league_returns_cached_primary_league_obj(): void {
         $event = new Event();
         $league = $this->createMock( League::class );
-        $league->id = 73;
+        League_Test_Factory::set_property( $league, 'id', 73 );
         $event->set_primary_league_obj( $league );
         $event->set_primary_league( 0 );
 
@@ -140,9 +141,9 @@ class Event_Primary_League_Test extends TestCase {
         $this->event->set_primary_league( 0 );
 
         $league1 = $this->createMock( League::class );
-        $league1->id = 12;
+        League_Test_Factory::set_property( $league1, 'id', 12 );
         $league2 = $this->createMock( League::class );
-        $league2->id = 14;
+        League_Test_Factory::set_property( $league2, 'id', 14 );
 
         $this->event->set_leagues( [ $league1, $league2 ] );
 
@@ -159,7 +160,7 @@ class Event_Primary_League_Test extends TestCase {
         $this->event->set_leagues( [ $league_record ] );
 
         $hydrated_league = $this->createMock( League::class );
-        $hydrated_league->id = 99;
+        League_Test_Factory::set_property( $hydrated_league, 'id', 99 );
 
         $this->league_repository->expects( $this->once() )
             ->method( 'find_by_id' )
@@ -174,9 +175,9 @@ class Event_Primary_League_Test extends TestCase {
         $this->event->set_primary_league( 55 );
 
         $league44 = $this->createMock( League::class );
-        $league44->id = 44;
+        League_Test_Factory::set_property( $league44, 'id', 44 );
         $league55 = $this->createMock( League::class );
-        $league55->id = 55;
+        League_Test_Factory::set_property( $league55, 'id', 55 );
 
         $this->event->set_leagues( [ $league44, $league55 ] );
         $this->event->set_league_index( [ 55 => 0 ] );
@@ -195,7 +196,7 @@ class Event_Primary_League_Test extends TestCase {
         $this->event->set_league_index( [ 55 => 0 ] );
 
         $hydrated55 = $this->createMock( League::class );
-        $hydrated55->id = 55;
+        League_Test_Factory::set_property( $hydrated55, 'id', 55 );
 
         $this->league_repository->expects( $this->once() )
             ->method( 'find_by_id' )
@@ -225,7 +226,7 @@ class Event_Primary_League_Test extends TestCase {
         $this->event->set_primary_league( 66 );
 
         $league66 = $this->createMock( League::class );
-        $league66->id = 66;
+        League_Test_Factory::set_property( $league66, 'id', 66 );
 
         $this->event->set_leagues( [ $league66 ] );
         $this->event->set_league_index( [] );
@@ -239,7 +240,7 @@ class Event_Primary_League_Test extends TestCase {
         $this->event->set_leagues( [] );
 
         $hydrated_league = $this->createMock( League::class );
-        $hydrated_league->id = 77;
+        League_Test_Factory::set_property( $hydrated_league, 'id', 77 );
 
         $this->league_repository->expects( $this->once() )
             ->method( 'find_by_id' )

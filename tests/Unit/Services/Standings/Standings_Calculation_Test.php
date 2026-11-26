@@ -39,12 +39,12 @@ class Standings_Calculation_Test extends TestCase {
         ];
 
         $league = League_Test_Factory::from_object( $league_raw );
-        $league->num_rubbers     = $overrides['num_rubbers'] ?? 6;
-        $league->num_sets        = $overrides['num_sets'] ?? 2;
-        $league->num_sets_to_win = $overrides['num_sets_to_win'] ?? 2;
-        $league->scoring         = $overrides['scoring'] ?? 'TB';
-        $league->point_rule      = $overrides['point_rule'] ?? 'three';
-        $league->current_season  = $overrides['current_season'] ?? [ 'name' => '2024-25' ];
+        $league->set_num_rubbers( $overrides['num_rubbers'] ?? 6 );
+        $league->set_num_sets( $overrides['num_sets'] ?? 2 );
+        $league->set_num_sets_to_win( $overrides['num_sets_to_win'] ?? 2 );
+        $league->set_scoring( $overrides['scoring'] ?? 'TB' );
+        $league->set_point_rule( $overrides['point_rule'] ?? 'three' );
+        $league->set_current_season( $overrides['current_season'] ?? [ 'name' => '2024-25' ] );
 
         return $league;
     }
@@ -608,7 +608,7 @@ class Standings_Calculation_Test extends TestCase {
 
     public function test_standings_data_shared_match_and_rubber_counts(): void {
         $league = $this->create_test_league();
-        $league->num_rubbers = 2;
+        $league->set_num_rubbers( 2 );
 
         $rubber1 = $this->create_rubber( [
             'winner_id'   => '10',
@@ -656,14 +656,14 @@ class Standings_Calculation_Test extends TestCase {
         ];
 
         // Test with point_rule = 'tennisRubber'
-        $league->point_rule = 'tennisRubber';
+        $league->set_point_rule( 'tennisRubber' );
         $points_rc = $this->service->calculate_points( $league, $team, [] );
         $this->assertIsArray( $points_rc );
         $this->assertArrayHasKey( 'plus', $points_rc );
         $this->assertArrayHasKey( 'minus', $points_rc );
 
         // Test with point_rule = 'score'
-        $league->point_rule = 'score';
+        $league->set_point_rule( 'score' );
         $points_games = $this->service->calculate_points( $league, $team, [] );
         $this->assertIsArray( $points_games );
         $this->assertArrayHasKey( 'plus', $points_games );

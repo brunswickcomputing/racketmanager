@@ -77,14 +77,10 @@ class Competition_Notification_Service_Test extends TestCase {
         $event       = new Event();
         $event->set_competition( $competition );
 
-        $league = new class extends League {
-            public function __construct() {
-                $this->id = 10;
-                $this->title = 'Premier Division';
-            }
-        };
-
-        $league->event = $event;
+        $league = new League();
+        $league->set_id( 10 );
+        $league->set_title( 'Premier Division' );
+        $league->set_event( $event );
 
         $result = $service->contact_league_teams( $league, '2026', 'Hello Teams' );
 
@@ -126,14 +122,10 @@ class Competition_Notification_Service_Test extends TestCase {
         $event       = new Event();
         $event->set_competition( $competition );
 
-        $league = new class extends League {
-            public function __construct() {
-                $this->id = 10;
-                $this->title = 'Division 1';
-            }
-        };
-
-        $league->event = $event;
+        $league = new League();
+        $league->set_id( 10 );
+        $league->set_title( 'Division 1' );
+        $league->set_event( $event );
 
         $result = $service->notify_withdrawn_team( $league, 2, '2026' );
 

@@ -239,7 +239,7 @@ class League_Repository_Sql_Test extends TestCase {
 		$league1 = League_Test_Factory::create( 1, 'League 2026', 1, $event_with_season );
 		$league2 = League_Test_Factory::create( 2, 'League 2025', 2, $event_other_season );
 		$league3 = League_Test_Factory::create( 3, 'League Null Event' );
-		$league3->event = null;
+		$league3->set_event( null );
 
 		// Cache hydrated entities under leagues group.
 		wp_cache_set( 1, $league1, 'leagues' );

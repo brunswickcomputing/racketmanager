@@ -46,6 +46,7 @@ use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use Racketmanager\Tests\Helpers\Creates_Team_Match_Row_Presenter;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
+use Racketmanager\Tests\Helpers\League_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
@@ -205,10 +206,10 @@ class Matches_Team_List_Template_Test extends TestCase {
         global $racketmanager;
 
         $league = $this->createStub( League::class );
-        $league->title = 'Division 1';
+        League_Test_Factory::set_property( $league, 'title', 'Division 1' );
         $event = new Event();
         $event->set_competition( (object) array( 'type' => Competition_Type::LEAGUE ) );
-        $league->event = $event;
+        League_Test_Factory::set_property( $league, 'event', $event );
         $league_repository = $this->createMock( League_Repository_Interface::class );
         $league_repository->expects( $this->once() )->method( 'find_by_id' )->with( 5 )->willReturn( $league );
 
@@ -568,12 +569,11 @@ class Matches_Team_List_Template_Test extends TestCase {
             is_withdrawn: false
         );
 
-        $league = $this->createStub( League::class );
-        $league->id = 1;
-        $league->title = 'Division 1';
-        $league->name = 'Division 1';
-        $league->is_championship = false;
-        $league->current_season = [ 'name' => '2026' ];
+        $league = new League();
+        $league->set_id( 1 );
+        $league->set_name( 'Division 1' );
+        $league->set_is_championship( false );
+        $league->set_current_season( [ 'name' => '2026' ] );
 
         $event = new Event();
         $event->set_id( 5 );
@@ -585,7 +585,7 @@ class Matches_Team_List_Template_Test extends TestCase {
             'is_player_entry' => false,
         ];
         $event->set_competition( $comp );
-        $league->event = $event;
+        $league->set_event( $event );
         $league_query = $this->createStub( League_Query_Service::class );
         $league_query->method( 'get_team_dtls' )->willReturn( $team->info );
         $league_query->method( 'get_league_team' )->willReturn(
@@ -719,12 +719,11 @@ class Matches_Team_List_Template_Test extends TestCase {
             is_withdrawn: false
         );
 
-        $league = $this->createStub( League::class );
-        $league->id = 1;
-        $league->title = 'Division 1';
-        $league->name = 'Division 1';
-        $league->is_championship = false;
-        $league->current_season = [ 'name' => '2026' ];
+        $league = new League();
+        $league->set_id( 1 );
+        $league->set_name( 'Division 1' );
+        $league->set_is_championship( false );
+        $league->set_current_season( [ 'name' => '2026' ] );
 
         $event = new Event();
         $event->set_id( 5 );
@@ -736,7 +735,7 @@ class Matches_Team_List_Template_Test extends TestCase {
             'is_player_entry' => false,
         ];
         $event->set_competition( $comp );
-        $league->event = $event;
+        $league->set_event( $event );
         $league_query = $this->createStub( League_Query_Service::class );
         $league_query->method( 'get_team_dtls' )->willReturn( $team->info );
         $league_query->method( 'get_league_team' )->willReturn(
@@ -1007,9 +1006,9 @@ class Matches_Team_List_Template_Test extends TestCase {
             start_time: '19:00'
         );
         $league = $this->createStub( League::class );
-        $league->id = 1;
-        $league->title = 'Division 1';
-        $league->method( 'get_name' )->willReturn( 'Division 1' );
+        League_Test_Factory::set_property( $league, 'id', 1 );
+        League_Test_Factory::set_property( $league, 'title', 'Division 1' );
+        League_Test_Factory::set_property( $league, 'name', 'Division 1' );
         $event = new Event();
         $event->set_id( 2 );
         $event->set_name( 'Men Singles' );

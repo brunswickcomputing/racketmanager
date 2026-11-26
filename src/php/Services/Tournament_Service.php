@@ -740,7 +740,7 @@ class Tournament_Service implements Tournament_Service_Interface {
                 }
             }
 
-            $league->finals    = $active_finals;
+            $league->set_finals_list( $active_finals );
             $leagues[ $index ] = $league;
         }
 

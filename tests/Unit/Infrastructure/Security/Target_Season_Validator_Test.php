@@ -22,7 +22,7 @@ final class Target_Season_Validator_Test extends TestCase {
 
     public function test_league_with_event_id_only_loads_event_through_repository(): void {
         $league = League_Test_Factory::from_object( (object) [ 'id' => 50, 'title' => 'Division 1', 'event_id' => 30 ] );
-        $league->event = null;
+        League_Test_Factory::set_property( $league, 'event', null );
         $this->assertNull( $league->event );
 
         $repository = $this->createMock( Event_Repository_Interface::class );
@@ -37,7 +37,7 @@ final class Target_Season_Validator_Test extends TestCase {
 
     public function test_league_whose_event_is_not_found_yields_null(): void {
         $league = League_Test_Factory::from_object( (object) [ 'id' => 50, 'title' => 'Division 1', 'event_id' => 30 ] );
-        $league->event = null;
+        League_Test_Factory::set_property( $league, 'event', null );
 
         $repository = $this->createMock( Event_Repository_Interface::class );
         $repository->expects( $this->once() )->method( 'find_by_id' )->with( 30 )->willReturn( null );
@@ -47,15 +47,15 @@ final class Target_Season_Validator_Test extends TestCase {
 
     public function test_league_without_repository_does_not_look_up_the_event(): void {
         $league = League_Test_Factory::from_object( (object) [ 'id' => 50, 'title' => 'Division 1', 'event_id' => 30 ] );
-        $league->event = null;
+        League_Test_Factory::set_property( $league, 'event', null );
 
         $this->assertNull( Target_Season_Validator::validate( $league, 'league', '2026' ) );
         $this->assertNull( Target_Season_Validator::validate( $league, 'league', '2026', null ) );
     }
 
     public function test_league_with_loaded_event_does_not_touch_the_repository(): void {
-        $league        = League_Test_Factory::from_object( (object) [ 'id' => 50, 'title' => 'Division 1', 'event_id' => 30 ] );
-        $league->event = $this->event_with_seasons( [ '2026' => [ 'name' => '2026' ] ] );
+        $league = League_Test_Factory::from_object( (object) [ 'id' => 50, 'title' => 'Division 1', 'event_id' => 30 ] );
+        League_Test_Factory::set_property( $league, 'event', $this->event_with_seasons( [ '2026' => [ 'name' => '2026' ] ] ) );
 
         $repository = $this->createMock( Event_Repository_Interface::class );
         $repository->expects( $this->never() )->method( 'find_by_id' );
@@ -65,8 +65,8 @@ final class Target_Season_Validator_Test extends TestCase {
 
     public function test_league_without_event_id_does_not_touch_the_repository(): void {
         $league = League_Test_Factory::from_object( (object) [ 'id' => 50, 'title' => 'Division 1' ] );
-        $league->event    = null;
-        $league->event_id = 0;
+        League_Test_Factory::set_property( $league, 'event', null );
+        League_Test_Factory::set_property( $league, 'event_id', 0 );
 
         $repository = $this->createMock( Event_Repository_Interface::class );
         $repository->expects( $this->never() )->method( 'find_by_id' );

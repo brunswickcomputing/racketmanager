@@ -233,7 +233,11 @@ namespace Racketmanager {
     }
 
     if ( ! function_exists( 'Racketmanager\do_action' ) ) {
-        function do_action( string $hook_name, ...$arg ): void {}
+        function do_action( string $hook_name, ...$arg ): void {
+            if ( isset( $GLOBALS['wp_stubs_do_action_callback'] ) && is_callable( $GLOBALS['wp_stubs_do_action_callback'] ) ) {
+                ( $GLOBALS['wp_stubs_do_action_callback'] )( $hook_name, ...$arg );
+            }
+        }
     }
 
     if ( ! function_exists( 'Racketmanager\constitution_notification' ) ) {
@@ -386,7 +390,11 @@ namespace {
     }
 
     if ( ! function_exists( 'do_action' ) ) {
-        function do_action( string $hook_name, ...$arg ): void {}
+        function do_action( string $hook_name, ...$arg ): void {
+            if ( isset( $GLOBALS['wp_stubs_do_action_callback'] ) && is_callable( $GLOBALS['wp_stubs_do_action_callback'] ) ) {
+                ( $GLOBALS['wp_stubs_do_action_callback'] )( $hook_name, ...$arg );
+            }
+        }
     }
 
     if ( ! function_exists( 'home_url' ) ) {

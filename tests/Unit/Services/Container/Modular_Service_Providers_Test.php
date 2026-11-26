@@ -160,6 +160,31 @@ class Modular_Service_Providers_Test extends TestCase {
         $this->assertTrue( $container->has( 'promotion_relegation_service' ) );
         $this->assertTrue( $container->has( \Racketmanager\Services\Competition\Promotion_Relegation_Service::class ) );
         $this->assertTrue( $container->has( 'tournament_service' ) );
+        $this->assertTrue( $container->has( 'tournament_entry_repository' ) );
+        $this->assertTrue( $container->has( \Racketmanager\Repositories\Interfaces\Tournament_Entry_Repository_Interface::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Application\Tournament\Listeners\Tournament_Entry_Audit_Listener::class ) );
+        $this->assertTrue( $container->has( \Racketmanager\Application\Tournament\Listeners\Tournament_Entry_Withdrawn_Listener::class ) );
+    }
+
+    public function test_competition_service_provider_subscribes_tournament_entry_listeners_when_dispatcher_present(): void {
+        $dispatcher = $this->createMock( \Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface::class );
+        $subscribed = [];
+        $dispatcher->expects( $this->exactly( 2 ) )
+            ->method( 'subscribe' )
+            ->willReturnCallback(
+                function ( string $event_class ) use ( &$subscribed ): void {
+                    $subscribed[] = $event_class;
+                }
+            );
+
+        $container = new Simple_Container();
+        $container->set( \Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface::class, fn(): \Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface => $dispatcher );
+
+        $provider = new Competition_Service_Provider( $this->app );
+        $provider->register( $container );
+
+        $this->assertContains( \Racketmanager\Domain\Tournament\Events\Tournament_Entry_Submitted_Event::class, $subscribed );
+        $this->assertContains( \Racketmanager\Domain\Tournament\Events\Tournament_Entry_Withdrawn_Event::class, $subscribed );
     }
 
     public function test_admin_service_provider_registers_expected_keys(): void {

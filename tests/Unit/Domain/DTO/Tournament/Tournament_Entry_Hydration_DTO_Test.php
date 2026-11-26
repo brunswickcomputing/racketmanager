@@ -9,20 +9,21 @@ use Racketmanager\Domain\DTO\Tournament\Tournament_Entry_Hydration_DTO;
 final class Tournament_Entry_Hydration_DTO_Test extends TestCase {
 
     public function test_from_object_casts_string_db_row_to_ints(): void {
-        $dto = Tournament_Entry_Hydration_DTO::from_object( (object) [
+        $row = (object) [
             'id'            => '55',
             'tournament_id' => '12',
             'player_id'     => '34',
             'status'        => '1',
             'fee'           => '15.00',
             'club_id'       => '7',
-        ] );
+        ];
+        $dto = Tournament_Entry_Hydration_DTO::from_object( $row );
 
         $this->assertSame( 55, $dto->id );
         $this->assertSame( 12, $dto->tournament_id );
         $this->assertSame( 34, $dto->player_id );
         $this->assertSame( 1, $dto->status );
-        $this->assertSame( 15, $dto->fee );
+        $this->assertSame( '15.00', $dto->fee );
         $this->assertSame( 7, $dto->club_id );
     }
 
@@ -35,6 +36,17 @@ final class Tournament_Entry_Hydration_DTO_Test extends TestCase {
         $this->assertNull( $dto->status );
         $this->assertNull( $dto->fee );
         $this->assertNull( $dto->club_id );
+    }
+
+    public function test_decimal_fee_string_is_preserved_without_truncation(): void {
+        $dto = Tournament_Entry_Hydration_DTO::from_object( (object) [ 'fee' => '15.50' ] );
+        $this->assertSame( '15.50', $dto->fee );
+
+        $dto_float = Tournament_Entry_Hydration_DTO::from_object( (object) [ 'fee' => 15.50 ] );
+        $this->assertSame( 15.50, $dto_float->fee );
+
+        $dto_int = Tournament_Entry_Hydration_DTO::from_object( (object) [ 'fee' => 20 ] );
+        $this->assertSame( 20, $dto_int->fee );
     }
 
     public function test_unknown_keys_are_dropped(): void {

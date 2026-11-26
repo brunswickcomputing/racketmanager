@@ -35,6 +35,6 @@ final class Tournament_Entry_Factory {
      * @return Tournament_Entry
      */
     public static function from_array( array $data ): Tournament_Entry {
-        return self::create_from_dto( Tournament_Entry_Hydration_DTO::from_array( $data ) );
+        return self::from_object( (object) $data );
     }
 }

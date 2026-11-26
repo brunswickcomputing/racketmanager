@@ -12,19 +12,19 @@ readonly class Tournament_Entry_Hydration_DTO {
     /**
      * Construct hydration DTO.
      *
-     * @param int|null $id            Entry ID.
-     * @param int|null $tournament_id Tournament ID.
-     * @param int|null $player_id     Player ID.
-     * @param int|null $status        Entry status.
-     * @param int|null $fee           Entry fee.
-     * @param int|null $club_id       Club ID.
+     * @param int|null              $id            Entry ID.
+     * @param int|null              $tournament_id Tournament ID.
+     * @param int|null              $player_id     Player ID.
+     * @param int|null              $status        Entry status.
+     * @param string|int|float|null $fee           Entry fee raw value (string decimal, int, float, or null).
+     * @param int|null              $club_id       Club ID.
      */
     public function __construct(
         public ?int $id = null,
         public ?int $tournament_id = null,
         public ?int $player_id = null,
         public ?int $status = null,
-        public ?int $fee = null,
+        public string|int|float|null $fee = null,
         public ?int $club_id = null,
     ) {
     }
@@ -41,7 +41,7 @@ readonly class Tournament_Entry_Hydration_DTO {
             tournament_id: self::nullable_int( $data->tournament_id ?? null ),
             player_id: self::nullable_int( $data->player_id ?? null ),
             status: self::nullable_int( $data->status ?? null ),
-            fee: self::nullable_int( $data->fee ?? null ),
+            fee: self::nullable_fee( $data->fee ?? null ),
             club_id: self::nullable_int( $data->club_id ?? null ),
         );
     }
@@ -67,5 +67,23 @@ readonly class Tournament_Entry_Hydration_DTO {
             return null;
         }
         return (int) $value;
+    }
+
+    /**
+     * Convert mixed fee value to nullable string, int, or float.
+     *
+     * Preserves raw decimal values like '15.50' or floats/ints without truncation.
+     *
+     * @param mixed $value Input value.
+     * @return string|int|float|null
+     */
+    private static function nullable_fee( mixed $value ): string|int|float|null {
+        if ( null === $value || '' === $value ) {
+            return null;
+        }
+        if ( is_int( $value ) || is_float( $value ) || is_string( $value ) ) {
+            return $value;
+        }
+        return (string) $value;
     }
 }

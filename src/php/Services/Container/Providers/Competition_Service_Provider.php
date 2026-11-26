@@ -66,6 +66,10 @@ use Racketmanager\Application\Tournament\Commands\Generate_Tournament_Bracket_Ha
 use Racketmanager\Application\Tournament\Commands\Submit_Tournament_Entry_Handler;
 use Racketmanager\Application\Tournament\Commands\Submit_Tournament_Partner_Handler;
 use Racketmanager\Application\Tournament\Commands\Withdraw_Tournament_Entry_Handler;
+use Racketmanager\Application\Tournament\Listeners\Tournament_Entry_Audit_Listener;
+use Racketmanager\Application\Tournament\Listeners\Tournament_Entry_Withdrawn_Listener;
+use Racketmanager\Domain\Tournament\Events\Tournament_Entry_Submitted_Event;
+use Racketmanager\Domain\Tournament\Events\Tournament_Entry_Withdrawn_Event;
 use Racketmanager\Application\Tournament\Ports\Tournament_Service_Interface;
 use Racketmanager\Application\Tournament\Queries\Get_Latest_Tournament_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Order_Of_Play_Handler;
@@ -426,11 +430,43 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
                 $c->get( Mailer_Interface::class ),
                 $c->get( Option_Service::class ),
                 $c->get( Player_Repository_Interface::class ),
-                $c->get( Event_Repository_Interface::class )
+                $c->get( Event_Repository_Interface::class ),
+                $c->has( Domain_Event_Dispatcher_Interface::class ) ? $c->get( Domain_Event_Dispatcher_Interface::class ) : null
             )
         );
         $container->alias( Competition_Entry_Service::class, Competition_Entry_Service_Interface::class );
         $container->alias( 'competition_entry_service', Competition_Entry_Service_Interface::class );
+
+        $container->set(
+            Tournament_Entry_Audit_Listener::class,
+            fn(): Tournament_Entry_Audit_Listener => new Tournament_Entry_Audit_Listener()
+        );
+
+        $container->set(
+            Tournament_Entry_Withdrawn_Listener::class,
+            fn(): Tournament_Entry_Withdrawn_Listener => new Tournament_Entry_Withdrawn_Listener()
+        );
+
+        if ( $container->has( Domain_Event_Dispatcher_Interface::class ) ) {
+            /** @var Domain_Event_Dispatcher_Interface $dispatcher */
+            $dispatcher = $container->get( Domain_Event_Dispatcher_Interface::class );
+            $dispatcher->subscribe(
+                Tournament_Entry_Submitted_Event::class,
+                function ( Tournament_Entry_Submitted_Event $event ) use ( $container ): void {
+                    /** @var Tournament_Entry_Audit_Listener $listener */
+                    $listener = $container->get( Tournament_Entry_Audit_Listener::class );
+                    $listener( $event );
+                }
+            );
+            $dispatcher->subscribe(
+                Tournament_Entry_Withdrawn_Event::class,
+                function ( Tournament_Entry_Withdrawn_Event $event ) use ( $container ): void {
+                    /** @var Tournament_Entry_Withdrawn_Listener $listener */
+                    $listener = $container->get( Tournament_Entry_Withdrawn_Listener::class );
+                    $listener( $event );
+                }
+            );
+        }
 
         // Competition Queries.
         $container->set(

@@ -24,12 +24,24 @@ class Tournament_Entry_Repository implements Tournament_Entry_Repository_Interfa
     private wpdb $wpdb;
     private string $table_name;
 
+    /**
+     * Initialises the tournament entries database handler.
+     *
+     * @return void
+     */
     public function __construct() {
         global $wpdb;
         $this->wpdb       = $wpdb;
         $this->table_name = $this->wpdb->prefix . 'racketmanager_tournament_entries';
     }
 
+    /**
+     * Finds a tournament entry by its ID.
+     *
+     * @param int|string|null $id Tournament entry ID.
+     *
+     * @return Tournament_Entry|null Tournament entry instance if found, otherwise null.
+     */
     public function find_by_id( int|string|null $id ): ?Tournament_Entry {
         if ( ! $id ) {
             return null;
@@ -54,9 +66,16 @@ class Tournament_Entry_Repository implements Tournament_Entry_Repository_Interfa
         }
 
         return $tournament_entry;
-
     }
 
+    /**
+     * Finds a tournament entry by tournament and player identifiers.
+     *
+     * @param int $tournament_id Tournament identifier.
+     * @param int $player_id Player identifier.
+     *
+     * @return Tournament_Entry|null Tournament entry if found, otherwise null.
+     */
     public function find_by_tournament_and_player( int $tournament_id, int $player_id ): ?Tournament_Entry {
         $tournament_entry_key = $tournament_id . '_' . $player_id;
         $tournament_entry     = wp_cache_get( $tournament_entry_key, 'tournament_entries' );
@@ -80,23 +99,35 @@ class Tournament_Entry_Repository implements Tournament_Entry_Repository_Interfa
         }
 
         return $tournament_entry;
-
     }
 
+    /**
+     * Saves a tournament entry entity to the database.
+     *
+     * Creates a new record when the entity has no ID, or updates the existing
+     * record when an ID is present. The entity cache is updated after a successful
+     * insert or before an update.
+     *
+     * @param object $entity Tournament entry entity to save.
+     *
+     * @return int|bool Inserted record ID on creation, number of affected rows on update, or false on failure.
+     */
     public function save( object $entity ): int|bool {
         /** @var Tournament_Entry $entity */
+        $fee_value = $entity->get_fee_money()?->get_amount_string();
+
         $data        = array(
             'tournament_id' => $entity->get_tournament_id(),
             'player_id'     => $entity->get_player_id(),
             'status'        => $entity->get_status(),
-            'fee'           => $entity->get_fee(),
+            'fee'           => $fee_value,
             'club_id'       => $entity->get_club_id(),
         );
         $data_format = array(
             '%d',
             '%d',
             '%d',
-            '%d',
+            null !== $fee_value ? '%s' : '%d',
             '%d',
         );
         if ( empty( $entity->get_id() ) ) {
@@ -118,22 +149,37 @@ class Tournament_Entry_Repository implements Tournament_Entry_Repository_Interfa
 
             return $this->wpdb->update(
                 $this->table_name,
-                $data, // Data to update
+                $data, // Data to update.
                 array(
-                    'id' => $entity->get_id()
-                ), // Where clause
+                    'id' => $entity->get_id(),
+                ), // Where clause.
                 $data_format,
                 array(
-                    '%d'
-                ) // Where format
+                    '%d',
+                ) // Where format.
             );
         }
     }
 
+    /**
+     * Deletes a record from the database by its identifier.
+     *
+     * @param int $id Record identifier to delete.
+     *
+     * @return bool True if a record was deleted, false otherwise.
+     */
     public function delete( int $id ): bool {
         return (bool) $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) );
     }
 
+    /**
+     * Finds tournament entries for a tournament, optionally filtered by entry or payment status.
+     *
+     * @param int         $tournament_id Tournament identifier.
+     * @param string|null $status Optional status filter. Accepts pending, unpaid, confirmed, or withdrawn.
+     *
+     * @return array List of matching tournament entry records.
+     */
     public function find_by_tournament( int $tournament_id, ?string $status = null ): array {
         $players_table            = $this->wpdb->prefix . 'users';
         $clubs_table              = $this->wpdb->prefix . 'racketmanager_clubs';
@@ -197,5 +243,4 @@ class Tournament_Entry_Repository implements Tournament_Entry_Repository_Interfa
 
         return $this->wpdb->get_results( $query );
     }
-
 }

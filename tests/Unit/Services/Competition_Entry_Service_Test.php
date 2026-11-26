@@ -23,7 +23,12 @@ use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Entry_R
 use Racketmanager\Domain\DTO\Tournament\Tournament_Entry_Response_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Invoice_Details_DTO;
 use Racketmanager\Infrastructure\Wordpress\Request\Tournament\Tournament_Partner_Request_DTO;
+use Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface;
+use Racketmanager\Domain\Tournament\Events\Tournament_Entry_Submitted_Event;
+use Racketmanager\Domain\Tournament\Events\Tournament_Entry_Withdrawn_Event;
+use Racketmanager\Domain\Value_Objects\Money;
 use Racketmanager\Domain\Tournament\Tournament_Entry;
+use Racketmanager\Infrastructure\Events\Simple_Domain_Event_Dispatcher;
 use Racketmanager\Application\Mail\Mailer_Interface;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
@@ -85,6 +90,7 @@ class Competition_Entry_Service_Test extends TestCase {
     private RacketManager $plugin;
     private ?Club $club_to_return;
     private ?Competition $competition_to_return;
+    private ?Domain_Event_Dispatcher_Interface $event_dispatcher = null;
 
     protected function setUp(): void {
         parent::setUp();
@@ -175,7 +181,8 @@ class Competition_Entry_Service_Test extends TestCase {
             mailer: $this->createStub( Mailer_Interface::class ),
             option_service: $this->option_service,
             player_repository: $this->player_repository,
-            event_repository: $this->event_repository
+            event_repository: $this->event_repository,
+            event_dispatcher: $this->event_dispatcher
         );
     }
 
@@ -3907,5 +3914,636 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->assertStringContainsString( 'https://example.com', $body );
         $this->assertStringContainsString( 'Test Tennis League', $body );
         $this->assertStringContainsString( 'https://example.com/entry-form/summer-cup/2026/leigh/', $body );
+    }
+
+    public function test_tournament_entry_submission_dispatches_submitted_event(): void {
+        $GLOBALS['wp_stubs_get_current_user_id'] = 10;
+        $dispatcher = new Simple_Domain_Event_Dispatcher();
+        $this->event_dispatcher = $dispatcher;
+        $this->service = $this->create_competition_entry_service();
+
+        /** @var list<Tournament_Entry_Submitted_Event> $dispatched_events */
+        $dispatched_events = [];
+        $dispatcher->subscribe(
+            Tournament_Entry_Submitted_Event::class,
+            function ( Tournament_Entry_Submitted_Event $event ) use ( &$dispatched_events ): void {
+                $dispatched_events[] = $event;
+            }
+        );
+
+        $tournament = $this->create_tournament( 1, '2026', '2026-08-30' );
+        $event = $this->create_tournament_event( 10, 'MS' );
+        $this->tournament_service->method( 'get_events_for_tournament' )->willReturn( [ $event ] );
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
+
+        $player = $this->create_tournament_player( 10, 'M', 1990 );
+        $this->player_service->method( 'get_player' )->willReturn( $player );
+        $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
+        $this->team_repository->method( 'find_team_by_players' )->willReturn( 500 );
+
+        $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 15.50, 'competition' => 0.0 ] );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 0.0 );
+
+        $this->tournament_entry_repository->method( 'find_by_tournament_and_player' )->willReturn( null );
+        $this->tournament_entry_repository->expects( $this->once() )
+            ->method( 'save' )
+            ->willReturnCallback(
+                function ( Tournament_Entry $entry ): int {
+                    $entry->set_id( 77 );
+                    return 77;
+                }
+            );
+
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'         => '10',
+                'clubId'           => '1',
+                'tournamentEvents' => '10',
+                'event'            => [ '10' ],
+            ]
+        );
+
+        $result = $this->service->request_tournament_entry( $dto );
+
+        $this->assertInstanceOf( Tournament_Entry_Response_DTO::class, $result );
+        $this->assertCount( 1, $dispatched_events );
+        $event = $dispatched_events[0];
+        $this->assertSame( 77, $event->entry_id );
+        $this->assertSame( 1, $event->tournament_id );
+        $this->assertSame( 10, $event->player_id );
+        $this->assertSame( 1, $event->club_id );
+        $this->assertSame( 1550, $event->fee_cents );
+        $this->assertSame( 'GBP', $event->currency->value );
+        $this->assertInstanceOf( Money::class, $event->fee );
+        $this->assertSame( 1550, $event->fee->get_cents() );
+    }
+
+    public function test_tournament_entry_submission_does_not_dispatch_if_save_fails(): void {
+        $GLOBALS['wp_stubs_get_current_user_id'] = 10;
+        $dispatcher = new Simple_Domain_Event_Dispatcher();
+        $this->event_dispatcher = $dispatcher;
+        $this->service = $this->create_competition_entry_service();
+
+        $dispatched_events = [];
+        $dispatcher->subscribe(
+            Tournament_Entry_Submitted_Event::class,
+            function ( Tournament_Entry_Submitted_Event $event ) use ( &$dispatched_events ): void {
+                $dispatched_events[] = $event;
+            }
+        );
+
+        $tournament = $this->create_tournament( 1, '2026', '2026-08-30' );
+        $event = $this->create_tournament_event( 10, 'MS' );
+        $this->tournament_service->method( 'get_events_for_tournament' )->willReturn( [ $event ] );
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
+
+        $player = $this->create_tournament_player( 10, 'M', 1990 );
+        $this->player_service->method( 'get_player' )->willReturn( $player );
+        $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
+        $this->team_repository->method( 'find_team_by_players' )->willReturn( 500 );
+
+        $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 0.0 ] );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 10.0 );
+
+        $this->tournament_entry_repository->method( 'find_by_tournament_and_player' )->willReturn( null );
+        $this->tournament_entry_repository->expects( $this->once() )
+            ->method( 'save' )
+            ->willReturn( false );
+
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'         => '10',
+                'tournamentEvents' => '10',
+                'event'            => [ '10' ],
+            ]
+        );
+
+        $result = $this->service->request_tournament_entry( $dto );
+
+        $this->assertInstanceOf( Tournament_Entry_Response_DTO::class, $result );
+        $this->assertCount( 0, $dispatched_events );
+    }
+
+    public function test_tournament_entry_update_of_existing_active_entry_does_not_dispatch_duplicate_event(): void {
+        $GLOBALS['wp_stubs_get_current_user_id'] = 10;
+        $dispatcher = new Simple_Domain_Event_Dispatcher();
+        $this->event_dispatcher = $dispatcher;
+        $this->service = $this->create_competition_entry_service();
+
+        $dispatched_events = [];
+        $dispatcher->subscribe(
+            Tournament_Entry_Submitted_Event::class,
+            function ( Tournament_Entry_Submitted_Event $event ) use ( &$dispatched_events ): void {
+                $dispatched_events[] = $event;
+            }
+        );
+
+        $tournament = $this->create_tournament( 1, '2026', '2026-08-30' );
+        $event = $this->create_tournament_event( 10, 'MS' );
+        $this->tournament_service->method( 'get_events_for_tournament' )->willReturn( [ $event ] );
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
+
+        $player = $this->create_tournament_player( 10, 'M', 1990 );
+        $this->player_service->method( 'get_player' )->willReturn( $player );
+        $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
+        $this->team_repository->method( 'find_team_by_players' )->willReturn( 500 );
+
+        $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 0.0 ] );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 10.0 );
+
+        // Existing entry rehydrated from storage (already confirmed active status 2)
+        $existing_entry = Tournament_Entry::from_array(
+            [
+                'id'            => 88,
+                'tournament_id' => 1,
+                'player_id'     => 10,
+                'status'        => 2,
+                'club_id'       => 1,
+                'fee'           => '10.00',
+            ]
+        );
+
+        $this->tournament_entry_repository->method( 'find_by_tournament_and_player' )->willReturn( $existing_entry );
+        $this->tournament_entry_repository->expects( $this->once() )
+            ->method( 'save' )
+            ->willReturn( 88 );
+
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'         => '10',
+                'clubId'           => '1',
+                'tournamentEvents' => '10',
+                'event'            => [ '10' ],
+            ]
+        );
+
+        $result = $this->service->request_tournament_entry( $dto );
+
+        $this->assertInstanceOf( Tournament_Entry_Response_DTO::class, $result );
+        $this->assertCount( 0, $dispatched_events, 'Updating an already active rehydrated entry must not emit duplicate submitted events' );
+    }
+
+    public function test_tournament_entry_reentry_without_club_clears_stale_club_on_active_entry(): void {
+        $dispatcher = new Simple_Domain_Event_Dispatcher();
+        $this->event_dispatcher = $dispatcher;
+        $this->service = $this->create_competition_entry_service();
+
+        $dispatched_events = [];
+        $dispatcher->subscribe(
+            Tournament_Entry_Submitted_Event::class,
+            function ( Tournament_Entry_Submitted_Event $event ) use ( &$dispatched_events ): void {
+                $dispatched_events[] = $event;
+            }
+        );
+
+        $existing_entry = Tournament_Entry::from_array(
+            [
+                'id'            => 88,
+                'tournament_id' => 1,
+                'player_id'     => 10,
+                'status'        => Tournament_Entry::STATUS_CONFIRMED,
+                'club_id'       => 7,
+                'fee'           => '10.00',
+            ]
+        );
+
+        $this->tournament_entry_repository->method( 'find_by_tournament_and_player' )->willReturn( $existing_entry );
+        $this->tournament_entry_repository->expects( $this->once() )
+            ->method( 'save' )
+            ->with( $existing_entry )
+            ->willReturn( 88 );
+
+        $this->invoke_set_tournament_entry( 1, 10, null, 10.0 );
+
+        $this->assertNull( $existing_entry->get_club_id(), 'Re-entering without a club must clear the stale club id' );
+        $this->assertSame( Tournament_Entry::STATUS_PENDING, $existing_entry->get_status() );
+        $this->assertCount( 0, $dispatched_events, 'Updating an already active entry must not emit a duplicate submitted event' );
+    }
+
+    private function invoke_set_tournament_entry( int $tournament_id, int $player_id, ?int $club_id, int|float $payment_required ): void {
+        $method = new \ReflectionMethod( Competition_Entry_Service::class, 'set_tournament_entry' );
+        $method->invoke( $this->service, $tournament_id, $player_id, $club_id, $payment_required );
+    }
+
+    public function test_tournament_entry_reentry_without_club_clears_stale_club_on_withdrawn_entry(): void {
+        $dispatcher = new Simple_Domain_Event_Dispatcher();
+        $this->event_dispatcher = $dispatcher;
+        $this->service = $this->create_competition_entry_service();
+
+        $dispatched_events = [];
+        $dispatcher->subscribe(
+            Tournament_Entry_Submitted_Event::class,
+            function ( Tournament_Entry_Submitted_Event $event ) use ( &$dispatched_events ): void {
+                $dispatched_events[] = $event;
+            }
+        );
+
+        $withdrawn_entry = Tournament_Entry::from_array(
+            [
+                'id'            => 123,
+                'tournament_id' => 1,
+                'player_id'     => 10,
+                'status'        => Tournament_Entry::STATUS_WITHDRAWN,
+                'club_id'       => 7,
+                'fee'           => '10.00',
+            ]
+        );
+
+        $this->tournament_entry_repository->method( 'find_by_tournament_and_player' )->willReturn( $withdrawn_entry );
+        $this->tournament_entry_repository->expects( $this->once() )
+            ->method( 'save' )
+            ->with( $withdrawn_entry )
+            ->willReturn( 123 );
+
+        $this->invoke_set_tournament_entry( 1, 10, null, 10.0 );
+
+        $this->assertNull( $withdrawn_entry->get_club_id(), 'Re-entering a withdrawn entry without a club must clear the stale club id' );
+        $this->assertSame( Tournament_Entry::STATUS_PENDING, $withdrawn_entry->get_status() );
+        $this->assertCount( 1, $dispatched_events, 'Re-submitting a withdrawn entry must emit a Tournament_Entry_Submitted_Event' );
+        $this->assertNull( $dispatched_events[0]->club_id );
+    }
+
+    public function test_confirm_tournament_withdrawal_dispatches_withdrawn_event(): void {
+        $dispatcher = new Simple_Domain_Event_Dispatcher();
+        $this->event_dispatcher = $dispatcher;
+        $this->service = $this->create_competition_entry_service();
+
+        /** @var list<Tournament_Entry_Withdrawn_Event> $dispatched_events */
+        $dispatched_events = [];
+        $dispatcher->subscribe(
+            Tournament_Entry_Withdrawn_Event::class,
+            function ( Tournament_Entry_Withdrawn_Event $event ) use ( &$dispatched_events ): void {
+                $dispatched_events[] = $event;
+            }
+        );
+
+        $tournament = $this->create_tournament( 1, '2026', '2026-08-30' );
+        $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
+
+        $player = $this->create_tournament_player( 50, 'M', 1990, 'withdraw@test.local' );
+        $this->player_service->method( 'get_player' )->willReturn( $player );
+
+        $existing_entry = Tournament_Entry::from_array(
+            [
+                'id'            => 99,
+                'tournament_id' => 1,
+                'player_id'     => 50,
+                'status'        => 2,
+                'club_id'       => 1,
+                'fee'           => '15.00',
+            ]
+        );
+        $this->tournament_entry_repository->method( 'find_by_tournament_and_player' )->willReturn( $existing_entry );
+        $this->tournament_entry_repository->expects( $this->once() )
+            ->method( 'save' )
+            ->with( $existing_entry )
+            ->willReturn( 99 );
+
+        $event = $this->create_tournament_event( 10, 'MS' );
+        $this->tournament_service->method( 'get_events_for_tournament' )->willReturn( [ $event ] );
+
+        $entry_to_withdraw = $this->createMock( League_Team::class );
+        $entry_to_withdraw->expects( $this->once() )->method( 'set_entered_state' )->with( Team_Profile::WITHDRAWN );
+        $this->league_team_repository->expects( $this->once() )->method( 'save' )->with( $entry_to_withdraw );
+        $this->league_team_repository->method( 'find_player_teams_by_player_for_events' )->willReturn( [ $entry_to_withdraw ] );
+
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 0.0 );
+
+        $shortcodes = $this->createStub( \Racketmanager\Public\Shortcodes::class );
+        $shortcodes->method( 'load_template' )->willReturn( 'withdrawal-body' );
+        $this->plugin->shortcodes = $shortcodes;
+
+        $refund = $this->service->confirm_tournament_withdrawal( 1, 50 );
+
+        $this->assertSame( 0, $refund );
+        $this->assertSame( Tournament_Entry::STATUS_WITHDRAWN, $existing_entry->get_status() );
+        $this->assertCount( 1, $dispatched_events );
+        $withdrawn_event = $dispatched_events[0];
+        $this->assertSame( 99, $withdrawn_event->entry_id );
+        $this->assertSame( 1, $withdrawn_event->tournament_id );
+        $this->assertSame( 50, $withdrawn_event->player_id );
+    }
+
+    public function test_tournament_entry_listeners_trigger_expected_wordpress_actions(): void {
+        $audit_listener = new \Racketmanager\Application\Tournament\Listeners\Tournament_Entry_Audit_Listener();
+        $withdrawn_listener = new \Racketmanager\Application\Tournament\Listeners\Tournament_Entry_Withdrawn_Listener();
+
+        $action_records = [];
+        $GLOBALS['wp_stubs_do_action_callback'] = function ( string $tag, ...$args ) use ( &$action_records ): void {
+            $action_records[ $tag ][] = $args;
+        };
+
+        $submitted_event = new Tournament_Entry_Submitted_Event(
+            entry_id: 101,
+            tournament_id: 2,
+            player_id: 15,
+            club_id: 3,
+            fee: Money::from_cents( 2500 )
+        );
+        $audit_listener( $submitted_event );
+
+        $this->assertArrayHasKey( 'racketmanager_tournament_entry_submitted', $action_records );
+        $this->assertSame(
+            [ [ 101, 2, 15, 3, 2500 ] ],
+            $action_records['racketmanager_tournament_entry_submitted']
+        );
+
+        $withdrawn_event = new Tournament_Entry_Withdrawn_Event(
+            entry_id: 101,
+            tournament_id: 2,
+            player_id: 15,
+            reason: 'Injury'
+        );
+        $withdrawn_listener( $withdrawn_event );
+
+        $this->assertArrayHasKey( 'racketmanager_tournament_entry_withdrawn', $action_records );
+        $this->assertSame(
+            [ [ 101, 2, 15, 'Injury' ] ],
+            $action_records['racketmanager_tournament_entry_withdrawn']
+        );
+
+        unset( $GLOBALS['wp_stubs_do_action_callback'] );
+    }
+
+    public function test_tournament_entry_reentry_of_withdrawn_entry_dispatches_submitted_event(): void {
+        $GLOBALS['wp_stubs_get_current_user_id'] = 10;
+        $dispatcher = new Simple_Domain_Event_Dispatcher();
+        $this->event_dispatcher = $dispatcher;
+        $this->service = $this->create_competition_entry_service();
+
+        $dispatched_events = [];
+        $dispatcher->subscribe(
+            Tournament_Entry_Submitted_Event::class,
+            function ( Tournament_Entry_Submitted_Event $event ) use ( &$dispatched_events ): void {
+                $dispatched_events[] = $event;
+            }
+        );
+
+        $tournament = $this->create_tournament( 1, '2026', '2026-08-30' );
+        $event = $this->create_tournament_event( 10, 'MS' );
+        $this->tournament_service->method( 'get_events_for_tournament' )->willReturn( [ $event ] );
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
+
+        $player = $this->create_tournament_player( 10, 'M', 1990 );
+        $this->player_service->method( 'get_player' )->willReturn( $player );
+        $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
+        $this->team_repository->method( 'find_team_by_players' )->willReturn( 500 );
+
+        $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 12.0, 'competition' => 0.0 ] );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 0.0 );
+
+        // Existing entry that was previously withdrawn (status 3)
+        $withdrawn_entry = Tournament_Entry::from_array(
+            [
+                'id'            => 123,
+                'tournament_id' => 1,
+                'player_id'     => 10,
+                'status'        => Tournament_Entry::STATUS_WITHDRAWN,
+                'club_id'       => null,
+                'fee'           => '10.00',
+            ]
+        );
+
+        $this->tournament_entry_repository->method( 'find_by_tournament_and_player' )->willReturn( $withdrawn_entry );
+        $this->tournament_entry_repository->expects( $this->once() )
+            ->method( 'save' )
+            ->with( $withdrawn_entry )
+            ->willReturn( 0 ); // update returns 0 rows changed or unchanged
+
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'         => '10',
+                'clubId'           => '1',
+                'tournamentEvents' => '10',
+                'event'            => [ '10' ],
+            ]
+        );
+
+        $result = $this->service->request_tournament_entry( $dto );
+
+        $this->assertInstanceOf( Tournament_Entry_Response_DTO::class, $result );
+        $this->assertSame( Tournament_Entry::STATUS_CONFIRMED, $withdrawn_entry->get_status() );
+        $this->assertCount( 1, $dispatched_events, 'Re-submitting a withdrawn entry must emit a Tournament_Entry_Submitted_Event' );
+        $event = $dispatched_events[0];
+        $this->assertSame( 123, $event->entry_id );
+        $this->assertSame( 1, $event->tournament_id );
+        $this->assertSame( 10, $event->player_id );
+        $this->assertSame( 1, $event->club_id );
+        $this->assertSame( 1200, $event->fee_cents );
+    }
+
+    public function test_confirm_tournament_withdrawal_accepts_save_returning_zero(): void {
+        $dispatcher = new Simple_Domain_Event_Dispatcher();
+        $this->event_dispatcher = $dispatcher;
+        $this->service = $this->create_competition_entry_service();
+
+        /** @var list<Tournament_Entry_Withdrawn_Event> $dispatched_events */
+        $dispatched_events = [];
+        $dispatcher->subscribe(
+            Tournament_Entry_Withdrawn_Event::class,
+            function ( Tournament_Entry_Withdrawn_Event $event ) use ( &$dispatched_events ): void {
+                $dispatched_events[] = $event;
+            }
+        );
+
+        $tournament = $this->create_tournament( 1, '2026', '2026-08-30' );
+        $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
+
+        $player = $this->create_tournament_player( 50, 'M', 1990, 'withdraw0@test.local' );
+        $this->player_service->method( 'get_player' )->willReturn( $player );
+
+        $existing_entry = Tournament_Entry::from_array(
+            [
+                'id'            => 99,
+                'tournament_id' => 1,
+                'player_id'     => 50,
+                'status'        => 2,
+                'club_id'       => 1,
+                'fee'           => '15.00',
+            ]
+        );
+        $this->tournament_entry_repository->method( 'find_by_tournament_and_player' )->willReturn( $existing_entry );
+        $this->tournament_entry_repository->expects( $this->once() )
+            ->method( 'save' )
+            ->with( $existing_entry )
+            ->willReturn( 0 ); // wpdb->update returns 0 when no rows were changed
+
+        $event = $this->create_tournament_event( 10, 'MS' );
+        $this->tournament_service->method( 'get_events_for_tournament' )->willReturn( [ $event ] );
+
+        $entry_to_withdraw = $this->createMock( League_Team::class );
+        $this->league_team_repository->method( 'find_player_teams_by_player_for_events' )->willReturn( [ $entry_to_withdraw ] );
+
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 0.0 );
+        $shortcodes = $this->createStub( \Racketmanager\Public\Shortcodes::class );
+        $this->plugin->shortcodes = $shortcodes;
+
+        $refund = $this->service->confirm_tournament_withdrawal( 1, 50 );
+
+        $this->assertSame( 0, $refund );
+        $this->assertSame( Tournament_Entry::STATUS_WITHDRAWN, $existing_entry->get_status() );
+        $this->assertCount( 1, $dispatched_events, 'A save returning 0 (0 rows changed) must still be treated as successful and dispatch the event' );
+    }
+
+    public function test_confirm_tournament_withdrawal_does_not_dispatch_when_save_returns_false(): void {
+        $dispatcher = new Simple_Domain_Event_Dispatcher();
+        $this->event_dispatcher = $dispatcher;
+        $this->service = $this->create_competition_entry_service();
+
+        $dispatched_events = [];
+        $dispatcher->subscribe(
+            Tournament_Entry_Withdrawn_Event::class,
+            function ( Tournament_Entry_Withdrawn_Event $event ) use ( &$dispatched_events ): void {
+                $dispatched_events[] = $event;
+            }
+        );
+
+        $tournament = $this->create_tournament( 1, '2026', '2026-08-30' );
+        $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
+
+        $player = $this->create_tournament_player( 50, 'M', 1990, 'withdraw_fail@test.local' );
+        $this->player_service->method( 'get_player' )->willReturn( $player );
+
+        $existing_entry = Tournament_Entry::from_array(
+            [
+                'id'            => 99,
+                'tournament_id' => 1,
+                'player_id'     => 50,
+                'status'        => 2,
+                'club_id'       => 1,
+                'fee'           => '15.00',
+            ]
+        );
+        $this->tournament_entry_repository->method( 'find_by_tournament_and_player' )->willReturn( $existing_entry );
+        $this->tournament_entry_repository->expects( $this->once() )
+            ->method( 'save' )
+            ->with( $existing_entry )
+            ->willReturn( false );
+
+        $event = $this->create_tournament_event( 10, 'MS' );
+        $this->tournament_service->method( 'get_events_for_tournament' )->willReturn( [ $event ] );
+
+        $entry_to_withdraw = $this->createMock( League_Team::class );
+        $this->league_team_repository->method( 'find_player_teams_by_player_for_events' )->willReturn( [ $entry_to_withdraw ] );
+
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 0.0 );
+        $shortcodes = $this->createStub( \Racketmanager\Public\Shortcodes::class );
+        $this->plugin->shortcodes = $shortcodes;
+
+        $refund = $this->service->confirm_tournament_withdrawal( 1, 50 );
+
+        $this->assertSame( 0, $refund );
+        $this->assertCount( 0, $dispatched_events, 'Failed repository save (false) must not dispatch domain event' );
+    }
+
+    public function test_confirm_tournament_withdrawal_on_already_withdrawn_entry_is_idempotent(): void {
+        $dispatcher = new Simple_Domain_Event_Dispatcher();
+        $this->event_dispatcher = $dispatcher;
+        $this->service = $this->create_competition_entry_service();
+
+        $dispatched_events = [];
+        $dispatcher->subscribe(
+            Tournament_Entry_Withdrawn_Event::class,
+            function ( Tournament_Entry_Withdrawn_Event $event ) use ( &$dispatched_events ): void {
+                $dispatched_events[] = $event;
+            }
+        );
+
+        $tournament = $this->create_tournament( 1, '2026', '2026-08-30' );
+        $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
+
+        $player = $this->create_tournament_player( 50, 'M', 1990, 'withdraw_repeat@test.local' );
+        $this->player_service->method( 'get_player' )->willReturn( $player );
+
+        $already_withdrawn_entry = Tournament_Entry::from_array(
+            [
+                'id'            => 99,
+                'tournament_id' => 1,
+                'player_id'     => 50,
+                'status'        => Tournament_Entry::STATUS_WITHDRAWN,
+                'club_id'       => 1,
+                'fee'           => '15.00',
+            ]
+        );
+        $this->tournament_entry_repository->method( 'find_by_tournament_and_player' )->willReturn( $already_withdrawn_entry );
+        $this->tournament_entry_repository->expects( $this->once() )
+            ->method( 'save' )
+            ->with( $already_withdrawn_entry )
+            ->willReturn( 0 );
+
+        $event = $this->create_tournament_event( 10, 'MS' );
+        $this->tournament_service->method( 'get_events_for_tournament' )->willReturn( [ $event ] );
+
+        $entry_to_withdraw = $this->createMock( League_Team::class );
+        $this->league_team_repository->method( 'find_player_teams_by_player_for_events' )->willReturn( [ $entry_to_withdraw ] );
+
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 0.0 );
+        $shortcodes = $this->createStub( \Racketmanager\Public\Shortcodes::class );
+        $this->plugin->shortcodes = $shortcodes;
+
+        $refund = $this->service->confirm_tournament_withdrawal( 1, 50 );
+
+        $this->assertSame( 0, $refund );
+        $this->assertCount( 0, $dispatched_events, 'Withdrawing an already withdrawn entry must not emit duplicate withdrawn event' );
+    }
+
+    public function test_service_without_dispatcher_saves_entry_and_withdrawal_without_errors(): void {
+        $GLOBALS['wp_stubs_get_current_user_id'] = 10;
+        $this->event_dispatcher = null;
+        $service = $this->create_competition_entry_service();
+
+        $tournament = $this->create_tournament( 1, '2026', '2026-08-30' );
+        $this->tournament_service->method( 'get_tournament' )->willReturn( $tournament );
+        $event = $this->create_tournament_event( 10, 'MS' );
+        $this->tournament_service->method( 'get_events_for_tournament' )->willReturn( [ $event ] );
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
+
+        $player = $this->create_tournament_player( 10, 'M', 1990, 'p10@test.local' );
+        $this->player_service->method( 'get_player' )->willReturn( $player );
+        $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
+        $this->team_repository->method( 'find_team_by_players' )->willReturn( 500 );
+
+        $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 15.0, 'competition' => 0.0 ] );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 0.0 );
+
+        $this->tournament_entry_repository->method( 'find_by_tournament_and_player' )
+            ->willReturnCallback(
+                function () use ( &$entry ) {
+                    return $entry ?? null;
+                }
+            );
+        $this->tournament_entry_repository->expects( $this->exactly( 2 ) )
+            ->method( 'save' )
+            ->willReturn( 150 );
+
+        $dto = $this->create_tournament_entry_request(
+            [
+                'playerId'         => '10',
+                'clubId'           => '1',
+                'tournamentEvents' => '10',
+                'event'            => [ '10' ],
+            ]
+        );
+
+        $result = $service->request_tournament_entry( $dto );
+        $this->assertInstanceOf( Tournament_Entry_Response_DTO::class, $result );
+
+        // Withdrawal without dispatcher
+        $entry = Tournament_Entry::from_array(
+            [
+                'id'            => 150,
+                'tournament_id' => 1,
+                'player_id'     => 10,
+                'status'        => 2,
+            ]
+        );
+        $entry_to_withdraw = $this->createMock( League_Team::class );
+        $this->league_team_repository->method( 'find_player_teams_by_player_for_events' )->willReturn( [ $entry_to_withdraw ] );
+        $shortcodes = $this->createStub( \Racketmanager\Public\Shortcodes::class );
+        $this->plugin->shortcodes = $shortcodes;
+
+        $refund = $service->confirm_tournament_withdrawal( 1, 10 );
+        $this->assertSame( 0, $refund );
+        $this->assertSame( Tournament_Entry::STATUS_WITHDRAWN, $entry->get_status() );
     }
 }

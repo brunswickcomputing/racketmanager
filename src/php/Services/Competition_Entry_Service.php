@@ -25,7 +25,10 @@ use Racketmanager\Domain\Shared\Seo_Slug;
 use Racketmanager\Domain\Team\Team_Factory;
 use Racketmanager\Domain\Tournament\Tournament;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Date_DTO;
+use Racketmanager\Domain\Events\Domain_Event_Dispatcher_Interface;
+use Racketmanager\Domain\Tournament\Currency;
 use Racketmanager\Domain\Tournament\Tournament_Entry;
+use Racketmanager\Domain\Value_Objects\Money;
 use Racketmanager\Domain\Tournament\Tournament_Entry_Factory;
 use Racketmanager\Exceptions\Charge_Not_Found_Exception;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
@@ -81,10 +84,30 @@ class Competition_Entry_Service implements Competition_Entry_Service_Interface {
     private Event_Query_Service $event_query_service;
     private ?Player_Repository_Interface $player_repository;
     private ?Event_Repository_Interface $event_repository;
+    private ?Domain_Event_Dispatcher_Interface $event_dispatcher;
 
     /**
      * Constructor
      *
+     * @param RacketManager                          $plugin_instance             Plugin instance.
+     * @param Club_Repository                        $club_repository             Club repository.
+     * @param League_Repository                      $league_repository           League repository.
+     * @param League_Team_Repository                 $league_team_repository      League team repository.
+     * @param Team_Repository                        $team_repository             Team repository.
+     * @param Tournament_Repository                  $tournament_repository       Tournament repository.
+     * @param Tournament_Entry_Repository            $tournament_entry_repository Tournament entry repository.
+     * @param Club_Service                           $club_service                Club service.
+     * @param Competition_Service                    $competition_service         Competition service.
+     * @param Finance_Service                        $finance_service             Finance service.
+     * @param Player_Service                         $player_service              Player service.
+     * @param Tournament_Service                     $tournament_service          Tournament service.
+     * @param Notify_Service                         $notify_service              Notify service.
+     * @param Event_Query_Service                    $event_query_service         Event query service.
+     * @param Mailer_Interface                       $mailer                      Mailer.
+     * @param Option_Service                         $option_service              Option service.
+     * @param Player_Repository_Interface|null       $player_repository           Player repository.
+     * @param Event_Repository_Interface|null        $event_repository            Event repository.
+     * @param Domain_Event_Dispatcher_Interface|null $event_dispatcher            Domain event dispatcher.
      */
     public function __construct(
         RacketManager $plugin_instance,
@@ -104,7 +127,8 @@ class Competition_Entry_Service implements Competition_Entry_Service_Interface {
         Mailer_Interface $mailer,
         Option_Service $option_service,
         ?Player_Repository_Interface $player_repository = null,
-        ?Event_Repository_Interface $event_repository = null
+        ?Event_Repository_Interface $event_repository = null,
+        ?Domain_Event_Dispatcher_Interface $event_dispatcher = null
     ) {
         $this->racketmanager               = $plugin_instance;
         $this->club_repository             = $club_repository;
@@ -124,6 +148,7 @@ class Competition_Entry_Service implements Competition_Entry_Service_Interface {
         $this->option_service              = $option_service;
         $this->player_repository           = $player_repository;
         $this->event_repository            = $event_repository;
+        $this->event_dispatcher            = $event_dispatcher;
     }
 
     /**
@@ -1572,32 +1597,72 @@ class Competition_Entry_Service implements Competition_Entry_Service_Interface {
         return $this->team_repository->save_with_players( $team, $player_ids );
     }
 
-    private function set_tournament_entry( int $tournament_id, int $player_id, ?int $club_id = null, null|int|float|string $payment_required = null ): void {
+    private function set_tournament_entry( int $tournament_id, int $player_id, ?int $club_id = null, null|int|float|string|Money $payment_required = null ): void {
         if ( ! empty( $club_id ) ) {
-            $status = 2;
+            $status = Tournament_Entry::STATUS_CONFIRMED;
         } else {
-            $status = 0;
+            $status = Tournament_Entry::STATUS_PENDING;
         }
-        $fee              = ! is_null( $payment_required ) ? (int) $payment_required : null;
-        $tournament_entry = $this->get_tournament_entry_by_tournament_and_player( $tournament_id, $player_id );
+
+        $fee_money = null;
+        if ( $payment_required instanceof Money ) {
+            $fee_money = $payment_required;
+        } elseif ( null !== $payment_required && '' !== $payment_required ) {
+            if ( is_string( $payment_required ) ) {
+                $fee_money = Money::from_string( $payment_required, Currency::GBP );
+            } elseif ( is_float( $payment_required ) ) {
+                $fee_money = Money::from_float( $payment_required, Currency::GBP );
+            } else {
+                $fee_money = Money::from_float( (float) $payment_required, Currency::GBP );
+            }
+        }
+
+        $effective_club_id = ! empty( $club_id ) ? $club_id : null;
+        $tournament_entry  = $this->get_tournament_entry_by_tournament_and_player( $tournament_id, $player_id );
+
         if ( $tournament_entry ) {
-            $tournament_entry->set_club_id( ! empty( $club_id ) ? $club_id : null );
-            $tournament_entry->set_status( $status );
-            if ( ! is_null( $fee ) ) {
-                $tournament_entry->set_fee( $fee );
+            $tournament_entry->set_club_id( $effective_club_id );
+            $tournament_entry->submit( $fee_money, null, $status );
+            $saved_id = $this->tournament_entry_repository->save( $tournament_entry );
+            if ( false !== $saved_id ) {
+                if ( empty( $tournament_entry->get_id() ) && is_int( $saved_id ) && $saved_id > 0 ) {
+                    $tournament_entry->set_id( $saved_id );
+                }
+                $this->dispatch_events_for_entry( $tournament_entry );
             }
         } else {
-            $tournament_entry = Tournament_Entry_Factory::from_array(
-                array(
-                    'status'        => $status,
-                    'tournament_id' => $tournament_id,
-                    'player_id'     => $player_id,
-                    'fee'           => $fee,
-                    'club_id'       => ! empty( $club_id ) ? $club_id : null,
-                )
+            $tournament_entry = Tournament_Entry::create(
+                $tournament_id,
+                $player_id,
+                $status,
+                $fee_money,
+                $effective_club_id
             );
+            $saved_id         = $this->tournament_entry_repository->save( $tournament_entry );
+            if ( false !== $saved_id ) {
+                if ( empty( $tournament_entry->get_id() ) && is_int( $saved_id ) && $saved_id > 0 ) {
+                    $tournament_entry->set_id( $saved_id );
+                }
+                $tournament_entry->submit();
+                $this->dispatch_events_for_entry( $tournament_entry );
+            }
         }
-        $this->tournament_entry_repository->save( $tournament_entry );
+    }
+
+    /**
+     * Dispatch any uncommitted domain events recorded on a tournament entry.
+     *
+     * @param Tournament_Entry $tournament_entry Tournament entry aggregate.
+     * @return void
+     */
+    private function dispatch_events_for_entry( Tournament_Entry $tournament_entry ): void {
+        if ( null === $this->event_dispatcher || ! $tournament_entry->has_domain_events() ) {
+            return;
+        }
+
+        foreach ( $tournament_entry->pull_domain_events() as $event ) {
+            $this->event_dispatcher->dispatch( $event );
+        }
     }
 
     public function get_tournament_entry_by_tournament_and_player( int $tournament_id, int $player_id ): Tournament_Entry|null {
@@ -1661,8 +1726,11 @@ class Competition_Entry_Service implements Competition_Entry_Service_Interface {
         $updates          = false;
         $tournament_entry = $this->get_tournament_entry_by_tournament_and_player( $tournament_id, $player_id );
         if ( $tournament_entry ) {
-            $tournament_entry->set_status( 3 );
-            $this->tournament_entry_repository->save( $tournament_entry );
+            $tournament_entry->withdraw();
+            $saved_id = $this->tournament_entry_repository->save( $tournament_entry );
+            if ( false !== $saved_id ) {
+                $this->dispatch_events_for_entry( $tournament_entry );
+            }
         }
         $events = $this->tournament_service->get_events_for_tournament( $tournament_id );
         foreach ( $events as $event ) {

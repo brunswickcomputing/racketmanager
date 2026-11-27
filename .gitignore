@@ -15,6 +15,7 @@
 /tests/*
 !/tests/test-competition-scheduler.php
 !/tests/test-stripe-checkout.js
+!/tests/test-tournament-partner-removal-email.php
 /my-tests
 *phpunit.*
 /bin/*

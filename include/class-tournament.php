@@ -1079,7 +1079,7 @@ final class Tournament {
                 }
             } elseif ( 'refund' === $status ) {
                 if ( ! empty( $this->charge ) ) {
-                    $search_terms[] = '`status` = 2';
+                    $search_terms[] = '`status` IN (2, 3)';
                     $search_terms[] = "`player_id` IN (SELECT `player_id` FROM $wpdb->racketmanager_invoices WHERE `charge_id` = %d AND `status` != 'paid' AND `amount` < 0)";
                     $search_args[]  = $this->charge->id;
                 } else {
@@ -1877,6 +1877,7 @@ final class Tournament {
         $is_post_closing      = ( ! empty( $this->is_closed ) || ! empty( $this->is_withdrawal ) || ! empty( $this->is_started ) || ! empty( $this->is_complete ) );
         $is_withdrawal_closed = ( ! empty( $this->is_withdrawal ) || ! empty( $this->is_started ) || ! empty( $this->is_complete ) );
         $is_admin_allowed     = current_user_can( 'manage_racketmanager' ) && ! $is_withdrawal_closed;
+        $removed_partners     = array();
         if ( $this->set_tournament_entry( $player->id, $club->id, $fee_due ) ) {
             $updates = true;
         }
@@ -1972,22 +1973,28 @@ final class Tournament {
                             if ( ! $same_partner && ! empty( $partner_id ) ) {
                                 if ( ! $is_post_closing ) {
                                     $league->delete_team( $team->team_id, $this->season );
+                                    wp_cache_flush_group( 'event_teams' );
+                                    wp_cache_flush_group( 'teams' );
                                     $new_entry = true;
+                                    if ( ! empty( $old_partner_id ) ) {
+                                        $removed_partners[ $old_partner_id ][] = $event->name;
+                                    }
                                 } elseif ( $is_admin_allowed ) {
                                     $swap_error = $this->swap_doubles_partner( $team, $player, $partner, $club, $league, $event );
                                     if ( null !== $swap_error ) {
                                         $this->entry_errors[ 'partner[' . $event->id . ']' ] = $swap_error;
+                                        foreach ( $removed_partners as $removed_partner_id => $affected_event_names ) {
+                                            $this->notify_partner_removal( $removed_partner_id, (int) $player->id, array_values( array_unique( $affected_event_names ) ) );
+                                        }
                                         return false;
                                     }
+                                    wp_cache_flush_group( 'event_teams' );
+                                    wp_cache_flush_group( 'teams' );
                                     $this->set_tournament_entry( $partner_id );
                                     $tournament_entry['partner'] = $partner_name;
                                     $updates                     = true;
                                     if ( ! empty( $old_partner_id ) ) {
-                                        $remaining_events = $this->get_player_events( $old_partner_id );
-                                        if ( empty( $remaining_events ) ) {
-                                            $this->cancel_player_invoices( $old_partner_id );
-                                            $this->set_tournament_entry_withdrawn( $old_partner_id );
-                                        }
+                                        $removed_partners[ $old_partner_id ][] = $event->name;
                                     }
                                 }
                             }
@@ -2056,13 +2063,28 @@ final class Tournament {
                     $tournament_entries[]           = $tournament_entry;
                 } else {
                     if ( ! $is_post_closing ) {
+                        $deleted_any = false;
                         foreach ( $teams as $team ) {
                             $updates = true;
+                            if ( substr( $event->type, 1, 1 ) === 'D' ) {
+                                $deselected_partner_id = $this->get_team_partner_id( $team, (int) $player->id );
+                                if ( ! empty( $deselected_partner_id ) ) {
+                                    $removed_partners[ $deselected_partner_id ][] = $event->name;
+                                }
+                            }
                             $league->delete_team( $team->team_id, $this->season );
+                            $deleted_any = true;
+                        }
+                        if ( $deleted_any ) {
+                            wp_cache_flush_group( 'event_teams' );
+                            wp_cache_flush_group( 'teams' );
                         }
                     }
                 }
             }
+        }
+        foreach ( $removed_partners as $removed_partner_id => $affected_event_names ) {
+            $this->notify_partner_removal( $removed_partner_id, (int) $player->id, array_values( array_unique( $affected_event_names ) ) );
         }
         if ( empty( $entry->fee ) ) {
             $status = 0;
@@ -2147,8 +2169,10 @@ final class Tournament {
             foreach ( $prev_invoices as $prev_invoice ) {
                 $paid_amount += $prev_invoice->amount;
             }
-            $details->paid = $paid_amount;
-            $invoice->set_details( $details );
+            if ( $details ) {
+                $details->paid = $paid_amount;
+                $invoice->set_details( $details );
+            }
         }
     }
     /**
@@ -2277,8 +2301,9 @@ final class Tournament {
      * @return bool
      */
     private function withdraw_from_event( int $player_id ): bool {
-        $updates = false;
-        $events = $this->competition->get_events();
+        $updates          = false;
+        $removed_partners = array();
+        $events           = $this->competition->get_events();
         foreach ( $events as $event ) {
             $teams  = $event->get_teams(
                 array(
@@ -2290,9 +2315,22 @@ final class Tournament {
             if ( $league ) {
                 foreach ( $teams as $team ) {
                     $updates = true;
+                    if ( substr( $event->type, 1, 1 ) === 'D' ) {
+                        $partner_id = $this->get_team_partner_id( $team, $player_id );
+                        if ( ! empty( $partner_id ) ) {
+                            $removed_partners[ $partner_id ][] = $event->name;
+                        }
+                    }
                     $league->delete_team( $team->team_id, $this->season );
                 }
             }
+        }
+        if ( $updates ) {
+            wp_cache_flush_group( 'event_teams' );
+            wp_cache_flush_group( 'teams' );
+        }
+        foreach ( $removed_partners as $partner_id => $event_names ) {
+            $this->notify_partner_removal( $partner_id, $player_id, array_values( array_unique( $event_names ) ) );
         }
         return $updates;
     }
@@ -2306,6 +2344,207 @@ final class Tournament {
         $search           = $this->id . '_' . $player;
         $tournament_entry = get_tournament_entry( $search, 'key' );
         $tournament_entry?->set_status(3);
+    }
+    /**
+     * Reconcile partner financials and entry status upon removal from doubles event(s)
+     *
+     * @param int   $partner_id       partner player id.
+     * @param array $remaining_events array of remaining events.
+     * @return array{ amount_paid: float, new_fee: float, fee_due: float, refund_amount: float }
+     */
+    private function reconcile_partner_financials( int $partner_id, array $remaining_events ): array {
+        $amount_paid   = 0.0;
+        $paid_payments = $this->get_payments(
+            array(
+                'player' => $partner_id,
+                'status' => 'paid',
+            )
+        );
+        if ( ! empty( $paid_payments ) ) {
+            foreach ( $paid_payments as $payment ) {
+                $amount_paid += (float) $payment->amount;
+            }
+        }
+        $amount_paid = round( $amount_paid, 2 );
+
+        $new_fee = 0.0;
+        if ( ! empty( $remaining_events ) && ! empty( $this->charge ) ) {
+            $charge  = get_charge( $this->charge );
+            $partner = get_player( $partner_id );
+            if ( $charge && $partner ) {
+                $entry_details = $charge->get_player_entry( $partner );
+                if ( $entry_details && isset( $entry_details->fee ) ) {
+                    $new_fee = (float) $entry_details->fee;
+                }
+            }
+        }
+        $new_fee = round( $new_fee, 2 );
+
+        $fee_due       = round( $new_fee - $amount_paid, 2 );
+        $refund_amount = $fee_due < 0.0 ? round( abs( $fee_due ), 2 ) : 0.0;
+
+        $open_payments = $this->get_payments(
+            array(
+                'player' => $partner_id,
+                'status' => 'open',
+            )
+        );
+        $has_open_invoices  = ! empty( $open_payments );
+        $has_paid_invoices  = ! empty( $paid_payments );
+        $has_prior_invoices = $has_open_invoices || $has_paid_invoices;
+
+        if ( ! $has_prior_invoices ) {
+            // Unbilled pending partner: do not create invoices.
+        } elseif ( $fee_due < 0.0 ) {
+            $this->create_player_invoice( $partner_id, (string) $fee_due );
+        } elseif ( 0.0 === $fee_due ) {
+            $this->cancel_player_invoices( $partner_id );
+        } elseif ( $fee_due > 0.0 ) {
+            $this->create_player_invoice( $partner_id, (string) $fee_due );
+        }
+
+        if ( empty( $remaining_events ) ) {
+            $this->set_tournament_entry_withdrawn( $partner_id );
+        } else {
+            $search           = $this->id . '_' . $partner_id;
+            $tournament_entry = get_tournament_entry( $search, 'key' );
+            if ( $tournament_entry ) {
+                $existing_status = (int) $tournament_entry->status;
+                if ( 1 === $existing_status ) {
+                    $existing_status = 0;
+                }
+                $tournament_entry->set_status( $existing_status, (string) $new_fee );
+            }
+        }
+
+        return array(
+            'amount_paid'   => (float) $amount_paid,
+            'new_fee'       => (float) $new_fee,
+            'fee_due'       => (float) $fee_due,
+            'refund_amount' => (float) $refund_amount,
+        );
+    }
+    /**
+     * Get doubles partner ID from team object
+     *
+     * @param object $team team object.
+     * @param int    $player_id player ID to exclude.
+     * @return int|null partner ID or null.
+     */
+    private function get_team_partner_id( object $team, int $player_id ): ?int {
+        if ( ! empty( $team->players ) ) {
+            foreach ( $team->players as $team_player ) {
+                if ( (int) $team_player->id !== $player_id ) {
+                    return (int) $team_player->id;
+                }
+            }
+        }
+        if ( ! empty( $team->player_id ) ) {
+            foreach ( $team->player_id as $team_player_id ) {
+                if ( (int) $team_player_id !== $player_id ) {
+                    return (int) $team_player_id;
+                }
+            }
+        }
+        if ( ! empty( $team->player_1_id ) && (int) $team->player_1_id !== $player_id ) {
+            return (int) $team->player_1_id;
+        }
+        if ( ! empty( $team->player_2_id ) && (int) $team->player_2_id !== $player_id ) {
+            return (int) $team->player_2_id;
+        }
+        if ( ! empty( $team->team_id ) || ! empty( $team->id ) ) {
+            $team_id     = $team->team_id ?? $team->id;
+            $loaded_team = get_team( $team_id );
+            if ( $loaded_team ) {
+                if ( ! empty( $loaded_team->players ) ) {
+                    foreach ( $loaded_team->players as $team_player ) {
+                        if ( (int) $team_player->id !== $player_id ) {
+                            return (int) $team_player->id;
+                        }
+                    }
+                }
+                if ( ! empty( $loaded_team->player_id ) ) {
+                    foreach ( $loaded_team->player_id as $team_player_id ) {
+                        if ( (int) $team_player_id !== $player_id ) {
+                            return (int) $team_player_id;
+                        }
+                    }
+                }
+                if ( ! empty( $loaded_team->player_1_id ) && (int) $loaded_team->player_1_id !== $player_id ) {
+                    return (int) $loaded_team->player_1_id;
+                }
+                if ( ! empty( $loaded_team->player_2_id ) && (int) $loaded_team->player_2_id !== $player_id ) {
+                    return (int) $loaded_team->player_2_id;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Notify doubles partner of removal and reconcile entry finances
+     *
+     * @param int   $partner_id  removed partner player id.
+     * @param int   $player_id   removing player id.
+     * @param array $event_names names of events from which partner was removed.
+     * @return bool whether notification email was sent.
+     */
+    private function notify_partner_removal( int $partner_id, int $player_id, array $event_names ): bool {
+        global $racketmanager;
+
+        if ( empty( $partner_id ) || $partner_id === $player_id ) {
+            return false;
+        }
+
+        $remaining_events = $this->get_player_events( $partner_id );
+        $reconciliation   = $this->reconcile_partner_financials( $partner_id, $remaining_events );
+
+        $partner = get_player( $partner_id );
+        if ( empty( $partner ) || empty( $partner->email ) ) {
+            return false;
+        }
+
+        $player = get_player( $player_id );
+        if ( empty( $player ) ) {
+            return false;
+        }
+
+        $from_email = $racketmanager->get_confirmation_email( 'tournament' );
+        if ( empty( $from_email ) || empty( $racketmanager->shortcodes ) ) {
+            return false;
+        }
+
+        $email_to        = $partner->display_name . ' <' . $partner->email . '>';
+        $email_subject   = __( 'Tournament Partner Removal', 'racketmanager' ) . ( ! empty( $this->name ) ? ' - ' . ucfirst( $this->name ) : '' );
+        $tournament_link = '<a href="' . $racketmanager->site_url . ( $this->link ) . '/">' . ( function_exists( 'esc_html' ) ? esc_html( $this->name ) : htmlspecialchars( (string) $this->name ) ) . '</a>';
+
+        $headers   = array();
+        $secretary = __( 'Tournament Secretary', 'racketmanager' ) . ' <' . $from_email . '>';
+        $headers[] = RACKETMANAGER_FROM_EMAIL . $secretary;
+        $headers[] = RACKETMANAGER_CC_EMAIL . $secretary;
+
+        $template_args = array(
+            'tournament'       => $this,
+            'tournament_name'  => $this->name,
+            'tournament_link'  => $tournament_link,
+            'action_url'       => $this->entry_link,
+            'partner_name'     => $partner->display_name,
+            'player_name'      => $player->display_name,
+            'event_names'      => $event_names,
+            'refund_amount'    => $reconciliation['refund_amount'] ?? 0.0,
+            'remaining_events' => $remaining_events,
+            'contact_email'    => $from_email,
+            'organisation'     => $racketmanager->site_name,
+            'email_subject'    => $email_subject,
+        );
+
+        $email_message = $racketmanager->shortcodes->load_template(
+            'tournament-partner-removed',
+            $template_args,
+            'email'
+        );
+
+        return (bool) wp_mail( $email_to, $email_subject, $email_message, $headers );
     }
     /**
      * Function to get payments due for tournament
